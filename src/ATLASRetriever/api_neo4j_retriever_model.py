@@ -30,19 +30,19 @@ keyword_to_port_dict = {
 current_dir = Path.cwd()
 keyword_to_index_paths = {
     'cc_en':{
-        'node':f"{current_dir.parent.parent}/import/Dulce/triples_csv/triple_nodes_cc_en_from_json.index",
-        'edge':f"{current_dir.parent.parent}/import/Dulce/triples_csv/triple_edges_cc_en_from_json.index",
-        'text':f"{current_dir.parent.parent}/import/Dulce/triples_csv/text_nodes_cc_en_from_json_with_emb.index",
+        'node':f"{current_dir.parent.parent}/import/cc_en/triples_csv/triple_nodes_cc_en_from_json.index",
+        'edge':f"{current_dir.parent.parent}/import/cc_en/triples_csv/triple_edges_cc_en_from_json.index",
+        'text':f"{current_dir.parent.parent}/import/cc_en/triples_csv/text_nodes_cc_en_from_json_with_emb.index",
     },
     'pes2o_abstract':{
-        'node':f"{current_dir.parent.parent}/import/Dulce/triples_csv/triple_nodes_pes2o_abstract_from_json_non_norm.index",
-        'edge':f"{current_dir.parent.parent}/import/Dulce/triples_csv/triple_edges_pes2o_abstract_from_json_non_norm.index",
-        'text':f"{current_dir.parent.parent}/import/Dulce/triples_csv/text_nodes_pes2o_abstract_from_json_with_emb_non_norm.index",
+        'node':f"{current_dir.parent.parent}/import/pes2o_abstract/triples_csv/triple_nodes_pes2o_abstract_from_json_non_norm.index",
+        'edge':f"{current_dir.parent.parent}/import/pes2o_abstract/triples_csv/triple_edges_pes2o_abstract_from_json_non_norm.index",
+        'text':f"{current_dir.parent.parent}/import/pes2o_abstract/triples_csv/text_nodes_pes2o_abstract_from_json_with_emb_non_norm.index",
     },
     'en_simple_wiki_v0':{
-        'node':f"{current_dir.parent.parent}/import/Dulce/triples_csv/triple_nodes_en_simple_wiki_v0_from_json_non_norm.index",
-        'edge':f"{current_dir.parent.parent}/import/Dulce/triples_csv/triple_edges_en_simple_wiki_v0_from_json_non_norm.index",
-        'text':f"{current_dir.parent.parent}/import/Dulce/triples_csv/text_nodes_en_simple_wiki_v0_from_json_with_emb_non_norm.index",
+        'node':f"{current_dir.parent.parent}/import/en_simple_wiki_v0/triples_csv/triple_nodes_en_simple_wiki_v0_from_json_non_norm.index",
+        'edge':f"{current_dir.parent.parent}/import/en_simple_wiki_v0/triples_csv/triple_edges_en_simple_wiki_v0_from_json_non_norm.index",
+        'text':f"{current_dir.parent.parent}/import/en_simple_wiki_v0/triples_csv/text_nodes_en_simple_wiki_v0_from_json_with_emb_non_norm.index",
     },
     'demo':{
         'node':f"{current_dir.parent.parent}/import/Dulce/triples_csv/triple_nodes_Dulce_from_json.index",
