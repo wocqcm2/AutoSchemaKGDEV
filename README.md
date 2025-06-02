@@ -5,7 +5,7 @@ This repository contains the implementation of AutoSchemaKG, a novel framework f
 ## Overview
 
 AutoSchemaKG introduces a two-stage approach:
-1. **Knowledge Graph Construction**: Populates the knowledge graph with facts based on the generated schema
+1. **Knowledge Graph Triple Extraction**: Extract triples comprising entities and events from text by using LLMs 
 2. **Schema Induction**: Automatically generates schema for the knowledge graph by using conceptualization
 
 
