@@ -6,3 +6,4 @@ src/ATLASMultiHopQA/processed_data/
 *.pkl
 *.index
 benchmark_data
+result

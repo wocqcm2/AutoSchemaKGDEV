@@ -84,28 +84,28 @@ def compute_text_embeddings(text_list, sentence_encoder: SentenceTransformer):
         text_embeddings.extend(sentence_encoder.encode(batch, convert_to_tensor=True).cpu().numpy())
     return text_embeddings
 
-def create_embeddings_and_index(sentence_encoder, model_name: str, output_directory: str, keyword: str, include_events: bool, include_concept: bool):
+def create_embeddings_and_index(sentence_encoder, model_name: str, working_directory: str, keyword: str, include_events: bool, include_concept: bool):
     # Extract the last part of the encoder_model_name for simplified reference
     encoder_model_name = model_name.split('/')[-1]
     
     print(f"Using encoder model: {encoder_model_name}")
-    graph_dir = f"{output_directory}/kg_graphml/{keyword}_graph.graphml"
+    graph_dir = f"{working_directory}/kg_graphml/{keyword}_graph.graphml"
     if not os.path.exists(graph_dir):
         raise FileNotFoundError(f"Graph file {graph_dir} does not exist. Please check the path or generate the graph first.")
 
-    node_index_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_node_faiss.index"
-    node_list_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_node_list.pkl"
-    edge_index_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_edge_faiss.index"
-    edge_list_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_edge_list.pkl"
-    node_embeddings_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_node_embeddings.pkl"
-    edge_embeddings_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_edge_embeddings.pkl"
-    text_embeddings_path = f"{output_directory}/precompute/{keyword}_{encoder_model_name}_text_embeddings.pkl"
-    text_index_path = f"{output_directory}/precompute/{keyword}_text_faiss.index"
-    original_text_list_path = f"{output_directory}/precompute/{keyword}_text_list.pkl"
-    original_text_dict_with_node_id_path = f"{output_directory}/precompute/{keyword}_original_text_dict_with_node_id.pkl"
+    node_index_path = f"{working_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_node_faiss.index"
+    node_list_path = f"{working_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_node_list.pkl"
+    edge_index_path = f"{working_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_edge_faiss.index"
+    edge_list_path = f"{working_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_edge_list.pkl"
+    node_embeddings_path = f"{working_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_node_embeddings.pkl"
+    edge_embeddings_path = f"{working_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_edge_embeddings.pkl"
+    text_embeddings_path = f"{working_directory}/precompute/{keyword}_{encoder_model_name}_text_embeddings.pkl"
+    text_index_path = f"{working_directory}/precompute/{keyword}_text_faiss.index"
+    original_text_list_path = f"{working_directory}/precompute/{keyword}_text_list.pkl"
+    original_text_dict_with_node_id_path = f"{working_directory}/precompute/{keyword}_original_text_dict_with_node_id.pkl"
 
-    if not os.path.exists(f"{output_directory}/precompute"):
-        os.makedirs(f"{output_directory}/precompute", exist_ok=True)
+    if not os.path.exists(f"{working_directory}/precompute"):
+        os.makedirs(f"{working_directory}/precompute", exist_ok=True)
 
     print(f"Loading graph from {graph_dir}")
     with open(graph_dir, "rb") as f:
@@ -198,6 +198,7 @@ def create_embeddings_and_index(sentence_encoder, model_name: str, output_direct
     print("Node and edge embeddings already computed.")
     # Return all required indices, embeddings, and lists
     return {
+        "KG": KG,
         "node_faiss_index": node_faiss_index,
         "edge_faiss_index": edge_faiss_index,
         "text_faiss_index": text_faiss_index,
