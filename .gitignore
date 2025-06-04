@@ -10,3 +10,4 @@ result
 *.npy
 *.graphml
 import/Dulce/kg_graphml/Dulce_graph.graphml
+src/ATLASMultiHopQA/data
