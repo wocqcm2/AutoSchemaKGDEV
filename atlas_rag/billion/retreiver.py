@@ -77,7 +77,7 @@ def load_indexes(path_dict):
 class BaseLargeKGRetriever():
     def __init__():
         raise NotImplementedError("This is a base class and cannot be instantiated directly.")
-    def retrieve_passages(self, query, topN=5, number_of_source_nodes_per_ner = 2, sampling_area = 200):
+    def retrieve_passages(self, query, retriever_config:dict):
         """
         Retrieve passages based on the query.
         
@@ -367,10 +367,12 @@ class LargeKGRetriever(BaseLargeKGRetriever):
             self.logger.info(f"largekgRAG : Personalization dict's number of node: {len(personalization_dict)}")
         return personalization_dict
        
-    def retrieve_passages(self, query, topN=5, number_of_source_nodes_per_ner = 2, sampling_area = 200):
+    def retrieve_passages(self, query, retriever_config:dict):
         if self.verbose:
             self.logger.info(f"largekgRAG : Retrieving passages for query: {query}")
-            
+        topN = retriever_config.get("topN", 5)
+        number_of_source_nodes_per_ner = retriever_config.get("number_of_source_nodes_per_ner", 5)
+        sampling_area = retriever_config.get("sampling_area", 100)
         personalization_dict = self.retrieve_personalization_dict(query, number_of_source_nodes_per_ner)
         if personalization_dict == {}:
             return [], [0]

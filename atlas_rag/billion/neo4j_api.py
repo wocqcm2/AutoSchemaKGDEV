@@ -145,11 +145,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
             rag_text = parts[-1] if len(parts) > 1 else None
         print(f"RAG text: {rag_text}")
         if not is_exemption:
-            topN = request.retriever_config.get("topN", 5)
-            number_of_source_nodes_per_ner = request.retriever_config.get("number_of_source_nodes_per_ner", 5)
-            sampling_area = request.retriever_config.get("sampling_area", 100)
-            print(f"topN: {topN}, number_of_source_nodes_per_ner: {number_of_source_nodes_per_ner}, sampling_area: {sampling_area}")
-            passages, passages_score = large_kg_config.largekg_retriever.retrieve_passages(rag_text, topN, number_of_source_nodes_per_ner, sampling_area)
+            passages, passages_score = large_kg_config.largekg_retriever.retrieve_passages(rag_text, request.retriever_config)
             context = "No retrieved context, Please answer the question with your own knowledge." if not passages else "\n".join([f"Passage {i+1}: {text}" for i, text in enumerate(reversed(passages))])
             
         if is_mmlu:
