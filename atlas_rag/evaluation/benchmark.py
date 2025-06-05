@@ -43,6 +43,7 @@ class BenchMarkConfig:
         include_concept (bool): Whether to include concepts. Default is False.
         reader_model_name (str): Name of the reader model. Default is "meta-llama/Llama-2-7b-chat-hf".
         encoder_model_name (str): Name of the encoder model. Default is "nvidia/NV-Embed-v2".
+        number_of_samples (int): Number of samples to use from the dataset. Default is -1 (use all samples).
     """
     dataset_name: str = "hotpotqa"
     question_file: str = "hotpotqa"
