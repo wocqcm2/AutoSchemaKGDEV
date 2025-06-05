@@ -35,6 +35,10 @@ In order to install atlas-rag with gpu, it is recommended for you to first insta
 As faiss-gpu only support CUDA 11.4 and 12.1 for now. so,
 1. Install pytorch 
 ```bash
+conda create -n atlas-rag-gpu-test python=3.12 pip
+conda activate atlas-rag-gpu-test
+```
+```bash
 conda install pytorch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 pytorch-cuda=12.1 -c pytorch -c nvidia
 ```
 https://pytorch.org/get-started/locally/
@@ -42,11 +46,6 @@ https://pytorch.org/get-started/locally/
 2. For faiss-gpu
 ```bash
 conda install -c pytorch -c nvidia faiss-gpu
-```
-
-For faiss-cpu (not recommended)
-```bash
-conda install -c pytorch faiss-cpu
 ```
 
 3. Install atlas-rag
