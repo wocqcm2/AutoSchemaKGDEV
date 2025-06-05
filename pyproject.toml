@@ -6,9 +6,9 @@ build-backend = "flit_core.buildapi"
 name = "atlas-rag"
 version = "2025.0.0"
 authors = [
-    {name="Jiaxin Bai", email="jbai@connect.ust.hk"},
-    {name="Hong Ting TSANG", email="httsangaj@connect.ust.hk"},
-    {name="Haoyu Huang", email="haoyuhuang@link.cuhk.edu.hk"},
+    {name = "Jiaxin Bai", email = "jbai@connect.ust.hk"},
+    {name = "Hong Ting TSANG", email = "httsangaj@connect.ust.hk"},
+    {name = "Haoyu Huang", email = "haoyuhuang@link.cuhk.edu.hk"},
 ]
 description = "AutoSchemaKG, a framework for fully autonomous knowledge graph construction that eliminates the need for predefined schemas."
 readme = "README.md"
@@ -18,8 +18,7 @@ keywords = [
     "knowledge-graph",
     "nlp",
 ]
-license = "MIT"
-license-files = ["LICENSE"]
+license = {text = "MIT"}
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.9",
@@ -29,18 +28,23 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies = [
-    "numpy",
-    "networkx",
-    "tqdm",
-    "jsonschema",
-    "neo4j",
-    "fastapi",
-    "uvicorn",
-    "openai",
-    "tenacity",
-    "pandas",
+    "numpy>=2.2.0",
+    "networkx>=3.1",
+    "tqdm>=4.65.0",
+    "jsonschema>=4.17.3",
+    "neo4j>=5.8.0",
+    "fastapi>=0.95.0",
+    "uvicorn>=0.21.0",
+    "openai>=1.0.0",
+    "tenacity>=8.2.0",
+    "pandas>=2.0.0",
     "sentence-transformers>=2.7.0",
     "transformers>=4.42.4",
-    "flash-attn>=2.2.0"
-    "torch>=2.2.0",
+]
+[project.optional-dependencies]
+gpu = [
+    "torch>=2.5.1",
+    "torchvision>=0.20.1",
+    "torchaudio>=2.5.1",
+    "flash-attn>=2.2.0",
 ]

@@ -1,6 +1,7 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'  # Set to the GPU you want to use, or '0' for the first GPU
-import torch
+
+import torch.version 
+
 from configparser import ConfigParser
 from openai import OpenAI
 from atlas_rag.retriever import NvEmbed, HippoRAG2Retriever
@@ -8,12 +9,17 @@ from atlas_rag.reader import LLMGenerator
 from atlas_rag.evaluation import BenchMarkConfig, RAGBenchmark
 from atlas_rag import create_embeddings_and_index, setup_logger
 from transformers import AutoModel
+import torch
+print(torch.version.cuda)
+print(torch.cuda.device_count())
+torch.cuda.set_device(1)
+
 
 def main():
-    num_gpus = torch.cuda.device_count()
-    print("Number of GPUs available:", num_gpus)
-    for i in range(num_gpus):
-        print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
+    # num_gpus = torch.cuda.device_count()
+    # print("Number of GPUs available:", num_gpus)
+    # for i in range(num_gpus):
+    #     print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
 
     # Load SentenceTransformer model
     encoder_model_name = "nvidia/NV-Embed-v2"
