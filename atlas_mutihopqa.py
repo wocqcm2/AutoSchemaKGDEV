@@ -12,7 +12,6 @@ from transformers import AutoModel
 import torch
 print(torch.version.cuda)
 print(torch.cuda.device_count())
-torch.cuda.set_device(1)
 
 
 def main():
