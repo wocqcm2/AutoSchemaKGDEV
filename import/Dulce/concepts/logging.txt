@@ -1,0 +1,7 @@
+2025-06-05 11:04:48,672 - INFO - Load pretrained SentenceTransformer: all-MiniLM-L12-v2
+2025-06-05 11:04:53,059 - INFO - Stopped loading due to: No data left in file
+2025-06-05 11:04:53,061 - INFO - Adding time: 0.00 seconds
+2025-06-05 11:04:53,080 - INFO - Stopped loading due to: No data left in file
+2025-06-05 11:04:53,082 - INFO - Adding time: 0.00 seconds
+2025-06-05 11:04:53,115 - INFO - Stopped loading due to: No data left in file
+2025-06-05 11:04:53,117 - INFO - Adding time: 0.00 seconds

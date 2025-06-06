@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from ast import literal_eval  # Safer string-to-list conversion
+import os
 
 CHUNKSIZE = 100_000  # Adjust based on your RAM (100K rows per chunk)
 EMBEDDING_COL = "embedding:STRING"  # Column name with embeddings
@@ -14,6 +15,9 @@ def parse_embedding(embed_str):
 # Create memory-mapped numpy file
 def convert_csv_to_npy(csv_path, npy_path):
     total_embeddings = 0
+    # check dir exist, if not then create it
+    os.makedirs(os.path.dirname(npy_path), exist_ok=True)
+    
     with open(npy_path, "wb") as f:
         pass  # Initialize empty file
 

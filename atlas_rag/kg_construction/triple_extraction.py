@@ -25,9 +25,8 @@ from atlas_rag.utils.csv_add_column import add_csv_columns
 from atlas_rag.utils.convert_csv2npy import convert_csv_to_npy
 from atlas_rag.utils.compute_embedding import compute_embedding
 from atlas_rag.utils.create_index import build_faiss_from_npy
+from atlas_rag.retriever.embedding_model import BaseEmbeddingModel
 
-from sentence_transformers import SentenceTransformer
-from transformers import AutoModel
 
 
 
@@ -336,7 +335,10 @@ class KnowledgeGraphExtractor:
         filename = (f"{model_name_safe}_{self.config.filename_pattern}_output_"
                    f"{timestamp}_{self.config.slice_current + 1}_in_{self.config.slice_total}.json")
         
-        return os.path.join(self.config.output_directory, filename)
+        extraction_dir = os.path.join(self.config.output_directory, "kg_extraction")
+        os.makedirs(extraction_dir, exist_ok=True)
+        
+        return os.path.join(extraction_dir, filename)
     
     def prepare_result_dict(self, batch_data: Tuple, stage_outputs: Tuple, index: int) -> Dict[str, Any]:
         """Prepare result dictionary for a single sample."""
@@ -461,18 +463,10 @@ class KnowledgeGraphExtractor:
             text_with_numeric_id=f"{self.config.output_directory}/triples_csv/text_nodes_{self.config.filename_pattern}_from_json_with_numeric_id.csv",
         )
 
-    def compute_embedding(self, encoder_model_name="all-MiniLM-L12-v2"):
-        # TODO: compute embedding for the graph
-
-        if encoder_model_name == "nvidia/NV-Embed-v2":
-            sentence_encoder = AutoModel.from_pretrained("nvidia/NV-Embed-v2", device_map="auto", trust_remote_code=True)
-            encoder_model_name = "NV-Embed-v2"
-        else:
-            sentence_encoder = SentenceTransformer(encoder_model_name, device="cuda:0")
-        
+    def compute_embedding(self, encoder_model:BaseEmbeddingModel):
 
         compute_embedding(
-            model=sentence_encoder,
+            model=encoder_model,
             node_csv_without_emb=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_without_emb.csv",
             node_csv_file=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_with_emb.csv",
             edge_csv_without_emb=f"{self.config.output_directory}/concept_csv/triple_edges_{self.config.filename_pattern}_from_json_with_concept.csv",

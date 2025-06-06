@@ -4,8 +4,8 @@ import torch.nn.functional as F
 from abc import ABC, abstractmethod
 
 class BaseEmbeddingModel(ABC):
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, sentence_encoder):
+        self.sentence_encoder = sentence_encoder
 
     @abstractmethod
     def encode(self, query, **kwargs):

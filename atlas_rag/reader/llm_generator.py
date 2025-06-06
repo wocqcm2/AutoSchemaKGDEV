@@ -1,10 +1,10 @@
 import json
-from openai import OpenAI
+from openai import OpenAI, NOT_GIVEN
 from tenacity import retry, wait_fixed, stop_after_delay, stop_after_attempt
 from copy import deepcopy
 from atlas_rag.retriever.filter_template import messages as filter_messages, validate_filter_output
 from atlas_rag.retriever.rag_qa_prompt import prompt_template
-from atlas_rag.billion.prompt_template import ner_prompt, validate_keyword_output
+from atlas_rag.billion.prompt_template import ner_prompt, validate_keyword_output, keyword_filtering_prompt
 from transformers.pipelines import Pipeline
 import jsonschema
 
@@ -36,24 +36,20 @@ class LLMGenerator():
         self.cot_system_instruction_kg = "".join(cot_system_instruction_kg)
 
     @retry(stop=(stop_after_delay(60) | stop_after_attempt(6)), wait=wait_fixed(5))
-    def _generate_response(self, messages, max_new_tokens=32768, temperature=0.7):
-        """
-        Generate a response using the configured client.
-
-        Args:
-            messages: The input messages for the model.
-            max_new_tokens: The maximum number of tokens to generate.
-            temperature: The sampling temperature.
-
-        Returns:
-            The generated response.
-        """
+    def _generate_response(self, messages, do_sample=True, 
+                           max_new_tokens=32768,
+                           temperature = 0.7,
+                           frequency_penalty = None,
+                           response_format = {"type": "text"}  # Default response format,
+                           ):
         if self.inference_type == "openai":
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=messages,
                 max_tokens=max_new_tokens,
                 temperature=temperature,
+                frequency_penalty= NOT_GIVEN if frequency_penalty is None else frequency_penalty,
+                response_format = response_format if response_format is not None else {"type": "text"},
             )
             return response.choices[0].message.content
         elif self.inference_type == "pipeline":
@@ -182,8 +178,30 @@ class LLMGenerator():
         except Exception as e:
             # If all retries fail, return the original triples
             return []
-    def generate_with_custom_messages(self, custom_messages, max_new_tokens=1024):
-        return self._generate_response(custom_messages, max_new_tokens)
+    def generate_with_custom_messages(self, custom_messages, do_sample=True, max_new_tokens=1024, temperature=0.8, frequency_penalty = None):
+        return self._generate_response(custom_messages, do_sample, max_new_tokens, temperature, frequency_penalty)
+    
+    @retry(stop=(stop_after_delay(60) | stop_after_attempt(6)), wait=wait_fixed(2))
+    def large_kg_filter_keywords_with_entity(self, question, keywords):
+        messages = deepcopy(keyword_filtering_prompt)
+        
+        messages.append({
+            "role": "user",
+            "content": f"""[[ ## question ## ]]
+            {question}
+            [[ ## keywords_before_filter ## ]]
+            {keywords}"""
+        })
+        
+        try:
+            response = self.generate_with_custom_messages(messages, response_format={"type": "json_object"}, temperature=0.0, max_new_tokens=2048)
+            
+            # Validate and clean the response
+            cleaned_data = validate_keyword_output(response)
+            
+            return cleaned_data['keywords']
+        except Exception as e:
+            return keywords
     
     def ner(self, text):
         messages = [
@@ -192,6 +210,7 @@ class LLMGenerator():
         ]
         return self._generate_response(messages)
     
+    @retry(stop=(stop_after_delay(60) | stop_after_attempt(6)), wait=wait_fixed(2))
     def large_kg_ner(self, text):
         messages = deepcopy(ner_prompt)
         messages.append(

@@ -99,7 +99,7 @@ class LargeKGRetriever(BaseLargeKGRetriever):
         # istantiate one kg resources
         self.keyword = keyword
         self.neo4j_driver = neo4j_driver
-        self.gds_driver = GraphDatabase(self.neo4j_driver)
+        self.gds_driver = GraphDataScience(self.neo4j_driver)
         self.llm_generator = llm_generator
         self.sentence_encoder = sentence_encoder
         self.node_faiss_index = node_index
@@ -174,6 +174,10 @@ class LargeKGRetriever(BaseLargeKGRetriever):
                 self.logger.info(f"Optimized word set: {word_set}")
         else:
             filtered_personalization = personalization_dict
+        if self.verbose:
+            self.logger.info(f"largekgRAG : Personalization dict: {filtered_personalization}")
+            self.logger.info(f"largekgRAG : Sampling ratio: {sampling_ratio}")
+            self.logger.info(f"largekgRAG : PPR weight threshold: {ppr_weight_threshold}")
         # Process each node in the filtered personalization dict
         for node_id, ppr_weight in filtered_personalization.items():
             try:
@@ -187,13 +191,20 @@ class LargeKGRetriever(BaseLargeKGRetriever):
                 result = self.gds_driver.pageRank.stream(
                     G_sample, maxIterations=30, sourceNodes=[node_id], logProgress=False
                 ).sort_values("score", ascending=False)
+                
                 if self.verbose:
+                    self.logger.info(f"pagerank type: {type(result)}")
+                    self.logger.info(f"pagerank result: {result}")
                     self.logger.info(f"largekgRAG : PageRank calculated for node {node_id} in {time.time() - start_time:.2f} seconds")
                 start_time = time.time()
                 # if self.keyword == 'cc_en':
                 if self.keyword != 'cc_en':
                     result = result[result['score'] > 0.0].nlargest(50, 'score').to_dict('records')
-                for entry in result.to_dict('records'):
+                else:
+                    result = result.to_dict('records')
+                if self.verbose:
+                    self.logger.info(f"largekgRAG :result: {result}")
+                for entry in result:
                     if self.keyword == 'cc_en':
                         node_name = self.gds_driver.util.asNode(entry['nodeId'])['name']
                         if not self.has_intersection(word_set, node_name):
@@ -207,13 +218,15 @@ class LargeKGRetriever(BaseLargeKGRetriever):
 
             except Exception as e:
                 if self.verbose:
+                    self.logger.error(f"Error processing node {node_id}: {e}")
                     self.logger.error(f"Node is filtered out: {self.gds_driver.util.asNode(node_id)['name']}")
                 else:
                     continue
 
     
-        
         aggregation_node_dict = sorted(aggregation_node_dict, key=lambda x: x['score'], reverse=True)[:25]
+        if self.verbose:
+            self.logger.info(f"Aggregation node dict: {aggregation_node_dict}")
         if self.verbose:
             self.logger.info(f"Time taken to sample and calculate PageRank: {time.time() - start_time:.2f} seconds")
         start_time = time.time()
@@ -263,7 +276,10 @@ class LargeKGRetriever(BaseLargeKGRetriever):
         topN_passages = sorted(topN_passages, key=lambda x: x[1], reverse=True)
         top_texts = [item[0] for item in topN_passages][:topN]
         top_scores = [item[1] for item in topN_passages][:topN]
-
+        if self.verbose:
+            self.logger.info(f"Total passages retrieved: {len(top_texts)}")
+            self.logger.info(f"Top passages: {top_texts}")
+            self.logger.info(f"Top scores: {top_scores}")
         if self.verbose:
             self.logger.info(f"Neo4j Query Time: {time.time() - start_time:.2f} seconds")
         return top_texts, top_scores
@@ -271,6 +287,8 @@ class LargeKGRetriever(BaseLargeKGRetriever):
     def retrieve_topk_nodes(self, query, top_k_nodes = 2):
         # extract entities from the query
         entities = self.ner(query)
+        if self.verbose:
+            self.logger.info(f"largekgRAG : LLM Extracted entities: {entities}")
         if len(entities) == 0:
             entities = [query]
         num_entities = len(entities)
@@ -289,7 +307,7 @@ class LargeKGRetriever(BaseLargeKGRetriever):
         topk_nodes = list(set(initial_nodes))
         # convert the numeric id to string and filter again then return numeric id
         keywords_before_filter = [self.convert_numeric_id_to_name(n) for n in initial_nodes]
-        filtered_keywords = self.llm_generator.filter_keywords_with_entity(query, keywords_before_filter)
+        filtered_keywords = self.llm_generator.large_kg_filter_keywords_with_entity(query, keywords_before_filter)
     
         # Second pass: Add filtered keywords
         filtered_top_k_nodes = []
@@ -350,6 +368,9 @@ class LargeKGRetriever(BaseLargeKGRetriever):
         return personalization_dict
        
     def retrieve_passages(self, query, topN=5, number_of_source_nodes_per_ner = 2, sampling_area = 200):
+        if self.verbose:
+            self.logger.info(f"largekgRAG : Retrieving passages for query: {query}")
+            
         personalization_dict = self.retrieve_personalization_dict(query, number_of_source_nodes_per_ner)
         if personalization_dict == {}:
             return [], [0]
