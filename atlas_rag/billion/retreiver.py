@@ -74,14 +74,32 @@ def load_indexes(path_dict):
             print(f"Passage index loaded from {value}")
     return node_index, edge_index, passage_index
 
-class LargeKGRetriever_API():
-    def __init__(self, keyword:str, neo4j_driver: GraphDatabase, gds_driver: GraphDataScience, 
+class BaseLargeKGRetriever():
+    def __init__():
+        raise NotImplementedError("This is a base class and cannot be instantiated directly.")
+    def retrieve_passages(self, query, topN=5, number_of_source_nodes_per_ner = 2, sampling_area = 200):
+        """
+        Retrieve passages based on the query.
+        
+        Args:
+            query (str): The input query.
+            topN (int): Number of top passages to retrieve.
+            number_of_source_nodes_per_ner (int): Number of source nodes per named entity recognition.
+            sampling_area (int): Area for sampling in the graph.
+        
+        Returns:
+            List of retrieved passages and their scores.
+        """
+        raise NotImplementedError("This method should be implemented by subclasses.")
+
+class LargeKGRetriever(BaseLargeKGRetriever):
+    def __init__(self, keyword:str, neo4j_driver: GraphDatabase, 
                 llm_generator:LLMGenerator, sentence_encoder:BaseEmbeddingModel, 
                 node_index:faiss.Index, passage_index:faiss.Index, logger:Logger = None): 
         # istantiate one kg resources
         self.keyword = keyword
         self.neo4j_driver = neo4j_driver
-        self.gds_driver = gds_driver
+        self.gds_driver = GraphDatabase(self.neo4j_driver)
         self.llm_generator = llm_generator
         self.sentence_encoder = sentence_encoder
         self.node_faiss_index = node_index
@@ -338,20 +356,11 @@ class LargeKGRetriever_API():
         topN_passages, topN_scores = self.pagerank(personalization_dict, topN, sampling_area = sampling_area)
         return topN_passages, topN_scores
 
-def start_up_large_kg_model(keyword:str, llm_generator: LLMGenerator, sentence_transformer:BaseEmbeddingModel, 
-                      neo4j_driver: Driver, data:dict, logger:Logger = None)->LargeKGRetriever_API:    
+def start_up_large_kg_index_graph(neo4j_driver: Driver)->LargeKGRetriever:    
     gds_driver = GraphDataScience(neo4j_driver)
     # build label index and projection graph
     build_neo4j_label_index(neo4j_driver)
     build_projection_graph(gds_driver)
-    node_index = data.get('node_index', None)
-    edge_index = data.get('edge_index', None)   
-    passage_index = data.get('passage_index', None)
 
-    largekg_api = LargeKGRetriever_API(keyword, neo4j_driver, gds_driver,
-                                        llm_generator, sentence_transformer, 
-                                        node_index, edge_index, passage_index,
-                                        logger)
-    return largekg_api
 
     

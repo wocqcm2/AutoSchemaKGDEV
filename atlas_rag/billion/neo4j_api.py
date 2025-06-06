@@ -4,20 +4,17 @@ from fastapi import FastAPI, HTTPException, Response
 from typing import List, Literal, Optional, Union
 from pydantic import BaseModel, Field
 from logging import Logger
-from atlas_rag.retriever.embedding_model import BaseEmbeddingModel
-from atlas_rag.billion.retreiver import start_up_large_kg_model
+from atlas_rag.billion.retreiver import start_up_large_kg_index_graph, BaseLargeKGRetriever
 from atlas_rag.reader import LLMGenerator
 from neo4j import Driver
+from dataclasses import dataclass
 
-
+@dataclass
 class LargeKGConfig:
-    keyword = "largekg"
-    retreiver_llm_generator : LLMGenerator = None
+    largekg_retriever: BaseLargeKGRetriever = None
     reader_llm_generator : LLMGenerator = None
-    sentence_encoder : BaseEmbeddingModel= None
-    neo4j_driver : Driver = None
-    data = {}
-    logger : Logger = None
+    driver: Driver = None
+    logger: Logger = None
 
     rag_exemption_list = [
     """I will show you a question and a list of text segments. All the segments can be concatenated to form a complete answer to the question. Your task is to assess whether each text segment contains errors or not. \nPlease generate using the following format:\nAnswer: List the ids of the segments with errors (separated by commas). Please only output the ids, no more details. If all the segments are correct, output \"ALL_CORRECT\".\n\nHere is one example:\nQuestion: 8923164*7236571?\nSegments: \n1. The product of 8923164 and 7236571 is: 6,461,216,222,844\n2. So, 8923164 multiplied by 7236571 is equal to 6,461,216,222,844.\n\nBelow are your outputs:\nAnswer: 1,2\nIt means segment 1,2 contain errors.""",
@@ -30,18 +27,11 @@ class LargeKGConfig:
 
 app = FastAPI()
 large_kg_config = LargeKGConfig()
-largekg_retriever = None
 
 @app.on_event("startup")
 async def startup():
-    global large_kg_config, largekg_retriever
-    largekg_retriever = start_up_large_kg_model(
-        LargeKGConfig.keyword,
-        LargeKGConfig.retreiver_llm_generator,
-        LargeKGConfig.sentence_encoder,
-        LargeKGConfig.neo4j_driver,
-        LargeKGConfig.logger
-    )
+    global large_kg_config
+    start_up_large_kg_index_graph(large_kg_config.driver)
 
 @app.on_event("shutdown")
 async def shutdown():
@@ -120,7 +110,7 @@ async def health_check():
 
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
 async def create_chat_completion(request: ChatCompletionRequest):
-    global large_kg_config, largekg_retriever
+    global large_kg_config
     try:
         if len(request.messages) < 1 or request.messages[-1].role == "assistant":
             print(request)
@@ -157,7 +147,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
             topN = request.retriever_config.get("topN", 5)
             number_of_source_nodes_per_ner = request.retriever_config.get("number_of_source_nodes_per_ner", 5)
             sampling_area = request.retriever_config.get("sampling_area", 100)
-            passages = None if rag_text is None else largekg_retriever.retrieve_passages(rag_text, topN, number_of_source_nodes_per_ner, sampling_area)
+            passages = None if rag_text is None else LargeKGConfig.largekg_retriever.retrieve_passages(rag_text, topN, number_of_source_nodes_per_ner, sampling_area)
             context = "No retrieved context, Please answer the question with your own knowledge." if not passages else "\n".join([f"Passage {i+1}: {text}" for i, text in enumerate(reversed(passages))])
             
         if is_mmlu:
@@ -224,7 +214,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def start_app(user_config, app_name="app.main:app", host="0.0.0.0", port=10090, reload=False):
+def start_app(user_config:LargeKGConfig, app_name="app.main:app", host="0.0.0.0", port=10090, reload=False):
     """Function to start the FastAPI application."""
     global large_kg_config
     if user_config:
