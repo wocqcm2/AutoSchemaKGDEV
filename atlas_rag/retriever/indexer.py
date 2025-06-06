@@ -2,7 +2,7 @@ import os
 import pickle
 import networkx as nx
 from tqdm import tqdm
-from sentence_transformers import SentenceTransformer
+from atlas_rag.retriever.embedding_model import BaseEmbeddingModel
 from transformers import AutoModel
 import faiss
 import numpy as np
@@ -47,17 +47,17 @@ def add_eos(input_examples, model):
   input_examples = [input_example + model.tokenizer.eos_token for input_example in input_examples]
   return input_examples
 
-def compute_graph_embeddings(node_list, edge_list_string, sentence_encoder: SentenceTransformer, batch_size=40):
+def compute_graph_embeddings(node_list, edge_list_string, sentence_encoder: BaseEmbeddingModel, batch_size=40, normalize_embeddings: bool = False):
     # Encode in batches
     node_embeddings = []
     for i in tqdm(range(0, len(node_list), batch_size), desc="Encoding nodes"):
         batch = node_list[i:i + batch_size]
-        node_embeddings.extend(sentence_encoder.encode(batch, convert_to_tensor=True).cpu().numpy())
+        node_embeddings.extend(sentence_encoder.encode(batch, normalize_embeddings = normalize_embeddings))
 
     edge_embeddings = []
     for i in tqdm(range(0, len(edge_list_string), batch_size), desc="Encoding edges"):
         batch = edge_list_string[i:i + batch_size]
-        edge_embeddings.extend(sentence_encoder.encode(batch, convert_to_tensor=True).cpu().numpy())
+        edge_embeddings.extend(sentence_encoder.encode(batch, normalize_embeddings = normalize_embeddings))
 
     return node_embeddings, edge_embeddings
 
@@ -76,15 +76,15 @@ def build_faiss_index(embededdings):
     # index.add(X)
     return faiss_index
 
-def compute_text_embeddings(text_list, sentence_encoder: SentenceTransformer):
+def compute_text_embeddings(text_list, sentence_encoder: BaseEmbeddingModel, batch_size = 40, normalize_embeddings: bool = False):
     """Separated text embedding computation"""
     text_embeddings = []
-    for i in tqdm(range(0, len(text_list), 5), desc="Encoding texts"):
-        batch = text_list[i:i + 5]
-        text_embeddings.extend(sentence_encoder.encode(batch, convert_to_tensor=True).cpu().numpy())
+    for i in tqdm(range(0, len(text_list), batch_size), desc="Encoding texts"):
+        batch = text_list[i:i + batch_size]
+        text_embeddings.extend(sentence_encoder.encode(batch, normalize_embeddings = normalize_embeddings))
     return text_embeddings
 
-def create_embeddings_and_index(sentence_encoder, model_name: str, working_directory: str, keyword: str, include_events: bool, include_concept: bool):
+def create_embeddings_and_index(sentence_encoder, model_name: str, working_directory: str, keyword: str, include_events: bool, include_concept: bool, normalize_embeddings: bool = True, batch_size = 40):
     # Extract the last part of the encoder_model_name for simplified reference
     encoder_model_name = model_name.split('/')[-1]
     
@@ -148,7 +148,7 @@ def create_embeddings_and_index(sentence_encoder, model_name: str, working_direc
 
     if not os.path.exists(text_index_path) or not os.path.exists(text_embeddings_path):
         print("Computing text embeddings...")
-        text_embeddings = compute_text_embeddings(original_text_list, sentence_encoder)  # Assumes this function is defined
+        text_embeddings = compute_text_embeddings(original_text_list, sentence_encoder, batch_size, normalize_embeddings)  # Assumes this function is defined
         text_faiss_index = build_faiss_index(text_embeddings)  # Assumes this function is defined
         faiss.write_index(text_faiss_index, text_index_path)
         with open(text_embeddings_path, "wb") as f:
@@ -161,7 +161,7 @@ def create_embeddings_and_index(sentence_encoder, model_name: str, working_direc
 
     if not os.path.exists(node_embeddings_path) or not os.path.exists(edge_embeddings_path):
         print("Node and edge embeddings not found, computing...")
-        node_embeddings, edge_embeddings = compute_graph_embeddings(node_list_string, edge_list_string, sentence_encoder)  # Assumes this function is defined
+        node_embeddings, edge_embeddings = compute_graph_embeddings(node_list_string, edge_list_string, sentence_encoder, batch_size, normalize_embeddings=normalize_embeddings)  # Assumes this function is defined
     else:
         with open(node_embeddings_path, "rb") as f:
             node_embeddings = pickle.load(f)
@@ -301,7 +301,7 @@ if __name__ == "__main__":
     if is_add_eos:
         sentence_encoder = AutoModel.from_pretrained(encoder_model_name, device_map="auto", trust_remote_code=True)
     else:
-        sentence_encoder = SentenceTransformer(encoder_model_name, device="cuda:0")
+        sentence_encoder = BaseEmbeddingModel(encoder_model_name, device="cuda:0")
 
     create_embeddings_and_index(
         sentence_encoder=sentence_encoder,

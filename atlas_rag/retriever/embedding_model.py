@@ -13,51 +13,59 @@ class BaseEmbeddingModel(ABC):
         pass
     
 class NvEmbed(BaseEmbeddingModel):
-    def __init__(self, sentence_encoder:SentenceTransformer|AutoModel):
-        self.sentence_encoder:SentenceTransformer = sentence_encoder
+    def __init__(self, sentence_encoder: SentenceTransformer | AutoModel):
+        self.sentence_encoder = sentence_encoder
+
     def add_eos(self, input_examples):
-        input_examples = [input_example + self.sentence_encoder.tokenizer.eos_token for input_example in input_examples]
-        return input_examples
-    def encode(self, query, query_type = 'passage', **kwargs):
-        '''
-        HippoRAG orignal prompts:
-        'ner_to_node': 'Given a phrase, retrieve synonymous or relevant phrases that best match this phrase.',
-        'query_to_node': 'Given a question, retrieve relevant phrases that are mentioned in this question.',
-        'query_to_fact': 'Given a question, retrieve relevant triplet facts that matches this question.',
-        'query_to_sentence': 'Given a question, retrieve relevant sentences that best answer the question.',
-        'query_to_passage': 'Given a question, retrieve relevant documents that best answer the question.',
-        '''
+        """Add EOS token to input examples."""
+        return [input_example + self.sentence_encoder.tokenizer.eos_token for input_example in input_examples]
+
+    def encode(self, query, query_type=None, **kwargs):
+        """
+        Encode the query into embeddings.
+        
+        Args:
+            query: Input text or list of texts.
+            query_type: Type of query (e.g., 'passage', 'entity', 'edge', 'fill_in_edge', 'search').
+            **kwargs: Additional arguments (e.g., normalize_embeddings).
+        
+        Returns:
+            Embeddings as a NumPy array.
+        """
         normalize_embeddings = kwargs.get('normalize_embeddings', True)
-        if query_type == 'passage':
-            prompt_prefix = 'Given a question, retrieve relevant documents that best answer the question.'
-        elif query_type == 'entity':
-            prompt_prefix = 'Given a question, retrieve relevant phrases that are mentioned in this question.'
-        elif query_type == 'edge':
-            prompt_prefix = 'Given a question, retrieve relevant triplet facts that matches this question.'
-        elif query_type == 'fill_in_edge':
-            prompt_prefix = 'Given a triples with only head and relation, retrieve relevant triplet facts that best fill the atomic query.'
-        elif query_type == 'search':
-            if isinstance(self.sentence_encoder, SentenceTransformer):
-                query_embeddings = self.sentence_encoder.encode(self.add_eos(query), normalize_embeddings=normalize_embeddings)
+
+        # Define prompt prefixes based on query type
+        prompt_prefixes = {
+            'passage': 'Given a question, retrieve relevant documents that best answer the question.',
+            'entity': 'Given a question, retrieve relevant phrases that are mentioned in this question.',
+            'edge': 'Given a question, retrieve relevant triplet facts that matches this question.',
+            'fill_in_edge': 'Given a triples with only head and relation, retrieve relevant triplet facts that best fill the atomic query.'
+        }
+
+        if query_type in prompt_prefixes:
+            prompt_prefix = prompt_prefixes[query_type]
+            query_prefix = f"Instruct: {prompt_prefix}\nQuery: "
+        else:
+            query_prefix = ""
+
+        # Encode the query
+        if isinstance(self.sentence_encoder, SentenceTransformer):
+            if query_prefix:
+                query_embeddings = self.sentence_encoder.encode(self.add_eos(query), prompt=query_prefix, normalize_embeddings=normalize_embeddings, convert_to_tensor=True)
+            else:
+                query_embeddings = self.sentence_encoder.encode(self.add_eos(query), normalize_embeddings=normalize_embeddings, convert_to_tensor=True)
+        else:
+            if query_prefix:
+                query_embeddings = self.sentence_encoder.encode(query, instruction=query_prefix)
             else:
                 query_embeddings = self.sentence_encoder.encode(query)
-                if normalize_embeddings:
-                    query_embeddings = F.normalize(query_embeddings, p=2, dim=1)
-                query_embeddings =  query_embeddings.detach().cpu().numpy() 
-            return query_embeddings
-        else:
-            raise ValueError(f"Unknown query type: {query_type}. Supported types are: passage, entity, edge, search.")
-        
-        query_prefix = f"Instruct: {prompt_prefix}\nQuery: "
-        if isinstance(self.sentence_encoder, SentenceTransformer):
-            query_embeddings = self.sentence_encoder.encode(self.add_eos(query), prompt=query_prefix, normalize_embeddings=normalize_embeddings)
-        else:
-            query_embeddings = self.sentence_encoder.encode(query, instruction=query_prefix)
-            # Normalize the embeddings
-            if normalize_embeddings:
-                query_embeddings = F.normalize(query_embeddings, p=2, dim=1).detach().cpu().numpy()
-        
-        return query_embeddings
+
+        # Normalize embeddings if required
+        if normalize_embeddings:
+            query_embeddings = F.normalize(query_embeddings, p=2, dim=1)
+
+        # Move to CPU and convert to NumPy
+        return query_embeddings.detach().cpu().numpy()
 
 class SentenceEmbedding(BaseEmbeddingModel):
     def __init__(self,sentence_encoder:SentenceTransformer):
