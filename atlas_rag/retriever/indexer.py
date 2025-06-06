@@ -134,7 +134,7 @@ def create_embeddings_and_index(sentence_encoder, model_name: str, working_direc
     edge_list_index = [i for i, edge in tqdm(enumerate(edge_list)) if edge[0] in node_set and edge[1] in node_set]
     edge_list = [edge_list[i] for i in edge_list_index]
     edge_list_string = [f"{KG.nodes[edge[0]]['id']} {KG.edges[edge]['relation']} {KG.nodes[edge[1]]['id']}" for edge in edge_list]
-    
+
     original_text_list = []
     original_text_dict_with_node_id = {}
     for text_node in text_list:
@@ -151,8 +151,8 @@ def create_embeddings_and_index(sentence_encoder, model_name: str, working_direc
 
     if not os.path.exists(text_index_path) or not os.path.exists(text_embeddings_path):
         print("Computing text embeddings...")
-        text_embeddings = compute_text_embeddings(original_text_list, sentence_encoder, text_batch_size, normalize_embeddings)  # Assumes this function is defined
-        text_faiss_index = build_faiss_index(text_embeddings)  # Assumes this function is defined
+        text_embeddings = compute_text_embeddings(original_text_list, sentence_encoder, text_batch_size, normalize_embeddings)  
+        text_faiss_index = build_faiss_index(text_embeddings)  
         faiss.write_index(text_faiss_index, text_index_path)
         with open(text_embeddings_path, "wb") as f:
             pickle.dump(text_embeddings, f)

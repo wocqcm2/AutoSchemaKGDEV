@@ -46,26 +46,26 @@ class NvEmbed(BaseEmbeddingModel):
             prompt_prefix = prompt_prefixes[query_type]
             query_prefix = f"Instruct: {prompt_prefix}\nQuery: "
         else:
-            query_prefix = ""
+            query_prefix = None
 
         # Encode the query
         if isinstance(self.sentence_encoder, SentenceTransformer):
             if query_prefix:
-                query_embeddings = self.sentence_encoder.encode(self.add_eos(query), prompt=query_prefix, normalize_embeddings=normalize_embeddings, convert_to_tensor=True)
+                query_embeddings = self.sentence_encoder.encode(self.add_eos(query), prompt=query_prefix, normalize_embeddings=normalize_embeddings)
             else:
-                query_embeddings = self.sentence_encoder.encode(self.add_eos(query), normalize_embeddings=normalize_embeddings, convert_to_tensor=True)
+                query_embeddings = self.sentence_encoder.encode(self.add_eos(query), normalize_embeddings=normalize_embeddings)
         else:
             if query_prefix:
-                query_embeddings = self.sentence_encoder.encode(query, instruction=query_prefix)
+                query_embeddings = self.sentence_encoder.encode(query, instruction=query_prefix, max_length = 32768)
             else:
-                query_embeddings = self.sentence_encoder.encode(query)
+                query_embeddings = self.sentence_encoder.encode(query, max_length = 32768)
 
-        # Normalize embeddings if required
-        if normalize_embeddings:
-            query_embeddings = F.normalize(query_embeddings, p=2, dim=1)
+            # Normalize embeddings if required
+            if normalize_embeddings:
+                query_embeddings = F.normalize(query_embeddings, p=2, dim=1).detach().cpu().numpy()
 
         # Move to CPU and convert to NumPy
-        return query_embeddings.detach().cpu().numpy()
+        return query_embeddings
 
 class SentenceEmbedding(BaseEmbeddingModel):
     def __init__(self,sentence_encoder:SentenceTransformer):
