@@ -1,15 +1,32 @@
 # AutoSchemaKG: A Knowledge Graph Construction Framework with Schema Generation and Knowledge Graph Completion
 
-This repository contains the implementation of AutoSchemaKG, a novel framework for automatic knowledge graph construction that combines schema generation and knowledge graph completion. The framework is designed to address the challenges of constructing high-quality knowledge graphs from unstructured text.
+This repository contains the implementation of AutoSchemaKG, a novel framework for automatic knowledge graph construction that combines schema generation via conceptualization. The framework is designed to address the challenges of constructing high-quality knowledge graphs from unstructured text.
 
-## Overview
+This project uses the following paper and data:
+
+*   **Paper:** [Read the paper](https://arxiv.org/abs/2505.23628)
+*   **Data:** [Download the dataset](https://hkustconnect-my.sharepoint.com/:f:/g/personal/jbai_connect_ust_hk/EgJCqoU91KpAlSSOi6dzgccB6SCL4YBpsCyEtGiRBV4WNg)
+
+
+## AutoSchemaKG Overview
 
 AutoSchemaKG introduces a two-stage approach:
 1. **Knowledge Graph Triple Extraction**: Extract triples comprising entities and events from text by using LLMs 
-2. **Schema Induction**: Automatically generates schema for the knowledge graph by using conceptualization
+2. **Schema Induction**: Automatically generate schema for the knowledge graph by using conceptualization and create semantic bridges between seemingly disparate information to enable zero-shot inferencing across domains
 
 
 The framework achieves state-of-the-art performance on multiple benchmarks and demonstrates strong generalization capabilities across different domains.
+
+## ATLAS Knowledge Graphs
+
+ATLAS (Automated Triple Linking And Schema induction) is a family of knowledge graphs created through the AutoSchemaKG framework, which enables fully autonomous knowledge graph construction without predefined schemas. Here's a summary of what ATLAS is and how it works:
+
+### Key Features of ATLAS Knowledge Graphs
+
+- **Scale**: Consists of 900+ million nodes connected by 5.9 billion edges
+- **Autonomous Construction**: Built without predefined schemas or manual intervention
+- **Three Variants**: ATLAS-Wiki (from Wikipedia), ATLAS-Pes2o (from academic papers), and ATLAS-CC (from Common Crawl)
+
 
 
 
@@ -17,17 +34,31 @@ The framework achieves state-of-the-art performance on multiple benchmarks and d
 
 ```
 AutoSchemaKG/
-├── src/
-│   ├── LKGConstruction/       # Knowledge Graph Construction components
-│   ├── ATLASMultiHopQA/       # Multi-hop Question Answering implementation
-│   └── ATLASRetriever/        # Retrieval components
-├── EvaluateFactuality/     # Factuality evaluation metrics
-├── EvaluateKGC/            # Knowledge Graph evaluation metrics
-│   ├── InfoPreservation/    # Information preservation metrics
-│   ├── SchemaQuality/       # Schema quality evaluation
-│   └── TripleAccuracy/      # Triple accuracy metrics
-└── EvaluationGeneral/       # General evaluation metrics
+├── atlas_rag/                  # Main package directory
+│   ├── kg_construction/        # Knowledge graph construction modules
+│   ├── retriever/              # Retrieval components
+│   ├── reader/                 # Reading and processing components
+│   ├── utils/                  # Utility functions
+│   ├── evaluation/             # Evaluation metrics and tools
+│   └── billion/                # Large-scale KG processing
+├── EvaluateKGC/                # Knowledge Graph Construction evaluation
+├── EvaluateFactuality/         # Factual consistency evaluation
+├── EvaluateGeneralTask/        # General task performance evaluation
+├── neo4j_scripts/              # Neo4j database scripts
+├── neo4j_api_host/             # Neo4j API hosting
+├── import/                     # Data import directory
+├── dist/                       # Distribution files
+├── atlas_full_pipeline.ipynb   # Example for construct KG on new text data and doing RAG on it
+├── atlas_multihopqa.ipynb      # Example for benchmarking the multi-hop QA datasets
+└── atlas_billion_kg_usage.ipynb # Example for hosting and doing RAG with the constructed ATLAS-cc/ATLAS-wiki/ATLAS-pes2o
 ```
+
+The project is organized into several key components:
+- `atlas_rag/`: Core package containing the main functionality
+- Evaluation directories for different aspects of the system
+- Database-related scripts and API hosting
+- Example notebooks demonstrating usage
+- Import and distribution directories for data management
 
 ## Installation with Pip (Recommended)
 In order to install atlas-rag with gpu, it is recommended for you to first install pytorch-gpu with cuda and faiss-gpu, then you can run pip insatll atlas-rag to install necessary packages.
@@ -93,156 +124,36 @@ kg_extractor.create_concept_csv()
 kg_extractor.convert_to_graphml()
 ```
 
-### Retrieval Augumented Generation with ATLAS
-
-## Installation from source
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/AutoSchemaKG.git
-cd AutoSchemaKG
-```
-
-2. Create and activate the conda environment:
-```bash
-conda env create -f src/environment.yaml
-conda activate autoschemakg
-```
-
-## Usage (for running source file directly)
-
-### Auto Schema Knowledge Graph Construction
-Change the working directory to the `src/LKGConstruction` folder and run the triple extraction script for your dataset. The dataset can be `wiki`, `pes2o`, or `cc`.
-
-```shell
-# dataset can be wiki, pes2o, or cc
-cd script
-
-sh triple_extraction_{dataset}.sh
-```
-
-JSON to CSV
-
-Convert the extracted triples from JSON to CSV format. Ensure you are in the script directory and run the appropriate script for your dataset.
-
-```shell
-cd script
-
-sh json2csv_{dataset}_with_text.sh
-```
-
-Conceptualization
-
-Generate concepts for the extracted triples and merge them into the dataset. Run the following scripts in the script directory.
-
-```shell
-cd script
-
-sh concept_generation_{dataset}.sh
-
-sh merge_{dataset}_concept.sh
-```
-
-Load Concept to CSV
-
-load the conceptualized data into CSV format. Run the script for your dataset in the script directory.
-
-```shell
-cd script
-
-sh concept_to_csv_{dataset}.sh
-```
-
-Convert CSV to graphml
-
-```shell
-python csv_to_graphml.py 
-    --triple_node_file ../import/triple_nodes_en_simple_wiki_v0_from_json_without_emb.csv 
-    --text_node_file ../import/text_nodes_en_simple_wiki_v0_from_json.csv 
-    --concept_node_file ../import/concept_nodes_en_simple_wiki_v0_from_json_without_emb.csv 
-    --triple_edge_file ../import/triple_edges_en_simple_wiki_v0_from_json_without_emb_full_concept.csv 
-    --text_edge_file ../import/text_edges_en_simple_wiki_v0_from_json.csv 
-    --concept_edge_file ../import/concept_edges_en_simple_wiki_v0_from_json_without_emb.csv 
-    --output_file ../import/output_graph.graphml
-```
-
-### Retrieval Augumented Generation for Multi-hop QA 
-
-Change working directory to AutoSchemaKG/src/ATLASMultiHopQA
-```
-cd src/ATLASMultiHopQA
-```
-
-Download the constructed knowledge graph files if you prefer not to build them from scratch. Due to the inherent randomness in LLM decoding, there may be minor variations in the extracted triples each time. However, our experiments show these variations don't significantly impact performance.
-
-Download these files:
-- `2wikimultihopqa_concept.graphml`
-- `hotpotqa_concept.graphml`
-- `musique_concept.graphml`
-
-Get them from [this link](https://hkustconnect-my.sharepoint.com/:f:/g/personal/jbai_connect_ust_hk/EgJCqoU91KpAlSSOi6dzgccB6SCL4YBpsCyEtGiRBV4WNg?e=88SYt0) and place them in your project directory.
-```
-AutoSchemaKG/src/ATLASMultiHopQA/processed_data/kg_graphml
-```
-Meanwhile, you need to explicitly create an output directory, otherwise will cause the following script to stop.
-
-```
-mkdir src/ATLASMultiHopQA/processed_data/precompute
-```
-
-
-For running the data processing from the graphs, use the following script for computing the embeddings of using ```all-MiniLM-L12-v2```. 
-```
-bash create_preload_data_for_each_config.bash
-```
-
-You can also uncomment the ```nvidia/NV-Embed-v2``` line in ```create_preload_data_for_each_config.bash``` for computing the nv-embed-v2 vectors, however this takes a long time. We provide the pre-computed in [this link](https://hkustconnect-my.sharepoint.com/:f:/g/personal/jbai_connect_ust_hk/EgJCqoU91KpAlSSOi6dzgccB6SCL4YBpsCyEtGiRBV4WNg?e=88SYt0), with the file name ```nvembed.zip```. Unzip it to ```src/ATLASMultiHopQA/processed_data/precompute```.
-
-
-Create your own config.ini with path ```src/ATLASMultiHopQA/config.ini``` and include the necessary api key
-
-(you can replace with any other api key that is compatable with OpenAI package and please remember to change the base url in the code.)
-You should put the following contents in your ```config.ini``` file
-```conf
-[settings]
-DEEPINFRA_API_KEY = <your api key>
-```
-
-Then you can run the below command 
-```shell
-
-python ./opendomainqa/open_domain_qa.py --keyword hotpotqa --include_events --include_concept --encoder_model_name all-MiniLM-L12-v2 --method hipporag2
-
-python ./opendomainqa/open_domain_qa.py --keyword hotpotqa --include_events --include_concept --encoder_model_name all-MiniLM-L12-v2 --method hipporag
-
-python ./opendomainqa/open_domain_qa.py --keyword hotpotqa --include_events --include_concept --encoder_model_name all-MiniLM-L12-v2 --method tog
-```
-by altering parameters to choose between different graph config.
-
-The keyword can be selected from ```hotpotqa``` ```2wikimultihopqa```, and ```musique``` for different dataset. 
-
-For the method we support ```hipporag```, ```hipporag2```, and ```tog```. As this implementation include the source text nodes, the TOG method here is actually think-on-graph 2.0 instead of 1.0. 
-
-If you have also download or processed with NV-Embedd-V2, you can replace ```--encoder_model_name``` of ```all-MiniLM-L12-v2``` with ```nvidia/NV-Embed-v2```, which can be used to replicate the results from our paper. 
-
-
-### Large Knowledge Graph Extraction for ATLAS-wiki, ATLAS-pes2o, and ATLAS-cc
-
-
-### Retrieval Augumented Generation for ATLAS-wiki, ATLAS-pes2o, and ATLAS-cc
 
 
 
+## Large Knowledge Graph Hosting and Retrieval Augmented Generation
+
+This repository provides support for hosting and implementing Retrieval Augmented Generation (RAG) over our constructed knowledge graphs: `ATLAS-wiki`, `ATLAS-pes2o`, and `ATLAS-cc`. For detailed instructions on hosting and running these knowledge graphs, please refer to the `atlas_billion_kg_usage.ipynb` notebook. 
+
+## Building New Knowledge Graphs and Implementing RAG
+
+The `atlas_full_pipeline.ipynb` notebook demonstrates how to:
+- Build new knowledge graphs using AutoschemaKG
+- Implement Retrieval Augmented Generation on your custom knowledge graphs
 
 
+## Multi-hop Question Answering Evaluation
 
+To replicate our multi-hop question answering evaluation results on benchmark datasets:
+- `MuSiQue`
+- `HotpotQA` 
+- `2WikiMultiHopQA`
 
-## Evaluation
+Please follow the instructions in the `atlas_multihopqa.ipynb` notebook, which contains all necessary code and configuration details.
+
+## General Evaluation
+
 
 The framework includes comprehensive evaluation metrics across three dimensions:
-- Knowledge Graph Quality 
-- Factual Consistency on FELM
-- General Performance on MMLU
+- Knowledge Graph Quality  (`EvaluateKGC`)
+- Factual Consistency on FELM (`EvaluateFactuality`)
+- General Performance on MMLU (`EValuateGeneralTask`)
 
 Detailed evaluation procedures can be found in the respective evaluation directories.
 
@@ -270,28 +181,7 @@ If you use this code in your research, please cite our paper:
 
 Jiaxin Bai: jbai@connect.ust.hk 
 
-Dennis: httsangaj@connect.ust.hk
+Dennis Hong Ting TSANG : httsangaj@connect.ust.hk
 
-Haoyu: haoyuhuang@link.cuhk.edu.hk
-
-
-## Todo
-
-- [ ] We are working on the link of our full KG data.
-- [ ] We are working on restructuring the code for easier replication of results
-- [ ] We are working on demo and tutorials for easier end-to-end RAG with our framework
-
-Billion Level Graph Workflow:
-- Triples Json Generation **Dulce Done**
-- Json to csv **Dulce Done**
-- CSV + concept -> all csv **Dulce Done**
-- Calculate embedding -> to get both (without emb, with emb csv) **Dulce Done**
-- With emb, faiss index  **Dulce Done**
-- without emb, numeric id for neo4j import  **Dulce Done**
-
-1. Packaging step 6 of LKG construction
-2. Packaging LKG retriever
-
-
-
+Haoyu Huang: haoyuhuang@link.cuhk.edu.hk
 
