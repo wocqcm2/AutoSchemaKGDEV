@@ -1230,7 +1230,7 @@ if __name__ == "__main__":
     with open(question_data_dir, "r") as f:
         data = json.load(f)
         print(f"Data loaded from {question_data_dir}")
-        data = data[:1]
+        # data = data[:1]
 
         for sample in tqdm(data):
             question = sample["question"]
