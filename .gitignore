@@ -1,0 +1,7 @@
+log
+*.ini
+__pycache__
+*.pyc
+src/ATLASMultiHopQA/processed_data/
+*.pkl
+*.index
