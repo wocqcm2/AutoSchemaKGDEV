@@ -21,6 +21,10 @@ from atlas_rag.kg_construction.concept_generation import generate_concept
 from atlas_rag.utils.merge_csv import merge_csv_files
 from atlas_rag.utils.csv_to_graphml import csvs_to_graphml
 from atlas_rag.utils.concept_to_csv import all_concept_triples_csv_to_csv
+from atlas_rag.utils.csv_add_column import add_csv_columns
+from atlas_rag.utils.convert_csv2npy import convert_csv_to_npy
+
+
 
 TRIPLE_INSTRUCTIONS = {
     "entity_relation": """Given a passage, summarize all the important entities and the relations between them in a concise manner. Relations should briefly capture the connections between entities, without repeating information from the head and tail entities. The entities should be as specific as possible. Exclude pronouns from being considered as entities. 
@@ -425,7 +429,7 @@ class KnowledgeGraphExtractor:
             node_file=f'{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_without_emb.csv',
             edge_file=f'{self.config.output_directory}/triples_csv/triple_edges_{self.config.filename_pattern}_from_json_without_emb.csv',
             concepts_file=f'{self.config.output_directory}/triples_csv/{self.config.filename_pattern}_from_json_with_concept.csv',
-            output_node_file=f'{self.config.output_directory}/concept_csv/triple_nodes_{self.config.filename_pattern}_from_json_with_concept.csv',
+            output_node_file=f'{self.config.output_directory}/concept_csv/concept_nodes_{self.config.filename_pattern}_from_json_with_concept.csv',
             output_edge_file=f'{self.config.output_directory}/concept_csv/concept_edges_{self.config.filename_pattern}_from_json_with_concept.csv',
             output_full_concept_triple_edges=f'{self.config.output_directory}/concept_csv/triple_edges_{self.config.filename_pattern}_from_json_with_concept.csv',
         )
@@ -434,12 +438,39 @@ class KnowledgeGraphExtractor:
         csvs_to_graphml(
             triple_node_file=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_without_emb.csv",
             text_node_file=f"{self.config.output_directory}/triples_csv/text_nodes_{self.config.filename_pattern}_from_json.csv",
-            concept_node_file=f"{self.config.output_directory}/concept_csv/triple_nodes_{self.config.filename_pattern}_from_json_with_concept.csv",
-            triple_edge_file=f"{self.config.output_directory}/triples_csv/triple_edges_{self.config.filename_pattern}_from_json_without_emb.csv",
+            concept_node_file=f"{self.config.output_directory}/concept_csv/concept_nodes_{self.config.filename_pattern}_from_json_with_concept.csv",
+            triple_edge_file=f"{self.config.output_directory}/concept_csv/triple_edges_{self.config.filename_pattern}_from_json_with_concept.csv",
             text_edge_file=f"{self.config.output_directory}/triples_csv/text_edges_{self.config.filename_pattern}_from_json.csv",
             concept_edge_file=f"{self.config.output_directory}/concept_csv/concept_edges_{self.config.filename_pattern}_from_json_with_concept.csv",
             output_file=f"{self.config.output_directory}/kg_graphml/{self.config.filename_pattern}_graph.graphml",
         )
+    
+    def add_numeric_id(self):
+        add_csv_columns(
+            node_csv=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_without_emb.csv",
+            edge_csv=f"{self.config.output_directory}/concept_csv/triple_edges_{self.config.filename_pattern}_from_json_with_concept.csv",
+            text_csv=f"{self.config.output_directory}/triples_csv/text_nodes_{self.config.filename_pattern}_from_json.csv",
+            node_with_numeric_id=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_without_emb_with_numeric_id.csv",
+            edge_with_numeric_id=f"{self.config.output_directory}/triples_csv/triple_edges_{self.config.filename_pattern}_from_json_without_emb_with_numeric_id.csv",
+            text_with_numeric_id=f"{self.config.output_directory}/triples_csv/text_nodes_{self.config.filename_pattern}_from_json_with_numeric_id.csv",
+        )
+
+    def compute_embedding(self, encoder_model_name="all-MiniLM-L12-v2"):
+        # TODO: compute embedding for the graph
+
+        # if encoder_model_name == "nvidia/NV-Embed-v2":
+        #     sentence_encdoder = AutoModel.from_pretrained("nvidia/NV-Embed-v2", device_map="auto", trust_remote_code=True)
+        #     encoder_model_name = "NV-Embed-v2"
+        # else:
+        #     sentence_encdoder = SentenceTransformer(encoder_model_name, device="cuda:0")
+        pass
+
+    def create_faiss_index(self):
+        # TODO: create faiss index for the graph
+        pass
+
+    
+       
     
 
 def parse_command_line_arguments() -> ProcessingConfig:
