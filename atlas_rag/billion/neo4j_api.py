@@ -217,5 +217,5 @@ def start_app(user_config:LargeKGConfig, host="0.0.0.0", port=10090, reload=Fals
     global large_kg_config
     large_kg_config = user_config  # Use the passed context if provided
     # modify the app name for your own api app.
-    uvicorn.run("atlas_rag.billion.neo4j_api:app", host=host, port=port, reload=reload)
+    uvicorn.run(f"atlas_rag.billion.neo4j_api:app", host=host, port=port, reload=reload)
     

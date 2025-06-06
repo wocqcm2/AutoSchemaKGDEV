@@ -69,4 +69,4 @@ large_kg_config = LargeKGConfig(
     is_mmlu = False
 )
 
-start_app(user_config=large_kg_config, host="0.0.0.0", port = 10090, reload=False)
+start_app(user_config=large_kg_config, app_name="Dulce", host="0.0.0.0", port = 10090, reload=False)

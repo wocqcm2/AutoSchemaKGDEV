@@ -293,12 +293,14 @@ class LargeKGRetriever(BaseLargeKGRetriever):
             entities = [query]
         num_entities = len(entities)
         initial_nodes = []
-        if self.verbose:
-            self.logger.info(f"largekgRAG : Number per ner {top_k_nodes}")
         for entity in entities:
             entity_embedding = self.sentence_encoder.encode([entity])
             D, I = self.node_faiss_index.search(entity_embedding, top_k_nodes)
+            if self.verbose:
+                self.logger.info(f"largekgRAG : Search results - Distances: {D}, Indices: {I}")
             initial_nodes += [str(i)for i in I[0]]
+        if self.verbose:
+            self.logger.info(f"largekgRAG : Initial nodes: {initial_nodes}")
         name_id_map = {}
         for node_id in initial_nodes:
             name = self.convert_numeric_id_to_name(node_id)
