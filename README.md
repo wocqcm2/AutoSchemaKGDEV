@@ -5,7 +5,8 @@ This repository contains the implementation of AutoSchemaKG, a novel framework f
 This project uses the following paper and data:
 
 *   **Paper:** [Read the paper](https://arxiv.org/abs/2505.23628)
-*   **Data:** [Download the dataset](https://hkustconnect-my.sharepoint.com/:f:/g/personal/jbai_connect_ust_hk/EgJCqoU91KpAlSSOi6dzgccB6SCL4YBpsCyEtGiRBV4WNg)
+*   **Data:** [Download the dataset](https://hkustconnect-my.sharepoint.com/:f:/g/personal/jbai_connect_ust_hk/EgJCqoU91KpAlSSOi6dzgccB6SCL4YBpsCyEtGiRBV4WNg) (onedrive)
+*   **Huggingface Dataset** [Dowload CSV Only](https://huggingface.co/datasets/AlexFanWei/AutoSchemaKG)
 
 
 ## AutoSchemaKG Overview
