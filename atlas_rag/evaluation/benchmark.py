@@ -1,16 +1,21 @@
 import os
 import json
 import numpy as np
-import logging
+from logging import Logger
+from atlas_rag.retriever.rag_model import BaseRetriever, BaseEdgeRetriever, BasePassageRetriever
+from typing import List
 from datetime import datetime
-from configparser import ConfigParser
-import networkx as nx
 from transformers import AutoModel
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
-import argparse
 import torch
 import torch.nn.functional as F
+from atlas_rag.retriever.embedding_model import NvEmbed, SentenceEmbedding
+from atlas_rag.reader.llm_generator import LLMGenerator
+from atlas_rag.evaluation.evaluation import QAJudger
+from dataclasses import dataclass
+
+
 
 def normalize_embeddings(embeddings):
     """Normalize the embeddings to unit length (L2 norm)."""
@@ -24,99 +29,59 @@ def normalize_embeddings(embeddings):
         raise TypeError(f"Unsupported input type: {type(embeddings)}. Must be torch.Tensor or np.ndarray")
     
     return norm_emb
+
+@dataclass
+class BenchMarkConfig:
+    """
+    Configuration class for benchmarking.
+
+    Attributes:
+        dataset_name (str): Name of the dataset. Default is "hotpotqa".
+        question_file (str): Path to the question file. Default is "hotpotqa".
+        graph_file (str): Path to the graph file. Default is "hotpotqa_concept.graphml".
+        include_events (bool): Whether to include events. Default is False.
+        include_concept (bool): Whether to include concepts. Default is False.
+        reader_model_name (str): Name of the reader model. Default is "meta-llama/Llama-2-7b-chat-hf".
+        encoder_model_name (str): Name of the encoder model. Default is "nvidia/NV-Embed-v2".
+    """
+    dataset_name: str = "hotpotqa"
+    question_file: str = "hotpotqa"
+    graph_file: str = "hotpotqa_concept.graphml"
+    include_events: bool = False
+    include_concept: bool = False
+    reader_model_name: str = "meta-llama/Llama-2-7b-chat-hf"
+    encoder_model_name: str = "nvidia/NV-Embed-v2"
+        
+
 class RAGBenchmark:
-    def __init__(self):
-        self.config = ConfigParser()
-        self.config.read('hipporag_opendomainqa/config.ini')
+    def __init__(self, config:BenchMarkConfig,logging=False):
+        self.config = config
+        self.logging = logging
 
-    def setup_logger(self, keyword, include_events, include_concept, method):
-        log_file_path = f'./log/{keyword}_event{include_events}_concept{include_concept}_{method}.log'
-        logger = logging.getLogger("RAGBenchmarkLogger")
-        logger.setLevel(logging.INFO)
-        max_bytes = 50 * 1024 * 1024  # 50 MB
-        if not os.path.exists(os.path.dirname(log_file_path)):
-            os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
-        handler = logging.handlers.RotatingFileHandler(log_file_path, maxBytes=max_bytes, backupCount=5)
-        logger.addHandler(handler)
-        return logger
-
-    def load_encoder_model(self, encoder_model_name):
+    def load_encoder_model(self, encoder_model_name, **kwargs):
         if encoder_model_name == "nvidia/NV-Embed-v2":
-            sentence_encoder = AutoModel.from_pretrained("nvidia/NV-Embed-v2", device_map="auto", trust_remote_code=True)
+            sentence_encoder = AutoModel.from_pretrained("nvidia/NV-Embed-v2", **kwargs)
             return NvEmbed(sentence_encoder)
         else:
-            sentence_encoder = SentenceTransformer(encoder_model_name, device="cuda")
-            return MiniLM(sentence_encoder)
+            sentence_encoder = SentenceTransformer(encoder_model_name, **kwargs)
+            return SentenceEmbedding(sentence_encoder)
 
-    def load_data(self, keyword, include_events, include_concept, encoder_model_name):
-        loading_dir_encoder_name = "NV-Embed-v2" if encoder_model_name == "nvidia/NV-Embed-v2" else encoder_model_name
-        data = load_all_data(keyword, include_events, include_concept, loading_dir_encoder_name)
-        node_list = data["node_list"]
-        edge_list = data["edge_list"]
-        original_text_list = data["original_text_list"]
-        original_text_dict_with_node_id = data["original_text_dict_with_node_id"]
-        edge_faiss_index = data["edge_faiss_index"]
-        text_embeddings = data["text_embeddings"]
-        node_embeddings = data["node_embeddings"]
-        edge_embeddings = data["edge_embeddings"]
-        node_embeddings = normalize_embeddings(np.array(node_embeddings).astype(np.float32))
-        text_embeddings = normalize_embeddings(np.array(text_embeddings).astype(np.float32))
-        edge_embeddings = normalize_embeddings(np.array(edge_embeddings).astype(np.float32))
-        
-        # Sanity checks
-        assert len(node_list) == len(node_embeddings), "Mismatch in node list and embeddings lengths."
-        assert len(edge_list) == len(edge_embeddings) == edge_faiss_index.ntotal, "Mismatch in edge list, embeddings, and FAISS index."
-
-        return (data, node_list, edge_list, original_text_list, original_text_dict_with_node_id, edge_faiss_index, text_embeddings, node_embeddings, edge_embeddings)
-
-    def benchmark(self, dataset_name="hotpotqa", model_name="meta-llama/Llama-3.3-70B-Instruct-Turbo", include_events=False, include_concept=False, encoder_model_name="nvidia/NV-Embed-v2", hipporag2mode='query2edge', method='hipporag2'):
-        logger = self.setup_logger(dataset_name, include_events, include_concept, method)
-        embedding_model = self.load_encoder_model(encoder_model_name)
-        data, node_list, edge_list, original_text_list, original_text_dict_with_node_id, edge_faiss_index, text_embeddings, node_embeddings, edge_embeddings = self.load_data(dataset_name, include_events, include_concept, encoder_model_name)
-        
-        # Load Knowledge Graph
-        graph_dir = f"./processed_data/kg_graphml/{dataset_name}_concept.graphml"
-        KG = nx.read_graphml(graph_dir)
-        
-        # Prepare mappings
-        text_id_list = []
-        node_id_to_file_id = {}
-        file_id_to_node_id = {}
-        for node_id in tqdm(list(KG.nodes)):
-            node_id_to_file_id[node_id] = KG.nodes[node_id]["id"] if dataset_name == "musique" and KG.nodes[node_id]['type'] == "passage" else KG.nodes[node_id]["file_id"]
-            if KG.nodes[node_id]['file_id'] not in file_id_to_node_id:
-                file_id_to_node_id[KG.nodes[node_id]['file_id']] = []
-            if KG.nodes[node_id]['type'] == "passage":
-                file_id_to_node_id[KG.nodes[node_id]['file_id']].append(node_id)
-        for node_id in tqdm(list(original_text_dict_with_node_id.keys())):
-            text_id_list.append(node_id)
-        
-        assert len(text_id_list) == len(original_text_dict_with_node_id)
-        
-        # Initialize Judger and Generator
-        llm_judge = QAJudger()
-        llm_generator = LLMGenerator(model_name)
-
-        # Initialize retrievers based on selected method
-        if method == 'tog':
-            retriever = TogRetriever(KG, llm_generator, embedding_model, node_list, edge_list, node_embeddings, edge_embeddings)
-        elif method == 'hipporag':
-            retriever = HippoRAGRetriever(KG, original_text_dict_with_node_id, llm_generator, embedding_model, node_list, node_embeddings, file_id_to_node_id)
-        elif method == 'hipporag2':
-            retriever = HippoRAG2Retriever(KG, original_text_dict_with_node_id,
-                                           llm_generator, embedding_model,
-                                           node_list, node_embeddings,
-                                           edge_list, edge_embeddings, edge_faiss_index,
-                                           text_embeddings, text_id_list, node_id_to_file_id,
-                                           hipporag2mode=hipporag2mode)
-        
-        question_data_dir = f"./data/{dataset_name}.json"
+    def benchmark(self, retrievers:List[BaseRetriever], 
+                  llm_generator:LLMGenerator,
+                  dataset_name = "hotpotqa",
+                  question_file="hotpotqa",
+                  graph_file="hotpotqa_concept.graphml",
+                  logger:Logger = None,
+                  number_of_samples= -1,
+                  ):
+        qa_judge = QAJudger()
         result_list = []
-        
-        with open(question_data_dir, "r") as f:
+        with open(question_file, "r") as f:
             data = json.load(f)
-            print(f"Data loaded from {question_data_dir}")
-        
+            print(f"Data loaded from {question_file}")
+        if number_of_samples > 0:
+            data = data[:number_of_samples]
+            print(f"Using only the first {number_of_samples} samples from the dataset")
         for sample in tqdm(data):
             question = sample["question"]
             answer = sample["answer"]
@@ -133,77 +98,69 @@ class RAGBenchmark:
                 print("Dataset not supported")
                 continue
             
-            logger.info(f"Question: {question}")
-            result = self.perform_retrieval(retriever, method, question, answer, gold_file_ids)
+            result = {
+                "question": question,
+                "answer": answer,
+                "gold_file_ids": gold_file_ids,
+            } 
+            
+            if logger is not None:
+                logger.info(f"Question: {question}")
+            for retriever in retrievers:
+                sorted_context, sorted_context_ids = retriever.retrieve(question, topN=5)
+                
+                if isinstance(retriever, BaseEdgeRetriever):
+                    sorted_context = ". ".join(sorted_context)
+                    llm_generated_answer = llm_generator.generate_with_context_kg(question, sorted_context, max_new_tokens=2048, temperature=0.5)
+                elif isinstance(retriever, BasePassageRetriever):
+                    sorted_context = "\n".join(sorted_context)
+                    llm_generated_answer = llm_generator.generate_with_context(question, sorted_context, max_new_tokens=2048, temperature=0.5)
+                
+                short_answer = qa_judge.split_answer(llm_generated_answer)
+                em, f1 = qa_judge.judge(short_answer, answer)
+                
+                
+                result[f"{retriever.__class__.__name__ }_em"] = em
+                result[f"{retriever.__class__.__name__ }_f1"] = f1
+                result[f"{retriever.__class__.__name__ }_passages"] = sorted_context
+                result[f"{retriever.__class__.__name__ }_id"] = sorted_context_ids
+                result[f"{retriever.__class__.__name__ }_generated_answer"] = llm_generated_answer
+                result[f"{retriever.__class__.__name__ }short_answer"] = short_answer
+                
+                # Calculate recall
+                if dataset_name in ("hotpotqa", "2wikimultihopqa"):
+                    recall_2, recall_5 = qa_judge.recall(sorted_context_ids, gold_file_ids)
+                elif dataset_name == "musique":
+                    recall_2, recall_5 = qa_judge.recall(sorted_context, gold_file_ids)
+                
+                result[f"{retriever.__class__.__name__ }_recall@2"] = recall_2
+                result[f"{retriever.__class__.__name__ }_recall@5"] = recall_5
+                
             result_list.append(result)
-        
-        self.save_results(result_list, method, dataset_name, include_events, include_concept, encoder_model_name, loading_dir_encoder_name)
-    
-    def perform_retrieval(self, retriever, method, question, answer, gold_file_ids):
-        if method == 'tog':
-            tog_triples, tog_generated_answer = retriever.retrieve_path(question, topN=5, Dmax=3)
-            tog_short_answer = llm_judge.split_answer(tog_generated_answer)
-            tog_em, tog_f1 = llm_judge.judge(tog_short_answer, answer)
-            return {
-                "question": question,
-                "answer": answer,
-                "tog_triples": tog_triples,
-                "tog_generated_answer": tog_generated_answer,
-                "tog_short_answer": tog_short_answer,
-                "tog_em": tog_em,
-                "tog_f1": tog_f1,
-                "gold_file_ids": gold_file_ids
-            }
-        elif method == 'hipporag':
-            hippo_passages, hippo_scores, hippo_id = retriever.retrieve_passages(question, topN=5)
-            hippo_response_text = "\nTitle:".join(hippo_passages)
-            generated_answer_with_hippo = llm_generator.generate_with_context(question, hippo_response_text, max_new_tokens=2048, temperature=0.5)
-            hippo_short_answer = llm_judge.split_answer(generated_answer_with_hippo)
-            hippo_em, hippo_f1 = llm_judge.judge(hippo_short_answer, answer)
-            return {
-                "question": question,
-                "answer": answer,
-                "hippo_passages": hippo_passages,
-                "hippo_id": hippo_id,
-                "hippo_scores": hippo_scores,
-                "hippo_generated_answer": generated_answer_with_hippo,
-                "hippo_short_answer": hippo_short_answer,
-                "hippo_em": hippo_em,
-                "hippo_f1": hippo_f1,
-                "gold_file_ids": gold_file_ids
-            }
-        elif method == 'hipporag2':
-            hippo2_passages, hippo2_scores, hippo2_id = retriever.retrieve_passages(question, topN=5)
-            hippo2_response_text = "Title: " + "\nTitle: ".join(hippo2_passages)
-            generated_answer_with_hippo2 = llm_generator.generate_with_context(question, hippo2_response_text, max_new_tokens=2048, temperature=0.5)
-            hippo2_short_answer = llm_judge.split_answer(generated_answer_with_hippo2)
-            hippo2_em, hippo2_f1 = llm_judge.judge(hippo2_short_answer, answer)
-            return {
-                "question": question,
-                "answer": answer,
-                "hippo2_passages": hippo2_passages,
-                "hippo2_id": hippo2_id,
-                "hippo2_scores": hippo2_scores,
-                "hippo2_generated_answer": generated_answer_with_hippo2,
-                "hippo2_short_answer": hippo2_short_answer,
-                "hippo2_em": hippo2_em,
-                "hippo2_f1": hippo2_f1,
-                "gold_file_ids": gold_file_ids
-            }
 
-    def save_results(self, result_list, method, dataset_name, include_events, include_concept, encoder_model_name, loading_dir_encoder_name):
+
+        self.save_results(result_list, [retriever.__class__.__name__ for retriever in retrievers])
+    
+
+    def save_results(self, result_list, retriever_names:List[str]):
         current_time = datetime.now()
         formatted_time = current_time.strftime("%Y%m%d%H%M%S")
         
-        summary_file = f"./result/{dataset_name}/summary_{formatted_time}_event{include_events}_concept{include_concept}_{loading_dir_encoder_name}_{method}.json"
+        dataset_name = self.config.dataset_name
+        include_events = self.config.include_events
+        include_concept = self.config.include_concept
+        encoder_model_name = self.config.encoder_model_name
+        reader_model_name = self.config.reader_model_name
+        
+        summary_file = f"./result/{dataset_name}/summary_{formatted_time}_event{include_events}_concept{include_concept}_{encoder_model_name}_{reader_model_name}.json"
         if not os.path.exists(os.path.dirname(summary_file)):
             os.makedirs(os.path.dirname(summary_file), exist_ok=True)
         
-        result_dir = f"./result/{dataset_name}/result_{formatted_time}_event{include_events}_concept{include_concept}_{loading_dir_encoder_name}_{method}.json"
+        result_dir = f"./result/{dataset_name}/result_{formatted_time}_event{include_events}_concept{include_concept}_{encoder_model_name}_{reader_model_name}.json"
         if not os.path.exists(os.path.dirname(result_dir)):
             os.makedirs(os.path.dirname(result_dir), exist_ok=True)
         
-        summary_dict = self.calculate_summary(result_list, method)
+        summary_dict = self.calculate_summary(result_list, retriever_names)
         
         with open(summary_file, "w") as f_summary:
             json.dump(summary_dict, f_summary)
@@ -215,25 +172,25 @@ class RAGBenchmark:
                 f.write("\n")
     
     def calculate_summary(self, result_list, method):
-        average_em = sum([result[f"{method}_em"] for result in result_list]) / len(result_list)
-        average_f1 = sum([result[f"{method}_f1"] for result in result_list]) / len(result_list)
-        return {
-            "average_f1": average_f1,
-            "average_em": average_em,
-        }
-
-if __name__ == "__main__":
-    benchmark = RAGBenchmark()
-    parser = argparse.ArgumentParser()
-
-    # Add arguments
-    parser.add_argument("--dataset_name", type=str, default="hotpotqa")
-    parser.add_argument("--model_name", type=str, default="meta-llama/Llama-3.3-70B-Instruct-Turbo")
-    parser.add_argument("--include_events", action="store_true", default=False)
-    parser.add_argument("--include_concept", action="store_true", default=False)
-    parser.add_argument("--encoder_model_name", type=str, default="nvidia/NV-Embed-v2")
-    parser.add_argument("--hipporag2mode", type=str, default='query2edge', choices=['query2edge'], help="Choose the mode for HippoRAG2 retriever")
-    parser.add_argument("--method", type=str, default='hipporag2', choices=['hipporag', 'hipporag2', 'tog'], help="Choose which method to use for retrieval")
-
-    args = parser.parse_args()
-    benchmark.benchmark(args.dataset_name, args.model_name, args.include_events, args.include_concept, args.encoder_model_name, args.hipporag2mode, args.method)
+        summary_dict = {}
+        for retriever_name in method:
+            if not all(f"{retriever_name}_em" in result for result in result_list):
+                raise ValueError(f"Missing {retriever_name}_em in results")
+            if not all(f"{retriever_name}_f1" in result for result in result_list):
+                raise ValueError(f"Missing {retriever_name}_f1 in results")
+            if not all(f"{retriever_name}_recall@2" in result for result in result_list):
+                raise ValueError(f"Missing {retriever_name}_recall@2 in results")
+            if not all(f"{retriever_name}_recall@5" in result for result in result_list):
+                raise ValueError(f"Missing {retriever_name}_recall@5 in results")
+            
+            average_em = sum([result[f"{retriever_name}_em"] for result in result_list]) / len(result_list)
+            average_f1 = sum([result[f"{retriever_name}_f1"] for result in result_list]) / len(result_list)
+            average_recall_2 = sum([result[f"{retriever_name}_recall@2"] for result in result_list]) / len(result_list)
+            average_recall_5 = sum([result[f"{retriever_name}_recall@5"] for result in result_list]) / len(result_list)
+            summary_dict.update( {
+                "average_f1": average_f1,
+                "average_em": average_em,
+                "average_recall@2": average_recall_2,
+                "average_recall@5": average_recall_5,
+            })
+        return summary_dict

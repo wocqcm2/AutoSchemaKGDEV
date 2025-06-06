@@ -84,18 +84,15 @@ def compute_text_embeddings(text_list, sentence_encoder: SentenceTransformer):
         text_embeddings.extend(sentence_encoder.encode(batch, convert_to_tensor=True).cpu().numpy())
     return text_embeddings
 
-def create_embeddings_and_index(sentence_encoder: SentenceTransformer|AutoModel, model_name:str, output_directory: str, keyword: str, include_events: bool, include_concept: bool):
-     # Extract the last part of the encoder_model_name for simplified reference
+def create_embeddings_and_index(sentence_encoder, model_name: str, output_directory: str, keyword: str, include_events: bool, include_concept: bool):
+    # Extract the last part of the encoder_model_name for simplified reference
     encoder_model_name = model_name.split('/')[-1]
-
-    # Example usage of model identifier
-    print(f"Using encoder model: {encoder_model_name}")
     
+    print(f"Using encoder model: {encoder_model_name}")
     graph_dir = f"{output_directory}/kg_graphml/{keyword}_graph.graphml"
     if not os.path.exists(graph_dir):
         raise FileNotFoundError(f"Graph file {graph_dir} does not exist. Please check the path or generate the graph first.")
 
-    
     node_index_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_node_faiss.index"
     node_list_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_node_list.pkl"
     edge_index_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_edge_faiss.index"
@@ -104,21 +101,19 @@ def create_embeddings_and_index(sentence_encoder: SentenceTransformer|AutoModel,
     edge_embeddings_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_edge_embeddings.pkl"
     text_embeddings_path = f"{output_directory}/precompute/{keyword}_{encoder_model_name}_text_embeddings.pkl"
     text_index_path = f"{output_directory}/precompute/{keyword}_text_faiss.index"
-    
     original_text_list_path = f"{output_directory}/precompute/{keyword}_text_list.pkl"
     original_text_dict_with_node_id_path = f"{output_directory}/precompute/{keyword}_original_text_dict_with_node_id.pkl"
-    
+
     if not os.path.exists(f"{output_directory}/precompute"):
-        # generate dir
         os.makedirs(f"{output_directory}/precompute", exist_ok=True)
-        
+
     print(f"Loading graph from {graph_dir}")
     with open(graph_dir, "rb") as f:
         KG: nx.DiGraph = nx.read_graphml(f)
 
     node_list = list(KG.nodes)
-    # node type {'concept', 'event', 'passage', 'entity'}
     text_list = [node for node in tqdm(node_list) if "passage" in KG.nodes[node]["type"]]
+    
     if not include_events and not include_concept:
         node_list = [node for node in tqdm(node_list) if "entity" in KG.nodes[node]["type"]]
     elif include_events and not include_concept:
@@ -127,92 +122,92 @@ def create_embeddings_and_index(sentence_encoder: SentenceTransformer|AutoModel,
         node_list = [node for node in tqdm(node_list) if "event" in KG.nodes[node]["type"] or "concept" in KG.nodes[node]["type"] or "entity" in KG.nodes[node]["type"]]
     else:
         raise ValueError("Invalid combination of include_events and include_concept")
-    
-    edge_list = list(KG.edges)
-  
-    node_set = set(node_list)
 
+    edge_list = list(KG.edges)
+    node_set = set(node_list)
     node_list_string = [KG.nodes[node]["id"] for node in node_list]
 
-    # filter edges based on node list, use
-    edge_list_index = []
-    for i, edge in tqdm(enumerate(edge_list)):
-        if edge[0] in node_set and edge[1] in node_set:
-            edge_list_index.append(i)
-
-    # construct edge_list and related variable with edge_list_index
+    # Filter edges based on node list
+    edge_list_index = [i for i, edge in tqdm(enumerate(edge_list)) if edge[0] in node_set and edge[1] in node_set]
     edge_list = [edge_list[i] for i in edge_list_index]
-
     edge_list_string = [f"{KG.nodes[edge[0]]['id']} {KG.edges[edge]['relation']} {KG.nodes[edge[1]]['id']}" for edge in edge_list]
-    # merge text nodes with same file id, and put them into original_text_list and original_text_dict_with_node_id
+    
     original_text_list = []
-    # make oringal text list with original_text_dict_with_node_id.values
     original_text_dict_with_node_id = {}
     for text_node in text_list:
-        text = KG.nodes[text_node]["id"]
-        original_text_list.append(text.strip())
-        original_text_dict_with_node_id[text_node] = text.strip()
-        
+        text = KG.nodes[text_node]["id"].strip()
+        original_text_list.append(text)
+        original_text_dict_with_node_id[text_node] = text
+
     assert len(original_text_list) == len(original_text_dict_with_node_id)
-    
+
     with open(original_text_list_path, "wb") as f:
         pickle.dump(original_text_list, f)
     with open(original_text_dict_with_node_id_path, "wb") as f:
         pickle.dump(original_text_dict_with_node_id, f)
-    
+
     if not os.path.exists(text_index_path) or not os.path.exists(text_embeddings_path):
         print("Computing text embeddings...")
-        text_embeddings = compute_text_embeddings(  # New helper function
-            original_text_list, sentence_encoder
-        )
-        text_faiss_index = build_faiss_index(text_embeddings)
-        
-        # Save text artifacts
+        text_embeddings = compute_text_embeddings(original_text_list, sentence_encoder)  # Assumes this function is defined
+        text_faiss_index = build_faiss_index(text_embeddings)  # Assumes this function is defined
         faiss.write_index(text_faiss_index, text_index_path)
-        
-        # Save text embeddings
         with open(text_embeddings_path, "wb") as f:
             pickle.dump(text_embeddings, f)
     else:
         print("Text embeddings already computed.")
-        
-    
-    if not os.path.exists(node_index_path) or not os.path.exists(edge_index_path) or not os.path.exists(node_embeddings_path) or not os.path.exists(edge_embeddings_path):
-        if not os.path.exists(node_embeddings_path) and not os.path.exists(edge_embeddings_path):
-            print("Node and edge embeddings not found, computing...")
-            node_embeddings, edge_embeddings =compute_graph_embeddings(
-                node_list=node_list_string,
-                edge_list_string=edge_list_string,
-                sentence_encoder=sentence_encoder
-            )
-        else:
-            with open(node_embeddings_path, "rb") as f:
-                node_embeddings = pickle.load(f)
-            with open(edge_embeddings_path, "rb") as f:
-                edge_embeddings = pickle.load(f)
-        print("Graph embeddings computed")
-        if not os.path.exists(node_index_path):
-            node_faiss_index = build_faiss_index(node_embeddings)
-            faiss.write_index(node_faiss_index, f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_node_faiss.index")
-        if not os.path.exists(edge_index_path):
-            edge_faiss_index = build_faiss_index(edge_embeddings)  
-            faiss.write_index(edge_faiss_index, f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_edge_faiss.index")
+        with open(text_embeddings_path, "rb") as f:
+            text_embeddings = pickle.load(f)
+        text_faiss_index = faiss.read_index(text_index_path)
 
-        # save emeddings and faiss index based on (keyword, include_events, include_concept, embedding model)
-        
-        if not os.path.exists(node_embeddings_path):
-            with open(node_embeddings_path, "wb") as f:
-                pickle.dump(node_embeddings, f)
-        if not os.path.exists(edge_embeddings_path):
-            with open(edge_embeddings_path, "wb") as f:
-                pickle.dump(edge_embeddings, f)
-        with open(node_list_path, "wb") as f:
-            pickle.dump(node_list, f)
-        with open(edge_list_path, "wb") as f:
-            pickle.dump(edge_list, f)
-        
+    if not os.path.exists(node_embeddings_path) or not os.path.exists(edge_embeddings_path):
+        print("Node and edge embeddings not found, computing...")
+        node_embeddings, edge_embeddings = compute_graph_embeddings(node_list_string, edge_list_string, sentence_encoder)  # Assumes this function is defined
     else:
-        print("Node and edge embeddings already computed.")
+        with open(node_embeddings_path, "rb") as f:
+            node_embeddings = pickle.load(f)
+        with open(edge_embeddings_path, "rb") as f:
+            edge_embeddings = pickle.load(f)
+        print("Graph embeddings computed")
+    
+    if not os.path.exists(node_index_path):
+        node_faiss_index = build_faiss_index(node_embeddings)
+        faiss.write_index(node_faiss_index, node_index_path)
+    else:
+        node_faiss_index = faiss.read_index(node_index_path)
+    
+    if not os.path.exists(edge_index_path):
+        edge_faiss_index = build_faiss_index(edge_embeddings)
+        faiss.write_index(edge_faiss_index, edge_index_path)
+    else:
+        edge_faiss_index = faiss.read_index(edge_index_path)
+
+    if not os.path.exists(node_embeddings_path):
+        with open(node_embeddings_path, "wb") as f:
+            pickle.dump(node_embeddings, f)
+
+    if not os.path.exists(edge_embeddings_path):
+        with open(edge_embeddings_path, "wb") as f:
+            pickle.dump(edge_embeddings, f)
+
+    with open(node_list_path, "wb") as f:
+        pickle.dump(node_list, f)
+
+    with open(edge_list_path, "wb") as f:
+        pickle.dump(edge_list, f)
+
+    print("Node and edge embeddings already computed.")
+    # Return all required indices, embeddings, and lists
+    return {
+        "node_faiss_index": node_faiss_index,
+        "edge_faiss_index": edge_faiss_index,
+        "text_faiss_index": text_faiss_index,
+        "node_embeddings": node_embeddings,
+        "edge_embeddings": edge_embeddings,
+        "text_embeddings": text_embeddings,
+        "node_list": node_list,
+        "edge_list": edge_list,
+        "text_dict": original_text_dict_with_node_id,
+    }
 
 def load_all_data(keyword, include_events, include_concept, encoder_model_name):
     # Define paths for loading data

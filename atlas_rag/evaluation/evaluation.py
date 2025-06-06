@@ -7,13 +7,16 @@ from tqdm import tqdm
 class QAJudger:
     def __init__(self):
         pass
-
-    def split_answer(self, generated_text: str) -> str:
-        """Mirror the answer extraction logic used before passing to metrics"""
-        # Case-insensitive split for robustness
-        answer_part = generated_text.split('Answer:')[-1] if 'Answer:' in generated_text else generated_text
-        answer_part = answer_part.split('answer:')[-1]  # Handle lowercase version
-        return answer_part.strip()
+    
+    def split_answer(self, generated_text):
+        if "Answer:" in generated_text:
+            generated_text = generated_text.split("Answer:")[-1]
+        elif "answer:" in generated_text:
+            generated_text = generated_text.split("answer:")[-1]
+        # if answer is none
+        if not generated_text:
+            return "none"
+        return generated_text
 
     def normalize_answer(self, answer: str) -> str:
         """Direct copy of the normalization from QAExactMatch/QAF1Score"""

@@ -2,20 +2,18 @@ import networkx as nx
 import json
 import random
 from tqdm import tqdm
-import pickle
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import json
 from tqdm import tqdm
 import random
-import argparse
-import torch
-import pickle
+from typing import Dict, List, Tuple
 import networkx as nx
 import faiss
 import numpy as np
 from embedding_model import BaseEmbeddingModel
-from atlas_rag.reader.llm_generator import LLMGenerator, cot_system_instruction_kg
+from atlas_rag.reader.llm_generator import LLMGenerator
+from logging import Logger
  
 def min_max_normalize(x):
     min_val = np.min(x)
@@ -27,9 +25,36 @@ def min_max_normalize(x):
         return np.ones_like(x)  # Return an array of ones with the same shape as x
     
     return (x - min_val) / range_val
- 
-class SimpleGraphRetriever():
-    def __init__(self, KG:nx.DiGraph, llm_generator:LLMGenerator, sentence_encoder:BaseEmbeddingModel, node_index:faiss.Index, edge_index:faiss.Index, node_list:list, edge_list:list):
+
+class BaseRetriever:
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+    
+    def retrieve(self, query, topk=5, **kwargs) -> Tuple[List[str], List[str]]:
+        raise NotImplementedError("This method should be overridden by subclasses.") 
+
+class BaseEdgeRetriever(BaseRetriever):
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+    
+    def retrive(self, query, topk=5, **kwargs) -> Tuple[List[str], List[str]]:
+        raise NotImplementedError("This method should be overridden by subclasses.")
+
+class BasePassageRetriever(BaseRetriever):
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+    def retrive(self, query, topk=5, **kwargs) -> Tuple[List[str], List[str]]:
+        raise NotImplementedError("This method should be overridden by subclasses.")
+
+class SimpleGraphRetriever(BaseEdgeRetriever):
+
+    def __init__(self, KG:nx.DiGraph, llm_generator:LLMGenerator, sentence_encoder:BaseEmbeddingModel, 
+                 node_index:faiss.Index, edge_index:faiss.Index, 
+                 node_list:list, edge_list:list):
+        
         self.KG = KG
         self.node_list = node_list
         self.edge_list = edge_list
@@ -41,37 +66,39 @@ class SimpleGraphRetriever():
         self.edge_faiss_index = edge_index
 
 
-    def retrive_topk_edges(self, query, topk=5):
+    def retrieve(self, query, topk=5, **kwargs):
         # retrieve the top k edges
         topk_edges = []
         query_embedding = self.sentence_encoder.encode([query], query_type='edge')
         D, I = self.edge_faiss_index.search(query_embedding, topk)
 
         topk_edges += [self.edge_list[i] for i in I[0]]
-        edge_file_ids_list = [self.KG.edges[edge]["file_id"] for edge in topk_edges]
 
         topk_edges_with_data = [(edge[0], self.KG.edges[edge]["relation"], edge[1]) for edge in topk_edges]
-        string_edge_edges = [f"{self.KG.nodes[edge[0]]['id']}  {edge[1]}  {self.KG.nodes[edge[2]]['id']}." for edge in topk_edges_with_data]
-        
-        return string_edge_edges, edge_file_ids_list
+        string_edge_edges = [f"{self.KG.nodes[edge[0]]['id']}  {edge[1]}  {self.KG.nodes[edge[2]]['id']}" for edge in topk_edges_with_data]
+
+        return string_edge_edges, ["N/A" for _ in range(len(string_edge_edges))]
     
-class SimpleTextRetriever():
-    def __init__(self, passage_list:list, sentence_encoder:BaseEmbeddingModel, text_embeddings):  
+class SimpleTextRetriever(BasePassageRetriever):
+    def __init__(self, passage_dict:Dict[str,str], sentence_encoder:BaseEmbeddingModel, text_embeddings):  
         self.sentence_encoder = sentence_encoder
-        self.passage_list = passage_list
+        self.passage_dict = passage_dict
+        self.passage_list = list(passage_dict.values())
+        self.passage_keys = list(passage_dict.keys())
         self.text_embeddings = text_embeddings
         
-    def retrieve_topk_passages(self, query, topk=3):
+    def retrieve(self, query, topk=5, **kwargs):
         query_emb = self.sentence_encoder.encode([query], query_type="passage")
         sim_scores = self.text_embeddings @ query_emb[0].T
         topk_indices = np.argsort(sim_scores)[-topk:][::-1]  # Get indices of top-k scores
 
         # Retrieve top-k passages
         topk_passages = [self.passage_list[i] for i in topk_indices]
-        return topk_passages
+        topk_passages_ids = [self.passage_keys[i] for i in topk_indices]
+        return topk_passages, topk_passages_ids
 
-class TogRetriever():
-    def __init__(self, KG:nx.DiGraph, llm_generator, sentence_encoder, node_list, edge_list, node_embeddings, edge_embeddings):
+class TogRetriever(BaseEdgeRetriever):
+    def __init__(self, KG:nx.DiGraph, llm_generator, sentence_encoder, node_embeddings, edge_embeddings):
         self.KG = KG
 
         self.node_list = list(KG.nodes)
@@ -79,13 +106,11 @@ class TogRetriever():
         self.edge_list_with_relation = [(edge[0], KG.edges[edge]["relation"], edge[1])  for edge in self.edge_list]
         self.edge_list_string = [f"{edge[0]}  {KG.edges[edge]['relation']}  {edge[1]}" for edge in self.edge_list]
         
-        self.llm_generator = llm_generator
-        self.sentence_encoder = sentence_encoder        
+        self.llm_generator:LLMGenerator = llm_generator
+        self.sentence_encoder:BaseEmbeddingModel = sentence_encoder        
 
         self.node_embeddings = node_embeddings
         self.edge_embeddings = edge_embeddings
-
-    
 
     def ner(self, text):
         messages = [
@@ -103,7 +128,7 @@ class TogRetriever():
     
 
 
-    def retrieve_topk_nodes(self, query, topN=5):
+    def retrieve_topk_nodes(self, query, topN=5, **kwargs):
         # extract entities from the query
         entities = self.ner(query)
         entities = entities.split(", ")
@@ -139,12 +164,12 @@ class TogRetriever():
             topk_nodes = topk_nodes[:2*topN]
         return topk_nodes
 
-    def retrieve_path(self, query, topN=5, Dmax=4):
+    def retrieve(self, query, topN=5, **kwargs):
         """ 
         Retrieve the top N paths that connect the entities in the query.
         Dmax is the maximum depth of the search.
         """
-
+        Dmax = kwargs.get("Dmax", 4)
         # in the first step, we retrieve the top k nodes
         initial_nodes = self.retrieve_topk_nodes(query, topN=topN)
         E = initial_nodes
@@ -255,33 +280,44 @@ class TogRetriever():
                 triples.append((self.KG.nodes[path[i]]["id"], path[i+1], self.KG.nodes[path[i+2]]["id"]))
         
         triples_string = [f"({triple[0]}, {triple[1]}, {triple[2]})" for triple in triples]
-        triples_string = ". ".join(triples_string)
         
-        messages = [
-            {"role": "system", "content": cot_system_instruction_kg},
-            {"role": "user", "content": f"{triples_string}\n\n{query}"},
-        ]
-        
-        response = self.llm_generator._generate_response(messages)
-        return triples_string, response
+        # response = self.llm_generator.generate_with_context_kg(query, triples_string)
+        return triples_string, ["N/A" for _ in range(len(triples_string))]
 
-class HippoRAGRetriever():
-    def __init__(self, KG:nx.DiGraph, passage_dict:dict, llm_generator:LLMGenerator, sentence_encoder:BaseEmbeddingModel, node_list:list, node_embeddings:faiss.Index, file_id_to_node_id:dict):
+class HippoRAGRetriever(BasePassageRetriever):
+    def __init__(self, KG:nx.DiGraph, llm_generator:LLMGenerator, sentence_encoder:BaseEmbeddingModel, 
+                 node_list:list, node_embeddings:faiss.Index, 
+                 passage_dict:dict, **kwargs):
         self.passage_dict = passage_dict
         self.llm_generator = llm_generator
         self.sentence_encoder = sentence_encoder
         self.node_embeddings = node_embeddings
         self.node_list = node_list
+        file_id_to_node_id = {}
+        for node_id in tqdm(list(KG.nodes)):
+            if KG.nodes[node_id]['type'] == "passage":
+                if KG.nodes[node_id]['file_id'] not in file_id_to_node_id:
+                    file_id_to_node_id[KG.nodes[node_id]['file_id']] = []
+                file_id_to_node_id[KG.nodes[node_id]['file_id']].append(node_id)
         self.file_id_to_node_id = file_id_to_node_id
-        self.KG = KG.subgraph(self.node_list)
+        
+        self.KG:nx.DiGraph = KG.subgraph(self.node_list)
         self.node_name_list = [self.KG.nodes[node]["id"] for node in self.node_list]
-
+        
+        
+        self.logger :Logger = kwargs.get("logger", None)
+        if self.logger is None:
+            self.logging = False
+        else:
+            self.logging = True
         
     def retrieve_personalization_dict(self, query, topN=10):
 
         # extract entities from the query
         entities = self.llm_generator.ner(query)
         entities = entities.split(", ")
+        if self.logging:
+            self.logger.info(f"HippoRAG NER Entities: {entities}")
         # print("Entities:", entities)
 
         if len(entities) == 0:
@@ -311,6 +347,8 @@ class HippoRAGRetriever():
                
                 topk_nodes += [self.node_list[i] for i in index_matrix]
         
+        if self.logging:
+            self.logger.info(f"HippoRAG Topk Nodes: {[self.KG.nodes[node]['id'] for node in topk_nodes]}")
         
         topk_nodes = list(set(topk_nodes))
 
@@ -336,8 +374,9 @@ class HippoRAGRetriever():
         # print("personalization dict: ")
         return personalization_dict
 
-    def retrieve_passages(self, query, topN=5):
-        personaliation_dict = self.retrieve_personalization_dict(query, topN=2*topN)
+    def retrieve(self, query, topN=5, **kwargs):
+        topN_nodes = kwargs.get("topN_nodes", 10)
+        personaliation_dict = self.retrieve_personalization_dict(query, topN=topN_nodes)
         
         # retrieve the top N passages
         pr = nx.pagerank(self.KG, personalization=personaliation_dict)
@@ -371,15 +410,13 @@ class HippoRAGRetriever():
 
         passag_contents = [self.passage_dict[passage_id] for passage_id in top_passages]
         
-        return passag_contents, scores, top_passages
+        return passag_contents, top_passages
 
-class HippoRAG2Retriever():
-    def __init__(self, KG:nx.DiGraph, passage_dict:dict, llm_generator:LLMGenerator, sentence_encoder:BaseEmbeddingModel, 
+class HippoRAG2Retriever(BasePassageRetriever):
+    def __init__(self, KG:nx.DiGraph, llm_generator:LLMGenerator, sentence_encoder:BaseEmbeddingModel, 
                  node_list:list, node_embeddings:np.ndarray,
                  edge_list:list, edge_embeddings:np.ndarray, edge_faiss_index:faiss.Index,
-                 text_embeddings:np.ndarray, text_id_list: list, node_id_to_file_id:dict,
-                 hipporag2mode:str = "query2edge"):
-        self.passage_dict = passage_dict
+                 passage_dict:dict, text_embeddings:np.ndarray, **kwargs):
         self.llm_generator = llm_generator
         self.sentence_encoder = sentence_encoder
         self.node_embeddings = node_embeddings
@@ -388,14 +425,23 @@ class HippoRAG2Retriever():
         self.edge_embeddings = edge_embeddings
         self.text_embeddings = text_embeddings
         self.edge_faiss_index = edge_faiss_index
-        self.text_id_list = text_id_list
-        self.node_id_to_file_id = node_id_to_file_id
-
-        print("HippoRAG2: KG passages nodes:", len(self.passage_dict))
-        print("HippoRAG2: KG passages nodes:", len(self.text_id_list))
+        self.passage_dict = passage_dict
+        self.text_id_list = list(passage_dict.keys())
         
-        self.KG = KG.subgraph(self.node_list + text_id_list)
-
+        self.KG = KG.subgraph(self.node_list + self.text_id_list)
+        
+        node_id_to_file_id = {}
+        for node_id in tqdm(list(KG.nodes)):
+            node_id_to_file_id[node_id] = KG.nodes[node_id]["file_id"]
+        self.node_id_to_file_id = node_id_to_file_id
+        
+        self.logger = kwargs.get("logger", None)
+        if self.logger is None:
+            self.logging = False
+        else:
+            self.logging = True
+        
+        hipporag2mode = "query2edge"
         if hipporag2mode == "query2edge":
             self.retrieve_node_fn = self.query2edge
         elif hipporag2mode == "query2node":
@@ -459,6 +505,7 @@ class HippoRAG2Retriever():
             edge = self.edge_list[index]
             edge_str = [self.KG.nodes[edge[0]]['id'], self.KG.edges[edge]['relation'], self.KG.nodes[edge[1]]['id']]
             log_edge_list.append(edge_str)
+
         similarity_matrix = [scores[i] for i in index_matrix]
         # construct the edge list
         before_filter_edge_json = {}
@@ -483,6 +530,9 @@ class HippoRAG2Retriever():
             log_edge_list.append([self.KG.nodes[edge[0]]['id'], self.KG.edges[edge]['relation'], self.KG.nodes[edge[1]]['id']])
             head, tail = edge[0], edge[1]
             sim_score = scores[filtered_index]
+            
+            if self.logging:
+                self.logger.info(f"HippoRAG2: Edge: {edge_str}, Score: {sim_score}")
             if head not in node_score_dict:
                 node_score_dict[head] = [sim_score]
             else:
@@ -491,6 +541,9 @@ class HippoRAG2Retriever():
                 node_score_dict[tail] = [sim_score]
             else:
                 node_score_dict[tail].append(sim_score)
+        # average the scores
+        if self.logging:
+            self.logger.info(f"HippoRAG2: Filtered edges: {log_edge_list}")
         
         # take average of the scores
         for node in node_score_dict:
@@ -505,14 +558,17 @@ class HippoRAG2Retriever():
         # create dict of passage id and score
         return dict(zip(self.text_id_list, sim_scores))
     
-    def retrieve_personalization_dict(self, query, topN=10):
-        node_dict = self.retrieve_node_fn(query, topN=30)
-        text_dict = self.query2passage(query, weight_adjust=0.05)
+    def retrieve_personalization_dict(self, query, topN=30, weight_adjust=0.05):
+        node_dict = self.retrieve_node_fn(query, topN=topN)
+        text_dict = self.query2passage(query, weight_adjust=weight_adjust)
   
         return node_dict, text_dict
 
-    def retrieve_passages(self, query, topN=5):
-        node_dict, text_dict = self.retrieve_personalization_dict(query, topN=topN)
+    def retrieve(self, query, topN=5, **kwargs):
+        topN_edges = kwargs.get("topN_edges", 30)
+        weight_adjust = kwargs.get("weight_adjust", 0.05)
+        
+        node_dict, text_dict = self.retrieve_personalization_dict(query, topN=topN_edges, weight_adjust=weight_adjust)
           
         personalization_dict = {}
         if len(node_dict) == 0:
@@ -551,14 +607,4 @@ class HippoRAG2Retriever():
             sorted_passages_contents.append(self.passage_dict[passage_id])
             sorted_scores.append(score)
             sorted_passage_ids.append(self.node_id_to_file_id[passage_id])
-        return sorted_passages_contents, sorted_scores, sorted_passage_ids
-
-
-
-
-
-
-
-
-
-
+        return sorted_passages_contents, sorted_passage_ids

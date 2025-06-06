@@ -1,0 +1,342 @@
+from tqdm import tqdm
+import random
+import logging
+from transformers import set_seed
+import csv
+import os
+import hashlib
+import re
+from atlas_rag.utils.triple_generator import TripleGenerator
+
+# Increase the field size limit
+csv.field_size_limit(10 * 1024 * 1024)  # 10 MB limit
+
+EVENT_PROMPT = '''I will give you an EVENT. You need to give several phrases containing 1-2 words for the ABSTRACT EVENT of this EVENT.
+            You must return your answer in the following format: phrases1, phrases2, phrases3,...
+            You can't return anything other than answers.
+            These abstract event words should fulfill the following requirements.
+            1. The ABSTRACT EVENT phrases can well represent the EVENT, and it could be the type of the EVENT or the related concepts of the EVENT.    
+            2. Strictly follow the provided format, do not add extra characters or words.
+            3. Write at least 3 or more phrases at different abstract level if possible.
+            4. Do not repeat the same word and the input in the answer.
+            5. Stop immediately if you can't think of any more phrases, and no explanation is needed.
+
+            EVENT: A man retreats to mountains and forests.
+            Your answer: retreat, relaxation, escape, nature, solitude
+            EVENT: A cat chased a prey into its shelter
+            Your answer: hunting, escape, predation, hidding, stalking
+            EVENT: Sam playing with his dog
+            Your answer: relaxing event, petting, playing, bonding, friendship
+            EVENT: [EVENT]
+            Your answer:
+            '''
+
+ENTITY_PROMPT = '''I will give you an ENTITY. You need to give several phrases containing 1-2 words for the ABSTRACT ENTITY of this ENTITY.
+            You must return your answer in the following format: phrases1, phrases2, phrases3,...
+            You can't return anything other than answers.
+            These abstract intention words should fulfill the following requirements.
+            1. The ABSTRACT ENTITY phrases can well represent the ENTITY, and it could be the type of the ENTITY or the related concepts of the ENTITY.
+            2. Strictly follow the provided format, do not add extra characters or words.
+            3. Write at least 3 or more phrases at different abstract level if possible.
+            4. Do not repeat the same word and the input in the answer.
+            5. Stop immediately if you can't think of any more phrases, and no explanation is needed.
+
+            ENTITY: apple
+            Your answer: fruit, food, sweet, healthy
+            ENTITY: thinkpad
+            Your answer: laptop, machine, device, hardware, computer, brand
+            ENTITY: Harry Callahan
+            Your answer: person, Amarican, actor
+            ENTITY: Black Mountain College.
+            Your answer: college, university, school, liberal arts college
+            EVENT: 21st April
+            Your answer: date, day, time
+            ENTITY: [ENTITY]
+            Your answer:
+            '''
+
+RELATION_PROMPT = '''I will give you an RELATION. You need to give several phrases containing 1-2 words for the ABSTRACT RELATION of this RELATION.
+            You must return your answer in the following format: phrases1, phrases2, phrases3,...
+            You can't return anything other than answers.
+            These abstract intention words should fulfill the following requirements.
+            1. The ABSTRACT RELATION phrases can well represent the RELATION, and it could be the type of the RELATION or the simplest concepts of the RELATION.
+            2. Strictly follow the provided format, do not add extra characters or words.
+            3. Write at least 3 or more phrases at different abstract level if possible.
+            4. Do not repeat the same word and the input in the answer.
+            5. Stop immediately if you can't think of any more phrases, and no explanation is needed.
+            
+            RELATION: participated in
+            Your answer: become part of, attend, take part in, engage in, involve in
+            RELATION: be included in
+            Your answer: join, be a part of, be a member of, be a component of
+            RELATION: [RELATION]
+            Your answer:
+            '''
+
+
+def build_batch_data(sessions, batch_size):
+    batched_sessions = []
+    for i in range(0, len(sessions), batch_size):
+        batched_sessions.append(sessions[i:i+batch_size])
+    return batched_sessions
+
+# Function to compute a hash ID from text
+def compute_hash_id(text):
+    # Use SHA-256 to generate a hash
+    hash_object = hashlib.sha256(text.encode('utf-8'))
+    return hash_object.hexdigest()  # Return hash as a hex string
+
+def convert_attribute(value):
+    """ Convert attributes to GDS-compatible types. """
+    if isinstance(value, list):
+        return [str(v) for v in value]
+    elif isinstance(value, (int, float)):
+        return value
+    else:
+        return str(value)
+
+def clean_text(text):
+    # remove NUL as well
+    
+    new_text = text.replace("\n", " ").replace("\r", " ").replace("\t", " ").replace("\v", " ").replace("\f", " ").replace("\b", " ").replace("\a", " ").replace("\e", " ").replace(";", ",")
+    new_text = new_text.replace("\x00", "")
+    new_text = re.sub(r'\s+', ' ', new_text).strip()
+
+    return new_text
+
+def remove_NUL(text):
+    return text.replace("\x00", "")
+
+def build_batched_events(all_node_list, batch_size):
+    "The types are in Entity Event Relation"
+    event_nodes = [node[0] for node in all_node_list if node[1].lower() == "event"]
+    batched_events = []
+
+    for i in range(0, len(event_nodes), batch_size):
+        batched_events.append(event_nodes[i:i+batch_size])
+    
+    return batched_events
+
+def build_batched_entities(all_node_list, batch_size):
+    
+    entity_nodes = [node[0] for node in all_node_list if node[1].lower() == "entity"]
+    batched_entities = []
+
+    for i in range(0, len(entity_nodes), batch_size):
+        batched_entities.append(entity_nodes[i:i+batch_size])
+    
+    return batched_entities
+
+def build_batched_relations(all_node_list, batch_size):
+
+    relations = [node[0] for node in all_node_list if node[1].lower() == "relation"]
+    # relations = list(set(relations))
+    batched_relations = []
+
+    for i in range(0, len(relations), batch_size):
+        batched_relations.append(relations[i:i+batch_size])
+    
+    return batched_relations
+
+def batched_inference(model:TripleGenerator, inputs):
+    responses = model.generate(inputs)
+    answers = []
+    for i in range(len(responses)):
+        answer = responses[i]
+        answers.append([x.strip().lower() for x in answer.split(",")])
+    
+    return answers
+
+def load_data_with_shard(input_file, shard_idx, num_shards):
+
+    with open(input_file, "r") as f:
+        csv_reader = list(csv.reader(f))
+    
+    # data = csv_reader  
+    data = csv_reader[1:]
+    # Random shuffle the data before splitting into shards
+    random.shuffle(data)
+    
+    total_lines = len(data)
+    lines_per_shard = (total_lines + num_shards - 1) // num_shards
+    start_idx = shard_idx * lines_per_shard
+    end_idx = min((shard_idx + 1) * lines_per_shard, total_lines)
+    
+    return data[start_idx:end_idx]
+
+def conceptualize(model: TripleGenerator,
+                  input_file = 'processed_data/triples_csv', 
+                  output_folder = 'processed_data/triples_conceptualized', 
+                  output_file = 'output.json', 
+                  logging_file = 'processed_data/logging.txt', 
+                  sample_num=None, 
+                  batch_size=32, 
+                  shard=0, 
+                  num_shards=1):
+    """
+    Encapsulates the logic for parsing arguments, setting up the environment, and calling the generate function.
+
+    Args:
+        model (TripleGenerator): The model to use for generating concepts.
+        input_file (str): Path to the input file.
+        output_folder (str): Path to the output folder.
+        output_file (str): Path to the output file.
+        logging_file (str): Path to the logging file.
+        sample_num (int): Sample number of sessions.
+        batch_size (int): Number of sessions processed at the same time.
+        shard (int): Shard id.
+        num_shards (int): Total number of shards.
+    """
+    # Set random seed for reproducibility
+    random.seed(8)
+
+    # Print environment information
+    # print("\n>>>Shard id:", shard)
+    # print("CUDA Device Count:", torch.cuda.device_count())
+    # print("VISIBLE DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES", None))
+    # print("Current CUDA Device:", torch.cuda.current_device())
+
+    # Call the generate function with the provided arguments
+    generate_concept(model,input_file=input_file,
+             output_folder=output_folder,
+             output_file=output_file,
+             logging_file=logging_file,
+             sample_num=sample_num,
+             batch_size=batch_size,
+             shard=shard,
+             num_shards=num_shards)
+
+def generate_concept(model: TripleGenerator,
+            input_file = 'processed_data/triples_csv', 
+            output_folder = 'processed_data/triples_conceptualized', 
+            output_file = 'output.json', 
+            logging_file = 'processed_data/logging.txt', 
+            sample_num=None, 
+            batch_size=32, 
+            shard=0, 
+            num_shards=1):
+    log_dir = os.path.dirname(logging_file)
+    if log_dir and not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    # Create the log file if it doesn't exist
+    if not os.path.exists(logging_file):
+        open(logging_file, 'w').close()
+
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    file_handler = logging.FileHandler(logging_file)
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    logging.getLogger().addHandler(file_handler)
+    
+    # read data
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    all_missing_nodes = load_data_with_shard(
+        input_file,
+        shard_idx=shard,
+        num_shards=num_shards
+    )
+        
+    batched_events = build_batched_events(all_missing_nodes, batch_size)
+    batched_entities = build_batched_entities(all_missing_nodes, batch_size)
+    batched_relations = build_batched_relations(all_missing_nodes, batch_size)
+    
+    all_batches = []
+    all_batches.extend(('event', batch) for batch in batched_events)
+    all_batches.extend(('entity', batch) for batch in batched_entities)
+    all_batches.extend(('relation', batch) for batch in batched_relations)
+    
+    print("all_batches", len(all_batches))
+
+
+
+    set_seed(42)
+    
+    output_file = output_folder + f"/{output_file.rsplit('.', 1)[0]}_shard_{shard}.csv"
+    with open(output_file, "w") as file:
+        csv_writer = csv.writer(file)
+        csv_writer.writerow(["node", "conceptualized_node", "node_type"])
+
+        # for batch_type, batch in tqdm(all_batches, total=total_batches, desc="Generating concepts"):
+        # don't use tqdm for now
+        for batch_type, batch in tqdm(all_batches, desc="Shard_{}".format(shard)):
+            # print("batch_type", batch_type)
+            # print("batch", batch)
+            if batch_type == 'event':
+                template = EVENT_PROMPT
+                node_type = 'event'
+                replace_token = '[EVENT]'
+            elif batch_type == 'entity':
+                template = ENTITY_PROMPT
+                node_type = 'entity'
+                replace_token = '[ENTITY]'
+            elif batch_type == 'relation':
+                template = RELATION_PROMPT
+                node_type = 'relation'
+                replace_token = '[RELATION]'
+
+            inputs = []
+            for node in batch:
+                prompt = template.replace(replace_token, node)
+                constructed_input = [
+                    {"role": "system", "content": "You are a helpful AI assistant."},
+                    {"role": "user", "content": f"{prompt}"},
+                ]
+                inputs.append(constructed_input)
+
+            try:
+                # print("inputs", inputs)
+                answers = batched_inference(model, inputs)
+                # print("answers", answers)
+            except Exception as e:
+                logging.error(f"Error processing {batch_type} batch: {e}")
+                raise e
+            # try:
+            #     answers = batched_inference(llm, sampling_params, inputs)
+            # except Exception as e:
+            #     logging.error(f"Error processing {batch_type} batch: {e}")
+            #     continue
+
+            for node, answer in zip(batch, answers):
+                # print(node, answer, node_type)
+                csv_writer.writerow([node, ", ".join(answer), node_type])
+                file.flush()
+    # count unique conceptualized nodes
+    conceptualized_nodes = []
+
+    conceptualized_events = []
+    conceptualized_entities = []
+    conceptualized_relations = []
+
+    with open(output_file, "r") as file:
+        reader = csv.reader(file)
+        next(reader)
+        for row in reader:
+            conceptualized_nodes.extend(row[1].split(","))
+            if row[2] == "event":
+                conceptualized_events.extend(row[1].split(","))
+            elif row[2] == "entity":
+                conceptualized_entities.extend(row[1].split(","))
+            elif row[2] == "relation":
+                conceptualized_relations.extend(row[1].split(","))
+    
+    conceptualized_nodes = [x.strip() for x in conceptualized_nodes]
+    conceptualized_events = [x.strip() for x in conceptualized_events]
+    conceptualized_entities = [x.strip() for x in conceptualized_entities]
+    conceptualized_relations = [x.strip() for x in conceptualized_relations]
+
+    unique_conceptualized_nodes = list(set(conceptualized_nodes))
+    unique_conceptualized_events = list(set(conceptualized_events))
+    unique_conceptualized_entities = list(set(conceptualized_entities))
+    unique_conceptualized_relations = list(set(conceptualized_relations))
+
+    print(f"Number of unique conceptualized nodes: {len(unique_conceptualized_nodes)}")
+    print(f"Number of unique conceptualized events: {len(unique_conceptualized_events)}")
+    print(f"Number of unique conceptualized entities: {len(unique_conceptualized_entities)}")
+    print(f"Number of unique conceptualized relations: {len(unique_conceptualized_relations)}")
+
+    return 
+    
+
+

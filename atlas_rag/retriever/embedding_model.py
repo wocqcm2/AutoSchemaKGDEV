@@ -13,8 +13,11 @@ class BaseEmbeddingModel(ABC):
         pass
     
 class NvEmbed(BaseEmbeddingModel):
-    def __init__(self, sentence_encoder:AutoModel):
-        self.sentence_encoder = sentence_encoder
+    def __init__(self, sentence_encoder:SentenceTransformer):
+        self.sentence_encoder:SentenceTransformer = sentence_encoder
+    def add_eos(self, input_examples):
+        input_examples = [input_example + self.sentence_encoder.tokenizer.eos_token for input_example in input_examples]
+        return input_examples
     def encode(self, query, query_type = 'passage', **kwargs):
         '''
         HippoRAG orignal prompts:
@@ -34,18 +37,13 @@ class NvEmbed(BaseEmbeddingModel):
         elif query_type == 'fill_in_edge':
             prompt_prefix = 'Given a triples with only head and relation, retrieve relevant triplet facts that best fill the atomic query.'
         elif query_type == 'search':
-            query_embeddings = self.sentence_encoder.encode(query)
-            if normalize_embeddings:
-                query_embeddings = F.normalize(query_embeddings, p=2, dim=1)
+            query_embeddings = self.sentence_encoder.encode(self.add_eos(query), normalize_embeddings=normalize_embeddings)
             return query_embeddings.detach().cpu().numpy()
         else:
             raise ValueError(f"Unknown query type: {query_type}. Supported types are: passage, entity, edge, search.")
         query_prefix = f"Instruct: {prompt_prefix}\nQuery: "
-        query_embeddings = self.sentence_encoder.encode(query, instruction=query_prefix)
+        query_embeddings = self.sentence_encoder.encode(self.add_eos(query), prompt=query_prefix, normalize_embeddings=normalize_embeddings)
         
-        # Normalize the embeddings
-        if normalize_embeddings:
-            query_embeddings = F.normalize(query_embeddings, p=2, dim=1).detach().cpu().numpy()
         return query_embeddings
 
 class SentenceEmbedding(BaseEmbeddingModel):

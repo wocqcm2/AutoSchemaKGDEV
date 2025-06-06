@@ -1,10 +1,10 @@
 import json
 from openai import OpenAI
 from tenacity import retry, wait_fixed, stop_after_delay, stop_after_attempt
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from copy import deepcopy
 from atlas_rag.retriever.filter_template import messages as filter_messages, validate_filter_output
 from atlas_rag.retriever.rag_qa_prompt import prompt_template
+from transformers.pipelines import Pipeline
 
 # from https://github.com/OSU-NLP-Group/HippoRAG/blob/main/src/qa/qa_reader.py
 # prompts from hipporag qa_reader
@@ -22,47 +22,98 @@ cot_system_instruction_kg = ('As an advanced reading comprehension assistant, yo
 class LLMGenerator():
     def __init__(self, client, model_name):
         self.model_name = model_name
-        self.client : OpenAI = client
+        self.client : OpenAI|Pipeline  = client
+        if isinstance(client, OpenAI):
+            self.inference_type = "openai"
+        elif isinstance(client, Pipeline):
+            self.inference_type = "pipeline"
+        else:
+            raise ValueError("Unsupported client type. Please provide either an OpenAI client or a Huggingface Pipeline Object.")
         self.cot_system_instruction = "".join(cot_system_instruction)
         self.cot_system_instruction_no_doc = "".join(cot_system_instruction_no_doc)
         self.cot_system_instruction_kg = "".join(cot_system_instruction_kg)
 
     @retry(stop=(stop_after_delay(60) | stop_after_attempt(6)), wait=wait_fixed(5))
     def _generate_response(self, messages, max_new_tokens=32768, temperature=0.7):
-        response = self.client.chat.completions.create(
-            model=self.model_name,
-            messages=messages,
-            max_tokens=max_new_tokens,
-            temperature=temperature,
-        )
-        return response.choices[0].message.content
+        """
+        Generate a response using the configured client.
+
+        Args:
+            messages: The input messages for the model.
+            max_new_tokens: The maximum number of tokens to generate.
+            temperature: The sampling temperature.
+
+        Returns:
+            The generated response.
+        """
+        if self.inference_type == "openai":
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=messages,
+                max_tokens=max_new_tokens,
+                temperature=temperature,
+            )
+            return response.choices[0].message.content
+        elif self.inference_type == "pipeline":
+            # Convert messages to a single string for Hugging Face
+            input_text = " ".join([msg["content"] for msg in messages])
+            response = self.client(
+                messages,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                do_sample=True,
+            )
+            return response[0]["generated_text"]
+        else:
+            raise ValueError(f"Unsupported client type: {self.client_type}")
     
     @retry(stop=(stop_after_delay(60) | stop_after_attempt(6)), wait=wait_fixed(5))
     def filter_generation(self, messages):
-        response = self.client.chat.completions.create(
-            model=self.model_name,
-            messages=messages,
-            temperature=0.0,
-            top_p=0.1,
-            max_tokens=4096,
-            response_format={"type": "json_object"},
-            # Additional parameters for stability
-            frequency_penalty=0,
-            presence_penalty=0,
-        )
-        return response.choices[0].message.content
-    def _generate_batch_response(self, batch_messages, max_new_tokens=32768, temperature=0.7):
-        # Use ThreadPoolExecutor for concurrent requests if using API
-        with ThreadPoolExecutor() as executor:
-            future_to_index = {
-                executor.submit(self._generate_response, msg, max_new_tokens, temperature): idx 
-                for idx, msg in enumerate(batch_messages)
-            }
-            results = [None] * len(batch_messages)  # Pre-allocate results list
-            for future in as_completed(future_to_index):
-                index = future_to_index[future]  # Get the original index
-                results[index] = future.result()  # Place the result in the correct position
-        return results
+        """
+        Filter the generation using the configured client.
+
+        Args:
+            messages: The input messages for the model.
+
+        Returns:
+            The filtered response.
+        """
+        if self.inference_type == "openai":
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=messages,
+                temperature=0.0,
+                top_p=0.1,
+                max_tokens=4096,
+                response_format={"type": "json_object"},
+                frequency_penalty=0,
+                presence_penalty=0,
+            )
+            return response.choices[0].message.content
+        elif self.inference_type == "huggingface":
+            response = self.client(
+                messages,
+                max_new_tokens=4096,
+                temperature=0.0,
+                top_p=0.1,
+                do_sample=True,
+            )
+            return response[0]["generated_text"]
+        else:
+            raise ValueError(f"Unsupported client type: {self.client_type}")
+
+    # def _generate_batch_response(self, batch_messages, max_new_tokens=32768, temperature=0.7):
+    #     # Use ThreadPoolExecutor for concurrent requests if using API
+    #     with ThreadPoolExecutor() as executor:
+    #         future_to_index = {
+    #             executor.submit(self._generate_response, msg, max_new_tokens, temperature): idx 
+    #             for idx, msg in enumerate(batch_messages)
+    #         }
+    #         results = [None] * len(batch_messages)  # Pre-allocate results list
+    #         for future in as_completed(future_to_index):
+    #             index = future_to_index[future]  # Get the original index
+    #             results[index] = future.result()  # Place the result in the correct position
+    #     return results
 
     def generate(self, question, max_new_tokens=1024):
         messages = [

@@ -64,7 +64,7 @@ def csvs_to_graphml(triple_node_file, text_node_file, concept_node_file,
         reader = csv.DictReader(f)
         for row in reader:
             node_id = row["concept_id:ID"]
-            g.add_node(node_id, id=row["name"], type='concept')
+            g.add_node(node_id, file_id = "concept_file", id=row["name"], type='concept')
 
     # Add file id for triple nodes and concept nodes when add the edges
     
@@ -76,6 +76,8 @@ def csvs_to_graphml(triple_node_file, text_node_file, concept_node_file,
             end_id = get_node_id(row[":END_ID"], entity_to_id)
             concepts = ast.literal_eval(row["concepts"])
             g.add_edge(start_id, end_id, relation=row["relation"], type=row[":TYPE"])
+            
+            ### ADD CONCEPTS TO THE EDGE ###
             # split the concepts by comma and loop through the list to add synsets
             for concept in concepts:
                 if "concepts" not in g.edges[start_id, end_id]:
@@ -91,6 +93,8 @@ def csvs_to_graphml(triple_node_file, text_node_file, concept_node_file,
             start_id = get_node_id(row[":START_ID"], entity_to_id)
             end_id = row[":END_ID"]
             g.add_edge(start_id, end_id, relation='mention in', type=row[":TYPE"])
+            
+            ### ADD FILE ID TO NODE ###
             if 'file_id' in g.nodes[start_id]:
                 g.nodes[start_id]['file_id'] += "," + str(end_id)
             else:
@@ -103,12 +107,12 @@ def csvs_to_graphml(triple_node_file, text_node_file, concept_node_file,
             end_id = row[":END_ID"] # end id is concept node id
             g.add_edge(start_id, end_id, relation=row["relation"], type=row[":TYPE"])
 
-            if 'file_id' in g.nodes[end_id]:
-                # split by comma and loop through the list to add file ids
-                for file_id in g.nodes[start_id]['file_id'].split(','):
-                    g.nodes[end_id]['file_id'] += "," + str(file_id)
-            else:
-                g.nodes[end_id]['file_id'] = g.nodes[start_id]['file_id']  
+            # if 'file_id' in g.nodes[end_id]:
+            #     # split by comma and loop through the list to add file ids
+            #     for file_id in g.nodes[start_id]['file_id'].split(','):
+            #         g.nodes[end_id]['file_id'] += "," + str(file_id)
+            # else:
+            #     g.nodes[end_id]['file_id'] = g.nodes[start_id]['file_id']  
     # Write to GraphML
     # check if output file directory exists
     output_dir = os.path.dirname(output_file)

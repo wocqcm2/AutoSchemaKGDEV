@@ -14,13 +14,13 @@ from pathlib import Path
 import torch
 from datasets import load_dataset
 from tqdm import tqdm
-from atlas_rag.util.json_repair import repair_json
-from atlas_rag.util.triple_generator import TripleGenerator
-from atlas_rag.util.json_2_csv import json2csv
+from atlas_rag.utils.json_repair import repair_json
+from atlas_rag.utils.triple_generator import TripleGenerator
+from atlas_rag.utils.json_2_csv import json2csv
 from atlas_rag.kg_construction.concept_generation import generate_concept
-from atlas_rag.util.merge_csv import merge_csv_files
-from atlas_rag.util.csv_to_graphml import csvs_to_graphml
-from atlas_rag.util.concept_to_csv import all_concept_triples_csv_to_csv
+from atlas_rag.utils.merge_csv import merge_csv_files
+from atlas_rag.utils.csv_to_graphml import csvs_to_graphml
+from atlas_rag.utils.concept_to_csv import all_concept_triples_csv_to_csv
 
 TRIPLE_INSTRUCTIONS = {
     "entity_relation": """Given a passage, summarize all the important entities and the relations between them in a concise manner. Relations should briefly capture the connections between entities, without repeating information from the head and tail entities. The entities should be as specific as possible. Exclude pronouns from being considered as entities. 
