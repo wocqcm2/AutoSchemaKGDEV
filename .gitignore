@@ -11,3 +11,5 @@ result
 *.graphml
 import/Dulce/kg_graphml/Dulce_graph.graphml
 src/ATLASMultiHopQA/data
+neo4j-server-dulce/
+import.report
