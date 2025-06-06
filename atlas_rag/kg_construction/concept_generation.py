@@ -187,7 +187,6 @@ def conceptualize(model: TripleGenerator,
         num_shards (int): Total number of shards.
     """
     # Set random seed for reproducibility
-    random.seed(8)
 
     # Print environment information
     # print("\n>>>Shard id:", shard)

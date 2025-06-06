@@ -1,8 +1,6 @@
 import networkx as nx
 import json
 from tqdm import tqdm
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import json
 from tqdm import tqdm
 from typing import Dict, List, Tuple

@@ -1,6 +1,5 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'  
-
+os.environ['CUDA_VISIBLE_DEVICES'] = '3' 
 from configparser import ConfigParser
 from openai import OpenAI
 from atlas_rag.retriever import NvEmbed, HippoRAG2Retriever
