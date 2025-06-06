@@ -34,7 +34,7 @@ llm_generator = LLMGenerator(client=client, model_name=reader_model_name)
 neo4j_uri = "bolt://localhost:8013" # use bolt port for driver connection
 user = "neo4j"
 password = "admin2024"
-keyword =   # keyword to identify the cc_en dataset
+keyword = 'cc_en' # can be wiki or pes2o  # keyword to identify the cc_en dataset
 driver = GraphDatabase.driver(neo4j_uri, auth=(user, password))
 
 node_index = faiss.read_index(f"/data/httsangaj/GraphRAG/import/text_nodes_cc_en_from_json_with_emb_non_norm.index", faiss.IO_FLAG_MMAP)
