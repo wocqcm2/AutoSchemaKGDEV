@@ -38,11 +38,11 @@ dependencies = [
     "openai>=1.0.0",
     "tenacity>=8.2.0",
     "pandas>=2.0.0",
-    "sentence-transformers>=2.7.0, <=3.0.0",
-    "transformers>=4.42.4, <=4.45.1",
+    "sentence-transformers>=2.7.0",
+    "transformers>=4.42.4",
     "datasets",
     "einops",
-    "accelerate>=0.26.0, <=1.7.0",
+    "accelerate>=0.26.0",
     "nltk",
     "graphdatascience"
 ]
