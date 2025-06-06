@@ -84,7 +84,10 @@ def compute_text_embeddings(text_list, sentence_encoder: BaseEmbeddingModel, bat
         text_embeddings.extend(sentence_encoder.encode(batch, normalize_embeddings = normalize_embeddings))
     return text_embeddings
 
-def create_embeddings_and_index(sentence_encoder, model_name: str, working_directory: str, keyword: str, include_events: bool, include_concept: bool, normalize_embeddings: bool = True, batch_size = 40):
+def create_embeddings_and_index(sentence_encoder, model_name: str, working_directory: str, keyword: str, include_events: bool, include_concept: bool,
+                                 normalize_embeddings: bool = True, 
+                                 text_batch_size = 40,
+                                 node_and_edge_batch_size = 256):
     # Extract the last part of the encoder_model_name for simplified reference
     encoder_model_name = model_name.split('/')[-1]
     
@@ -148,7 +151,7 @@ def create_embeddings_and_index(sentence_encoder, model_name: str, working_direc
 
     if not os.path.exists(text_index_path) or not os.path.exists(text_embeddings_path):
         print("Computing text embeddings...")
-        text_embeddings = compute_text_embeddings(original_text_list, sentence_encoder, batch_size, normalize_embeddings)  # Assumes this function is defined
+        text_embeddings = compute_text_embeddings(original_text_list, sentence_encoder, text_batch_size, normalize_embeddings)  # Assumes this function is defined
         text_faiss_index = build_faiss_index(text_embeddings)  # Assumes this function is defined
         faiss.write_index(text_faiss_index, text_index_path)
         with open(text_embeddings_path, "wb") as f:
@@ -161,7 +164,7 @@ def create_embeddings_and_index(sentence_encoder, model_name: str, working_direc
 
     if not os.path.exists(node_embeddings_path) or not os.path.exists(edge_embeddings_path):
         print("Node and edge embeddings not found, computing...")
-        node_embeddings, edge_embeddings = compute_graph_embeddings(node_list_string, edge_list_string, sentence_encoder, batch_size, normalize_embeddings=normalize_embeddings)  # Assumes this function is defined
+        node_embeddings, edge_embeddings = compute_graph_embeddings(node_list_string, edge_list_string, sentence_encoder, node_and_edge_batch_size, normalize_embeddings=normalize_embeddings)  # Assumes this function is defined
     else:
         with open(node_embeddings_path, "rb") as f:
             node_embeddings = pickle.load(f)

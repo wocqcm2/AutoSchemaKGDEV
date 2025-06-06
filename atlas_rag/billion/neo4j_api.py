@@ -3,68 +3,55 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Response
 from typing import List, Literal, Optional, Union
 from pydantic import BaseModel, Field
-import torch
-from sentence_transformers import SentenceTransformer
-from openai import OpenAI
-import configparser
-from api_neo4j_retriever_model import load_api_start_up, LLMGenerator, MiniLM
-import time
+from logging import Logger
+from atlas_rag.retriever.embedding_model import BaseEmbeddingModel
+from atlas_rag.billion.retreiver import start_up_large_kg_model
+from atlas_rag.reader import LLMGenerator
+from neo4j import Driver
 
-rag_exemption_list = [
+
+class LargeKGConfig:
+    keyword = "largekg"
+    retreiver_llm_generator : LLMGenerator = None
+    reader_llm_generator : LLMGenerator = None
+    sentence_encoder : BaseEmbeddingModel= None
+    neo4j_driver : Driver = None
+    data = {}
+    logger : Logger = None
+
+    rag_exemption_list = [
     """I will show you a question and a list of text segments. All the segments can be concatenated to form a complete answer to the question. Your task is to assess whether each text segment contains errors or not. \nPlease generate using the following format:\nAnswer: List the ids of the segments with errors (separated by commas). Please only output the ids, no more details. If all the segments are correct, output \"ALL_CORRECT\".\n\nHere is one example:\nQuestion: 8923164*7236571?\nSegments: \n1. The product of 8923164 and 7236571 is: 6,461,216,222,844\n2. So, 8923164 multiplied by 7236571 is equal to 6,461,216,222,844.\n\nBelow are your outputs:\nAnswer: 1,2\nIt means segment 1,2 contain errors.""",
     """I will show you a question and a list of text segments. All the segments can be concatenated to form a complete answer to the question. Your task is to determine whether each text segment contains factual errors or not. \nPlease generate using the following format:\nAnswer: List the ids of the segments with errors (separated by commas). Please only output the ids, no more details. If all the segments are correct, output \"ALL_CORRECT\".\n\nHere is one example:\nQuestion: A company offers a 10% discount on all purchases over $100. A customer purchases three items, each costing $80. Does the customer qualify for the discount?\nSegments: \n1. To solve this problem, we need to use deductive reasoning. We know that the company offers a 10% discount on purchases over $100, so we need to calculate the total cost of the customer's purchase.\n2. The customer purchased three items, each costing $80, so the total cost of the purchase is: 3 x $80 = $200.\n3. Since the total cost of the purchase is greater than $100, the customer qualifies for the discount. \n4. To calculate the discounted price, we can multiply the total cost by 0.1 (which represents the 10% discount): $200 x 0.1 = $20.\n5. So the customer is eligible for a discount of $20, and the final cost of the purchase would be: $200 - $20 = $180.\n6. Therefore, the customer would pay a total of $216 for the three items with the discount applied.\n\nBelow are your outputs:\nAnswer: 2,3,4,5,6\nIt means segment 2,3,4,5,6 contains errors.""",
-]
+    ]
 
-mmlu_check_list = [
-    """Given the following question and four candidate answers (A, B, C and D), choose the answer."""
-]
-
-
-config = configparser.ConfigParser()
-config.read('config.ini')
-
-import logging
-from logging.handlers import RotatingFileHandler
-log_file_path = './log/demo.log'
-handler = RotatingFileHandler(
-    log_file_path, 
-    maxBytes=50 * 1024 * 1024,  # 50 MB limit
-    backupCount=5               # Keep 5 backup log files
-)
-
-logging.basicConfig(
-    handlers=[handler],
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+    mmlu_check_list = [
+        """Given the following question and four candidate answers (A, B, C and D), choose the answer."""
+    ]
 
 app = FastAPI()
-
-MODEL_PATH = "meta-llama/Llama-3.3-70B-Instruct-Turbo"
-device = torch.device('cuda:0')
+large_kg_config = LargeKGConfig()
 largekg_retriever = None
-llm_generator = None
+
 @app.on_event("startup")
 async def startup():
-    global largekg_retriever, llm_generator
-    sentence_encoder_model = SentenceTransformer('all-MiniLM-L12-v2', device=device, truncate_dim=32)
-    sentence_encoder = MiniLM(sentence_encoder_model)
-    client = OpenAI(api_key=config['settings']['DEEPINFRA_API_KEY'],base_url="https://api.deepinfra.com/v1/openai")
-    llm_generator = LLMGenerator(None, client, False, True)
-    largekg_retriever = load_api_start_up(sentence_encoder, llm_generator, "demo")
-    
+    global large_kg_config, largekg_retriever
+    largekg_retriever = start_up_large_kg_model(
+        LargeKGConfig.keyword,
+        LargeKGConfig.retreiver_llm_generator,
+        LargeKGConfig.sentence_encoder,
+        LargeKGConfig.neo4j_driver,
+        LargeKGConfig.logger
+    )
 
 @app.on_event("shutdown")
 async def shutdown():
-    global largekg_retriever, llm_generator
+    global large_kg_config
     print("Shutting down the model...")
-    # shut down the retrievers for the RAG model
-    del largekg_retriever
-
+    del large_kg_config
 
 class ModelCard(BaseModel):
     id: str
-    object: str="model"
+    object: str = "model"
     created: int = Field(default_factory=lambda: int(time.time()))
     owned_by: str = "test"
     root: Optional[str] = None
@@ -89,7 +76,6 @@ class UsageInfo(BaseModel):
     total_tokens: int = 0
     completion_tokens: Optional[int] = 0
 
-
 class ChatCompletionRequest(BaseModel):
     model: str
     messages: List[ChatMessage]
@@ -100,13 +86,11 @@ class ChatCompletionRequest(BaseModel):
     tools: Optional[Union[dict, List[dict]]] = None
     repetition_penalty: Optional[float] = 1.1
     retriever: Optional[str] = "largekg"
-    knowledge_graph: Optional[str] =  "demo"
     retriever_config: Optional[dict] = {
-            "topN":5, 
-            "number_of_source_nodes_per_ner": 10, 
-            "sampling_area": 250
-            }
-
+        "topN": 5,
+        "number_of_source_nodes_per_ner": 10,
+        "sampling_area": 250
+    }
     class Config:
         extra = "allow"
     
@@ -133,21 +117,16 @@ class ChatCompletionResponse(BaseModel):
 async def health_check():
     return Response(status_code=200)
 
-@app.get("/v1/models", response_model=ModelList)
-async def list_models():
-    model_card = ModelCard(
-        id=MODEL_PATH
-    )
-    return ModelList(data=[model_card])
 
 @app.post("/v1/chat/completions", response_model=ChatCompletionResponse)
 async def create_chat_completion(request: ChatCompletionRequest):
-    global largekg_retriever, llm_generator
+    global large_kg_config, largekg_retriever
     try:
         if len(request.messages) < 1 or request.messages[-1].role == "assistant":
             print(request)
             # raise HTTPException(status_code=400, detail="Invalid request")
-        logging.info(f"Request: {request}")
+        if large_kg_config.logger is not None:
+            large_kg_config.logger.info(f"Request: {request}")
         gen_params = dict(
             messages=request.messages,
             temperature=0.8,
@@ -158,66 +137,28 @@ async def create_chat_completion(request: ChatCompletionRequest):
             repetition_penalty=request.repetition_penalty,
             tools=request.tools,
             retriever=request.retriever,
-            knowledge_graph=request.knowledge_graph,
             retriever_config=request.retriever_config
         )
 
-        # rag related params
-
-
-        # print("RETRIEVER_MSG: ", retriever_msg)
-
-        retriever = request.retriever
-        retriever_config = request.retriever_config
-        knowledge_graph = request.knowledge_graph
-        logging.info(f"Knowledge Graph: {knowledge_graph}")
-        logging.info(f"Retriever: {retriever}")
-        # request.messages = request.messages[1:]
-
         last_message = request.messages[-1]
+        system_prompt = 'You are a helpful assistant.'
+        question = last_message.content if last_message.role == 'user' else request.messages[-2].content
 
-        system_prompt = 'You are a helpful asssistant.'
-        if last_message.role == 'assistant':
-            question = request.messages[-2].content
-        else:
-            system_prompt = request.messages[-2].content
-            question = request.messages[-1].content
-
-        is_exemption = False 
-        for exemption in rag_exemption_list:
-            if exemption in question:
-                is_exemption = True
-                break  
-
-        is_mmlu = False
-        for exemption in mmlu_check_list:
-            if exemption in question:
-                is_mmlu = True
-                break
+        is_exemption = any(exemption in question for exemption in LargeKGConfig.rag_exemption_list)
+        is_mmlu = any(exemption in question for exemption in LargeKGConfig.mmlu_check_list)
+        
         if is_mmlu:
             rag_text = question 
         else:
             parts = question.rsplit("Question:", 1)
-            if len(parts) > 1:
-                rag_text = "Question:" + parts[-1]
-            else:
-                rag_text = None
-        logging.info(f"RAG_TEXT: {rag_text}, EXEMPTION: {is_exemption}, MMLU: {is_mmlu}, RETRIEVER: {retriever}")
+            rag_text = "Question:" + parts[-1] if len(parts) > 1 else None
+
         if not is_exemption:
-            topN = retriever_config.get("topN", 5)
-            number_of_source_nodes_per_ner = retriever_config.get("number_of_source_nodes_per_ner", 5)
-            sampling_area = retriever_config.get("sampling_area", 100)
-            largekg_retriever.set_resources(knowledge_graph)
-            largekg_retriever.set_model('meta-llama/Llama-3.3-70B-Instruct-Turbo')
-            if rag_text is None:
-                passages = None
-            else:
-                passages, scores = largekg_retriever.retrieve_passages(rag_text, topN, number_of_source_nodes_per_ner, sampling_area)
-            if passages is None or len(passages) == 0:
-                context = "No retrieved context, Please answer the question with your own knowledge."
-            else:
-                context = "\n".join([f"Passage {i+1}: {text}" for i, text in enumerate(reversed(passages))])
-            logging.info(f"Retrieved Context: {context}")
+            topN = request.retriever_config.get("topN", 5)
+            number_of_source_nodes_per_ner = request.retriever_config.get("number_of_source_nodes_per_ner", 5)
+            sampling_area = request.retriever_config.get("sampling_area", 100)
+            passages = None if rag_text is None else largekg_retriever.retrieve_passages(rag_text, topN, number_of_source_nodes_per_ner, sampling_area)
+            context = "No retrieved context, Please answer the question with your own knowledge." if not passages else "\n".join([f"Passage {i+1}: {text}" for i, text in enumerate(reversed(passages))])
             
         if is_mmlu:
             rag_chat_content = [
@@ -253,9 +194,10 @@ async def create_chat_completion(request: ChatCompletionRequest):
                     "content": f"""{question} """
                 }
             ]
-        logging.info(rag_chat_content)
-        llm_generator.model_name = 'meta-llama/Meta-Llama-3.1-8B-Instruct'
-        response = llm_generator.generate_with_custom_messages(
+        if large_kg_config.logger is not None:
+            large_kg_config.logger.info(rag_chat_content)
+
+        response = large_kg_config.reader_llm_generator.generate_with_custom_messages(
             custom_messages=rag_chat_content,
             max_new_tokens=gen_params["max_tokens"],
             temperature=gen_params["temperature"],
@@ -281,6 +223,11 @@ async def create_chat_completion(request: ChatCompletionRequest):
         print("Catched error")
         raise HTTPException(status_code=500, detail=str(e))
 
-if __name__ == "__main__":
-    uvicorn.run("app_neo4j_retriever_demo:app", host="0.0.0.0", port=10090, reload=False)
+
+def start_app(user_config, app_name="app.main:app", host="0.0.0.0", port=10090, reload=False):
+    """Function to start the FastAPI application."""
+    global large_kg_config
+    if user_config:
+        large_kg_config = user_config  # Use the passed context if provided
+    uvicorn.run(app_name, host=host, port=port, reload=reload)
     

@@ -270,6 +270,9 @@ Billion Level Graph Workflow:
 - With emb, faiss index  **Dulce Done**
 - without emb, numeric id for neo4j import  **Dulce Done**
 
+1. Packaging step 6 of LKG construction
+2. Packaging LKG retriever
+
 
 
 

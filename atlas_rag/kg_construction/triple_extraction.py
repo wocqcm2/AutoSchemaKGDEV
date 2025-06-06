@@ -419,7 +419,7 @@ class KnowledgeGraphExtractor:
     def generate_concept_csv_temp(self, batch_size: int = 64):
         generate_concept(
             model=self.model,
-            input_dir=f"{self.config.output_directory}/triples_csv/missing_concepts_{self.config.filename_pattern}_from_json.csv",
+            input_file=f"{self.config.output_directory}/triples_csv/missing_concepts_{self.config.filename_pattern}_from_json.csv",
             output_folder=f"{self.config.output_directory}/concepts",
             output_file="concept.json",
             logging_file=f"{self.config.output_directory}/concepts/logging.txt",

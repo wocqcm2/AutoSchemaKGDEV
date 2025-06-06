@@ -4,7 +4,9 @@ from tenacity import retry, wait_fixed, stop_after_delay, stop_after_attempt
 from copy import deepcopy
 from atlas_rag.retriever.filter_template import messages as filter_messages, validate_filter_output
 from atlas_rag.retriever.rag_qa_prompt import prompt_template
+from atlas_rag.billion.prompt_template import ner_prompt, validate_keyword_output
 from transformers.pipelines import Pipeline
+import jsonschema
 
 # from https://github.com/OSU-NLP-Group/HippoRAG/blob/main/src/qa/qa_reader.py
 # prompts from hipporag qa_reader
@@ -189,4 +191,24 @@ class LLMGenerator():
             {"role": "user", "content": f"Extract the named entities from: {text}"},
         ]
         return self._generate_response(messages)
+    
+    def large_kg_ner(self, text):
+        messages = deepcopy(ner_prompt)
+        messages.append(
+            {
+                "role": "user", 
+                "content": f"[[ ## question ## ]]\n{text}" 
+            }
+        )
+        
+        # Generate raw response from LLM
+        raw_response = self._generate_response(messages, max_new_tokens=4096, temperature=0.7, frequency_penalty=1.1, response_format={"type": "json_object"})
+        
+        try:
+            # Validate and clean the response
+            cleaned_data = validate_keyword_output(raw_response)
+            return cleaned_data['keywords']
+        
+        except (json.JSONDecodeError, jsonschema.ValidationError) as e:
+            return []  # Fallback to empty list or raise custom exception
  
