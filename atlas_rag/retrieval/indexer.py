@@ -2,50 +2,9 @@ import os
 import pickle
 import networkx as nx
 from tqdm import tqdm
-from atlas_rag.retriever.embedding_model import BaseEmbeddingModel
-from transformers import AutoModel
+from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
 import faiss
 import numpy as np
-import argparse
-
-        
-# inspect kg
-def inspect_kg_nodes(keyword: str) -> None:
-    graph_dir = f"{output_directory}/knowledge_graphs_in_pickle/{keyword}_kg_from_corpus.pkl"
-    
-    with open(graph_dir, "rb") as f:
-        KG: nx.DiGraph = pickle.load(f)
-        
-    node_type_samples = {}
-    
-    for node, data in tqdm(KG.nodes(data=True)):
-        node_type = data.get('type', 'No type specified')
-        node_type_samples[node_type] = (node, data)  # Save one sample for the node type
-
-    # Print samples for each node type
-    for node_type, (node, data) in node_type_samples.items():
-        print(f"Sample for node type '{node_type}': Node: {node}, Data: {data}")
-
-def inspect_kg_edges(keyword: str):
-    graph_dir = f"{output_directory}/knowledge_graphs_in_pickle/{keyword}_kg_from_corpus.pkl"
-    
-    with open(graph_dir, "rb") as f:
-        KG: nx.DiGraph = pickle.load(f)
-        
-    edge_type_samples = {}
-    
-    for u, v, data in tqdm(KG.edges(data=True)):
-        edge_type = data.get('type', 'No type specified')
-
-        edge_type_samples[edge_type] = (u, v, data)  # Save one sample for the edge type
-
-    # Print samples for each edge type
-    for edge_type, (u, v, data) in edge_type_samples.items():
-        print(f"Sample for edge type '{edge_type}': Edge: ({u}, {v}), Data: {data}")
-
-def add_eos(input_examples, model):
-  input_examples = [input_example + model.tokenizer.eos_token for input_example in input_examples]
-  return input_examples
 
 def compute_graph_embeddings(node_list, edge_list_string, sentence_encoder: BaseEmbeddingModel, batch_size=40, normalize_embeddings: bool = False):
     # Encode in batches
@@ -170,7 +129,7 @@ def create_embeddings_and_index(sentence_encoder, model_name: str, working_direc
             node_embeddings = pickle.load(f)
         with open(edge_embeddings_path, "rb") as f:
             edge_embeddings = pickle.load(f)
-        print("Graph embeddings computed")
+        print("Graph embeddings already computed")
     
     if not os.path.exists(node_index_path):
         node_faiss_index = build_faiss_index(node_embeddings)
@@ -212,105 +171,3 @@ def create_embeddings_and_index(sentence_encoder, model_name: str, working_direc
         "edge_list": edge_list,
         "text_dict": original_text_dict_with_node_id,
     }
-
-def load_all_data(keyword, include_events, include_concept, encoder_model_name):
-    # Define paths for loading data
-    node_index_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_node_faiss.index"
-    node_list_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_node_list.pkl"
-    edge_index_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_edge_faiss.index"
-    edge_list_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_edge_list.pkl"
-    node_embeddings_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_node_embeddings.pkl"
-    edge_embeddings_path = f"{output_directory}/precompute/{keyword}_event{include_events}_concept{include_concept}_{encoder_model_name}_edge_embeddings.pkl"
-    text_embeddings_path = f"{output_directory}/precompute/{keyword}_{encoder_model_name}_text_embeddings.pkl"
-    text_index_path = f"{output_directory}/precompute/{keyword}_text_faiss.index"
-    
-    text_list_path = f"{output_directory}/precompute/{keyword}_text_list.pkl"
-    original_text_dict_path = f"{output_directory}/precompute/{keyword}_original_text_dict_with_node_id.pkl"
-        
-    
-    # Check if all required files exist
-    required_paths = [
-    text_index_path,
-    node_list_path, edge_list_path,
-    text_list_path, original_text_dict_path,
-    node_index_path, edge_index_path,
-    text_embeddings_path, node_embeddings_path, edge_embeddings_path
-    ]
-
-    # Check if all required files exist
-    missing_paths = [path for path in required_paths if not os.path.exists(path)]
-
-    if missing_paths:
-        print("Missing files:")
-        for path in missing_paths:
-            print(path)
-        raise FileNotFoundError("One or more required files are missing.")
-    
-    # Load data
-    text_faiss_index = faiss.read_index(text_index_path)
-
-    with open(node_list_path, "rb") as f:
-        node_list = pickle.load(f)
-
-    with open(edge_list_path, "rb") as f:
-        edge_list = pickle.load(f)
-
-    with open(text_list_path, "rb") as f:
-        original_text_list = pickle.load(f)
-
-    with open(original_text_dict_path, "rb") as f:
-        original_text_dict_with_node_id = pickle.load(f)
-
-    node_faiss_index = faiss.read_index(node_index_path)
-    edge_faiss_index = faiss.read_index(edge_index_path)
-
-    # Load text embeddings
-    with open(text_embeddings_path, "rb") as f:
-        text_embeddings = pickle.load(f)
-    with open(node_embeddings_path, "rb") as f:
-        node_embeddings = pickle.load(f)
-    with open(edge_embeddings_path, "rb") as f:
-        edge_embeddings = pickle.load(f)
-    return {
-        "text_faiss_index": text_faiss_index,
-        "node_list": node_list,
-        "edge_list": edge_list,
-        "original_text_list": original_text_list,
-        "original_text_dict_with_node_id": original_text_dict_with_node_id,
-        "node_faiss_index": node_faiss_index,
-        "edge_faiss_index": edge_faiss_index,
-        "text_embeddings": text_embeddings,
-        "node_embeddings": node_embeddings,
-        "edge_embeddings": edge_embeddings,
-    }
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--keyword', default='musique', type=str, help='Keyword to inspect the knowledge graph')
-    parser.add_argument('--include_events', action='store_true', help='Include events in the knowledge graph')
-    parser.add_argument('--include_concept', action='store_true', help='Include concepts in the knowledge graph')
-    parser.add_argument('--encoder_model_name', default='nvidia/NV-Embed-v2', type=str, help='Encoder model name')
-    parser.add_argument('--output_directory', default='./processed_data/precompute', type=str, help='Output directory for precomputed data')
-
-    args = parser.parse_args()
-    keyword = args.keyword
-    include_events = args.include_events
-    include_concept = args.include_concept
-    encoder_model_name = args.encoder_model_name
-    output_directory = args.output_directory
-    is_add_eos = encoder_model_name == "nvidia/NV-Embed-v2"
-
-    # Load model
-    if is_add_eos:
-        sentence_encoder = AutoModel.from_pretrained(encoder_model_name, device_map="auto", trust_remote_code=True)
-    else:
-        sentence_encoder = BaseEmbeddingModel(encoder_model_name, device="cuda:0")
-
-    create_embeddings_and_index(
-        sentence_encoder=sentence_encoder,
-        model_name=encoder_model_name,
-        output_directory=output_directory,
-        keyword=keyword,
-        include_events=include_events,
-        include_concept=include_concept
-    )

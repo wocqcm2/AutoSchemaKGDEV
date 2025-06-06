@@ -2,14 +2,14 @@ from openai import OpenAI
 from atlas_rag.reader import LLMGenerator
 from configparser import ConfigParser
 from sentence_transformers import SentenceTransformer
-from atlas_rag.retriever import SentenceEmbedding, NvEmbed
+from atlas_rag.retrieval import SentenceEmbedding, NvEmbed
 from neo4j import GraphDatabase
 import faiss
 import datetime
 import logging
 from logging.handlers import RotatingFileHandler
 import os
-from atlas_rag.billion.retreiver import LargeKGRetriever
+from atlas_rag.billion.retriever import LargeKGRetriever
 from atlas_rag.billion.neo4j_api import LargeKGConfig, start_app
 
 # use sentence embedding if you want to use sentence transformer

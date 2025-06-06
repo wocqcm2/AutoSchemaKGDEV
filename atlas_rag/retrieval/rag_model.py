@@ -6,7 +6,7 @@ from tqdm import tqdm
 from typing import Dict, List, Tuple
 import networkx as nx
 import numpy as np
-from atlas_rag.retriever.embedding_model import BaseEmbeddingModel
+from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
 from atlas_rag.reader.llm_generator import LLMGenerator
 from logging import Logger
 from dataclasses import dataclass
@@ -58,14 +58,14 @@ class BaseEdgeRetriever(BaseRetriever):
         for key, value in kwargs.items():
             setattr(self, key, value)
     
-    def retrive(self, query, topk=5, **kwargs) -> Tuple[List[str], List[str]]:
+    def retrieve(self, query, topk=5, **kwargs) -> Tuple[List[str], List[str]]:
         raise NotImplementedError("This method should be overridden by subclasses.")
 
 class BasePassageRetriever(BaseRetriever):
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
-    def retrive(self, query, topk=5, **kwargs) -> Tuple[List[str], List[str]]:
+    def retrieve(self, query, topk=5, **kwargs) -> Tuple[List[str], List[str]]:
         raise NotImplementedError("This method should be overridden by subclasses.")
 
 class SimpleGraphRetriever(BaseEdgeRetriever):
