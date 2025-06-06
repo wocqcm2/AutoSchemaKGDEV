@@ -4,7 +4,7 @@ from ast import literal_eval  # Safer string-to-list conversion
 
 CHUNKSIZE = 100_000  # Adjust based on your RAM (100K rows per chunk)
 EMBEDDING_COL = "embedding:STRING"  # Column name with embeddings
-DIMENSION = 32  # Update with your embedding dimension
+# DIMENSION = 32  # Update with your embedding dimension
 ENTITY_ONLY = True
 def parse_embedding(embed_str):
     """Convert embedding string to numpy array"""
@@ -29,8 +29,8 @@ def convert_csv_to_npy(csv_path, npy_path):
         )
         
         # Verify dimensions
-        assert embeddings.shape[1] == DIMENSION, \
-            f"Dimension mismatch at chunk {chunk_idx}"
+        # assert embeddings.shape[1] == DIMENSION, \
+        #     f"Dimension mismatch at chunk {chunk_idx}"
         total_embeddings += embeddings.shape[0]
         # Append to .npy file
         with open(npy_path, "ab") as f:

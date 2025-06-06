@@ -7,3 +7,6 @@ src/ATLASMultiHopQA/processed_data/
 *.index
 benchmark_data
 result
+*.npy
+*.graphml
+import/Dulce/kg_graphml/Dulce_graph.graphml

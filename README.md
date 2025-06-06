@@ -263,14 +263,13 @@ Haoyu: haoyuhuang@link.cuhk.edu.hk
 - [ ] We are working on demo and tutorials for easier end-to-end RAG with our framework
 
 Billion Level Graph Workflow:
-- Triples Json Generation
-- Json to csv
-- CSV + concept -> all csv
-- Calculate embedding -> to get both (without emb, with emb csv)
-- With emb, faiss index
-- without emb, numeric id for neo4j import
+- Triples Json Generation **Dulce Done**
+- Json to csv **Dulce Done**
+- CSV + concept -> all csv **Dulce Done**
+- Calculate embedding -> to get both (without emb, with emb csv) **Dulce Done**
+- With emb, faiss index  **Dulce Done**
+- without emb, numeric id for neo4j import  **Dulce Done**
 
 
 
-## Citation
 

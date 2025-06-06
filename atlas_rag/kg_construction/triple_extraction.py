@@ -23,6 +23,12 @@ from atlas_rag.utils.csv_to_graphml import csvs_to_graphml
 from atlas_rag.utils.concept_to_csv import all_concept_triples_csv_to_csv
 from atlas_rag.utils.csv_add_column import add_csv_columns
 from atlas_rag.utils.convert_csv2npy import convert_csv_to_npy
+from atlas_rag.utils.compute_embedding import compute_embedding
+from atlas_rag.utils.create_index import build_faiss_from_npy
+
+from sentence_transformers import SentenceTransformer
+from transformers import AutoModel
+
 
 
 
@@ -458,17 +464,65 @@ class KnowledgeGraphExtractor:
     def compute_embedding(self, encoder_model_name="all-MiniLM-L12-v2"):
         # TODO: compute embedding for the graph
 
-        # if encoder_model_name == "nvidia/NV-Embed-v2":
-        #     sentence_encdoder = AutoModel.from_pretrained("nvidia/NV-Embed-v2", device_map="auto", trust_remote_code=True)
-        #     encoder_model_name = "NV-Embed-v2"
-        # else:
-        #     sentence_encdoder = SentenceTransformer(encoder_model_name, device="cuda:0")
-        pass
+        if encoder_model_name == "nvidia/NV-Embed-v2":
+            sentence_encoder = AutoModel.from_pretrained("nvidia/NV-Embed-v2", device_map="auto", trust_remote_code=True)
+            encoder_model_name = "NV-Embed-v2"
+        else:
+            sentence_encoder = SentenceTransformer(encoder_model_name, device="cuda:0")
+        
 
-    def create_faiss_index(self):
-        # TODO: create faiss index for the graph
-        pass
+        compute_embedding(
+            model=sentence_encoder,
+            node_csv_without_emb=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_without_emb.csv",
+            node_csv_file=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_with_emb.csv",
+            edge_csv_without_emb=f"{self.config.output_directory}/concept_csv/triple_edges_{self.config.filename_pattern}_from_json_with_concept.csv",
+            edge_csv_file=f"{self.config.output_directory}/triples_csv/triple_edges_{self.config.filename_pattern}_from_json_with_concept_with_emb.csv",
+            text_node_csv_without_emb=f"{self.config.output_directory}/triples_csv/text_nodes_{self.config.filename_pattern}_from_json.csv",
+            text_node_csv=f"{self.config.output_directory}/triples_csv/text_nodes_{self.config.filename_pattern}_from_json_with_emb.csv",
+        )
 
+    def create_faiss_index(self, index_type="HNSW,Flat"):
+        """
+        Create faiss index for the graph, for index type, see https://github.com/facebookresearch/faiss/wiki/Faiss-indexes
+
+        "IVF65536_HNSW32,Flat" for 1M to 10M nodes
+
+        "HNSW,Flat" for toy dataset
+
+        """
+        # Convert csv to npy
+        convert_csv_to_npy(
+            csv_path=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_with_emb.csv",
+            npy_path=f"{self.config.output_directory}/vector_index/triple_nodes_{self.config.filename_pattern}_from_json_with_emb.npy",
+        )
+
+        convert_csv_to_npy(
+            csv_path=f"{self.config.output_directory}/triples_csv/text_nodes_{self.config.filename_pattern}_from_json_with_emb.csv",
+            npy_path=f"{self.config.output_directory}/vector_index/text_nodes_{self.config.filename_pattern}_from_json_with_emb.npy",
+        )
+
+        convert_csv_to_npy(
+            csv_path=f"{self.config.output_directory}/triples_csv/triple_edges_{self.config.filename_pattern}_from_json_with_concept_with_emb.csv",
+            npy_path=f"{self.config.output_directory}/vector_index/triple_edges_{self.config.filename_pattern}_from_json_with_concept_with_emb.npy",
+        )
+
+        build_faiss_from_npy(
+            index_type=index_type,
+            index_path=f"{self.config.output_directory}/vector_index/triple_nodes_{self.config.filename_pattern}_from_json_with_emb_non_norm.index",
+            npy_path=f"{self.config.output_directory}/vector_index/triple_nodes_{self.config.filename_pattern}_from_json_with_emb.npy",
+        )
+
+        build_faiss_from_npy(
+            index_type=index_type,
+            index_path=f"{self.config.output_directory}/vector_index/text_nodes_{self.config.filename_pattern}_from_json_with_emb_non_norm.index",
+            npy_path=f"{self.config.output_directory}/vector_index/text_nodes_{self.config.filename_pattern}_from_json_with_emb.npy",
+        )
+
+        build_faiss_from_npy(
+            index_type=index_type,
+            index_path=f"{self.config.output_directory}/vector_index/triple_edges_{self.config.filename_pattern}_from_json_with_concept_with_emb_non_norm.index",
+            npy_path=f"{self.config.output_directory}/vector_index/triple_edges_{self.config.filename_pattern}_from_json_with_concept_with_emb.npy",
+        )
     
        
     
