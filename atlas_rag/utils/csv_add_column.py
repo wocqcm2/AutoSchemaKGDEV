@@ -1,6 +1,4 @@
-import os
 import csv
-from neo4j import GraphDatabase
 from tqdm import tqdm
 
 def check_created_csv_header(keyword, csv_dir):

@@ -1,9 +1,5 @@
 import csv
 
-
-from sentence_transformers import SentenceTransformer
-from transformers import AutoModel
-
 def compute_embedding(model, node_csv_without_emb, node_csv_file, edge_csv_without_emb, edge_csv_file, text_node_csv_without_emb, text_node_csv):
 
 
@@ -126,20 +122,4 @@ def compute_embedding(model, node_csv_without_emb, node_csv_file, edge_csv_witho
                 batch_rows = []
 
 
-if __name__ == "__main__":
-    model = SentenceTransformer("all-MiniLM-L12-v2")
-
-
-    output_directory = "/home/jbai/AutoSchemaKG/import/Dulce"
-    filename_pattern = "Dulce"
-
-    compute_embedding(
-            model=model,
-            node_csv_without_emb=f"{output_directory}/triples_csv/triple_nodes_{filename_pattern}_from_json_without_emb.csv",
-            node_csv_file=f"{output_directory}/triples_csv/triple_nodes_{filename_pattern}_from_json_with_emb.csv",
-            edge_csv_without_emb=f"{output_directory}/concept_csv/triple_edges_{filename_pattern}_from_json_with_concept.csv",
-            edge_csv_file=f"{output_directory}/triples_csv/triple_edges_{filename_pattern}_from_json_with_concept_with_emb.csv",
-            text_node_csv_without_emb=f"{output_directory}/triples_csv/text_nodes_{filename_pattern}_from_json.csv",
-            text_node_csv=f"{output_directory}/triples_csv/text_nodes_{filename_pattern}_from_json_with_emb.csv",
-        )
    

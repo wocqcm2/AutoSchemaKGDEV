@@ -3,7 +3,6 @@ import os
 import json
 import networkx as nx
 from tqdm import tqdm
-import random
 import logging
 from logging import Logger
 from logging.handlers import RotatingFileHandler

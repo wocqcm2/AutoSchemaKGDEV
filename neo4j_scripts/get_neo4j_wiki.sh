@@ -1,6 +1,6 @@
 #!/bin/bash
 ulimit -n 65535
-NEO4J_VERSION=5.24.1
+NEO4J_VERSION=2025.03.0
 export NEO4J_HOME=`realpath ${PWD}/../neo4j-server-wiki`
 export NEO4J_DATA_DIR=`realpath ${NEO4J_HOME}/data`
 
@@ -18,7 +18,7 @@ rm -rf $NEO4J_DATA_DIR
 
 
 # Create APOC configuration
-APOC_VERSION=5.23.0
+APOC_VERSION=2025.03.0
 APOC_FILE=apoc-${APOC_VERSION}-core.jar
 if [ ! -f ${NEO4J_HOME}/plugins/${APOC_FILE} ]; then
     wget -P ${NEO4J_HOME}/plugins/ https://github.com/neo4j/apoc/releases/download/${APOC_VERSION}/${APOC_FILE}
@@ -27,7 +27,7 @@ echo "apoc.export.file.enabled=true" >> ${NEO4J_HOME}/conf/apoc.conf
 echo "apoc.import.file.use_neo4j_config=false" >> ${NEO4J_HOME}/conf/apoc.conf
 
 # GDS Plugin Installation
-GDS_VERSION=2.10.1
+GDS_VERSION=2.16.0
 GDS_FILE=neo4j-graph-data-science-${GDS_VERSION}.jar
 if [ ! -f ${NEO4J_HOME}/plugins/${GDS_FILE} ]; then
     wget -P ${NEO4J_HOME}/plugins/ https://github.com/neo4j/graph-data-science/releases/download/${GDS_VERSION}/neo4j-graph-data-science-${GDS_VERSION}.jar

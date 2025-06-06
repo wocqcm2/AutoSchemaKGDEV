@@ -5,7 +5,6 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import json
 from tqdm import tqdm
-import random
 from typing import Dict, List, Tuple
 import networkx as nx
 import numpy as np

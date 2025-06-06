@@ -1,7 +1,6 @@
 from tqdm import tqdm
 import random
 import logging
-from transformers import set_seed
 import csv
 import os
 import hashlib
@@ -251,7 +250,6 @@ def generate_concept(model: TripleGenerator,
 
 
 
-    set_seed(42)
     
     output_file = output_folder + f"/{output_file.rsplit('.', 1)[0]}_shard_{shard}.csv"
     with open(output_file, "w") as file:

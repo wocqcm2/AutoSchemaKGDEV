@@ -1,0 +1,46 @@
+[build-system]
+requires = ["flit_core >=3.12.0,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "atlas-rag"
+version = "2025.0.0"
+authors = [
+    {name="Jiaxin Bai", email="jbai@connect.ust.hk"},
+    {name="Hong Ting TSANG", email="httsangaj@connect.ust.hk"},
+    {name="Haoyu Huang", email="haoyuhuang@link.cuhk.edu.hk"},
+]
+description = "AutoSchemaKG, a framework for fully autonomous knowledge graph construction that eliminates the need for predefined schemas."
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = [
+    "retrieval-augmented-generation",
+    "knowledge-graph",
+    "nlp",
+]
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+    "numpy",
+    "networkx",
+    "tqdm",
+    "jsonschema",
+    "neo4j",
+    "fastapi",
+    "uvicorn",
+    "openai",
+    "tenacity",
+    "pandas",
+    "sentence-transformers>=2.7.0",
+    "transformers>=4.42.4",
+    "flash-attn>=2.2.0"
+    "torch>=2.2.0",
+]

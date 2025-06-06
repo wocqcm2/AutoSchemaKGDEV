@@ -1,11 +1,6 @@
-import os
-import csv
 import faiss
 import numpy as np
-import random
 import time
-from tqdm import tqdm
-import argparse
 import logging
 
 
