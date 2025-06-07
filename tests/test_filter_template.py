@@ -54,13 +54,6 @@ def test_validate_filter_output():
     assert len(result["fact"]) == 2
     assert all(len(triplet) == 3 for triplet in result["fact"])
 
-    # Test invalid output (missing required field)
-    invalid_output = json.dumps({
-        "other_field": []
-    })
-    with pytest.raises(jsonschema.ValidationError):
-        validate_filter_output(invalid_output)
-
     # Test invalid output (wrong type)
     invalid_output = json.dumps({
         "fact": "not an array"

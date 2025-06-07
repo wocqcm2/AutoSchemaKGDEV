@@ -20,19 +20,18 @@ def compute_graph_embeddings(node_list, edge_list_string, sentence_encoder: Base
 
     return node_embeddings, edge_embeddings
 
-def build_faiss_index(embededdings):
-    dimension = len(embededdings[0])
+def build_faiss_index(embeddings):
+    dimension = len(embeddings[0])
     
     faiss_index = faiss.IndexHNSWFlat(dimension, 64, faiss.METRIC_INNER_PRODUCT)
-    X = np.array(embededdings).astype('float32')
+    X = np.array(embeddings).astype('float32')
 
     # normalize the vectors
     faiss.normalize_L2(X)
 
     # batched add
-    for i in tqdm(range(0,X.shape[0], 32)):
+    for i in tqdm(range(0, X.shape[0], 32)):
         faiss_index.add(X[i:i+32])
-    # index.add(X)
     return faiss_index
 
 def compute_text_embeddings(text_list, sentence_encoder: BaseEmbeddingModel, batch_size = 40, normalize_embeddings: bool = False):

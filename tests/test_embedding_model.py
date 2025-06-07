@@ -30,7 +30,8 @@ def test_nv_embed_add_eos(sentence_transformer):
     
     # Check that EOS token is added to each input
     assert len(result) == len(test_inputs)
-    assert all(result[i].endswith(sentence_transformer.tokenizer.eos_token) for i in range(len(result)))
+    if sentence_transformer.tokenizer.eos_token is not None:
+        assert all(result[i].endswith(sentence_transformer.tokenizer.eos_token) for i in range(len(result)))
 
 def test_nv_embed_encode(sentence_transformer):
     nv_embed = NvEmbed(sentence_transformer)

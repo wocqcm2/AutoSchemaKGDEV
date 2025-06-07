@@ -4,6 +4,7 @@ import networkx as nx
 import os
 import tempfile
 import shutil
+import faiss
 from atlas_rag.retrieval.indexer import (
     compute_graph_embeddings,
     build_faiss_index,
@@ -21,15 +22,30 @@ def sentence_encoder():
 def sample_graph():
     G = nx.DiGraph()
     # Add nodes with different types
+    # Add multiple entities
     G.add_node("node1", type="entity", id="Entity 1")
-    G.add_node("node2", type="event", id="Event 1")
-    G.add_node("node3", type="passage", id="Passage 1")
-    G.add_node("node4", type="concept", id="Concept 1")
+    G.add_node("node2", type="entity", id="Entity 2")
+    G.add_node("node3", type="entity", id="Entity 3")
     
-    # Add edges
-    G.add_edge("node1", "node2", relation="causes")
-    G.add_edge("node2", "node3", relation="described_in")
-    G.add_edge("node3", "node4", relation="about")
+    # Add multiple events
+    G.add_node("node4", type="event", id="Event 1")
+    G.add_node("node5", type="event", id="Event 2")
+    
+    # Add multiple passages
+    G.add_node("node6", type="passage", id="Passage 1")
+    G.add_node("node7", type="passage", id="Passage 2")
+    
+    # Add multiple concepts
+    G.add_node("node8", type="concept", id="Concept 1")
+    G.add_node("node9", type="concept", id="Concept 2")
+    
+    # Add edges connecting different types of nodes
+    G.add_edge("node1", "node4", relation="causes")
+    G.add_edge("node2", "node5", relation="triggers")
+    G.add_edge("node4", "node6", relation="described_in")
+    G.add_edge("node5", "node7", relation="documented_in")
+    G.add_edge("node6", "node8", relation="about")
+    G.add_edge("node7", "node9", relation="related_to")
     
     return G
 
@@ -59,7 +75,7 @@ def test_build_faiss_index():
     embeddings = [np.random.rand(384).astype('float32') for _ in range(5)]
     
     index = build_faiss_index(embeddings)
-    assert isinstance(index, type(np.array([])))  # FAISS index type
+    assert isinstance(index, faiss.Index)  # FAISS index type
 
 def test_compute_text_embeddings(sentence_encoder):
     text_list = ["Text 1", "Text 2", "Text 3"]
@@ -109,6 +125,21 @@ def test_create_embeddings_and_index(sentence_encoder, sample_graph, temp_workin
         assert "node_list" in result
         assert "edge_list" in result
         assert "text_dict" in result
+        
+        # Verify that we have the expected number of nodes based on the configuration
+        if not include_events and not include_concept:
+            # Should only have entity nodes
+            assert all(sample_graph.nodes[node]["type"] == "entity" for node in result["node_list"])
+        elif include_events and not include_concept:
+            # Should have entity and event nodes
+            assert all(sample_graph.nodes[node]["type"] in ["entity", "event"] for node in result["node_list"])
+        else:
+            # Should have entity, event, and concept nodes
+            assert all(sample_graph.nodes[node]["type"] in ["entity", "event", "concept"] for node in result["node_list"])
+        
+        # Verify that we have edges
+        assert len(result["edge_list"]) > 0
+        assert len(result["edge_embeddings"]) > 0
 
 def test_create_embeddings_and_index_invalid_combination(sentence_encoder, sample_graph, temp_working_dir):
     # Create necessary directory structure
