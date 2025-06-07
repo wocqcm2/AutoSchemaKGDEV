@@ -18,7 +18,10 @@ class NvEmbed(BaseEmbeddingModel):
 
     def add_eos(self, input_examples):
         """Add EOS token to input examples."""
-        return [input_example + self.sentence_encoder.tokenizer.eos_token for input_example in input_examples]
+        if self.sentence_encoder.tokenizer.eos_token is not None:
+            return [input_example + self.sentence_encoder.tokenizer.eos_token for input_example in input_examples]
+        else:
+            return input_examples
 
     def encode(self, query, query_type=None, **kwargs):
         """

@@ -2,8 +2,8 @@ import json
 from openai import OpenAI, NOT_GIVEN
 from tenacity import retry, wait_fixed, stop_after_delay, stop_after_attempt
 from copy import deepcopy
-from atlas_rag.retriever.filter_template import messages as filter_messages, validate_filter_output
-from atlas_rag.retriever.rag_qa_prompt import prompt_template
+from atlas_rag.retrieval.filter_template import messages as filter_messages, validate_filter_output
+from atlas_rag.retrieval.prompt_template import prompt_template
 from atlas_rag.billion.prompt_template import ner_prompt, validate_keyword_output, keyword_filtering_prompt
 from transformers.pipelines import Pipeline
 import jsonschema

@@ -2,7 +2,7 @@ import os
 import json
 import numpy as np
 from logging import Logger
-from atlas_rag.retriever.rag_model import BaseRetriever, BaseEdgeRetriever, BasePassageRetriever
+from atlas_rag.retrieval.retriever import BaseRetriever, BaseEdgeRetriever, BasePassageRetriever
 from typing import List
 from datetime import datetime
 from transformers import AutoModel
@@ -10,7 +10,7 @@ from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 import torch
 import torch.nn.functional as F
-from atlas_rag.retriever.embedding_model import NvEmbed, SentenceEmbedding
+from atlas_rag.retrieval.embedding_model import NvEmbed, SentenceEmbedding
 from atlas_rag.reader.llm_generator import LLMGenerator
 from atlas_rag.evaluation.evaluation import QAJudger
 from dataclasses import dataclass

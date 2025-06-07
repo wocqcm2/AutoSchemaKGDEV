@@ -53,3 +53,12 @@ gpu = [
     "torchaudio>=2.5.1",
     "flash-attn>=2.2.0",
 ]
+
+dev = [
+    "torch>=2.5.1",
+    "torchvision>=0.20.1",
+    "torchaudio>=2.5.1",
+    "flash-attn>=2.2.0",
+    "pytest",
+    "pytest-mock"
+]
