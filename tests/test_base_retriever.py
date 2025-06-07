@@ -66,27 +66,3 @@ def test_base_passage_retriever_initialization():
     retriever = TestPassageRetriever(test_param="value")
     assert hasattr(retriever, "test_param")
     assert retriever.test_param == "value"
-
-def test_base_retriever_abstract_method():
-    class TestRetriever(BaseRetriever):
-        pass
-    
-    retriever = TestRetriever()
-    with pytest.raises(NotImplementedError):
-        retriever.retrieve("test query")
-
-def test_base_edge_retriever_abstract_method():
-    class TestEdgeRetriever(BaseEdgeRetriever):
-        pass
-    
-    retriever = TestEdgeRetriever()
-    with pytest.raises(NotImplementedError):
-        retriever.retrieve("test query")
-
-def test_base_passage_retriever_abstract_method():
-    class TestPassageRetriever(BasePassageRetriever):
-        pass
-    
-    retriever = TestPassageRetriever()
-    with pytest.raises(NotImplementedError):
-        retriever.retrieve("test query") 

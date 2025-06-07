@@ -1,5 +1,6 @@
 import pytest
 import json
+import jsonschema
 from atlas_rag.retrieval.filter_template import (
     flatten_and_filter_triplets,
     validate_filter_output,
@@ -57,14 +58,14 @@ def test_validate_filter_output():
     invalid_output = json.dumps({
         "other_field": []
     })
-    with pytest.raises(jsonschema.exceptions.ValidationError):
+    with pytest.raises(jsonschema.ValidationError):
         validate_filter_output(invalid_output)
 
     # Test invalid output (wrong type)
     invalid_output = json.dumps({
         "fact": "not an array"
     })
-    with pytest.raises(jsonschema.exceptions.ValidationError):
+    with pytest.raises(jsonschema.ValidationError):
         validate_filter_output(invalid_output)
 
 def test_messages_structure():

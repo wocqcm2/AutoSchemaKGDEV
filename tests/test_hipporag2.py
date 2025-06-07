@@ -29,7 +29,7 @@ def sample_graph_data():
     
     # Add nodes with different types
     G.add_node("node1", id="Entity 1", type="entity", file_id="file1")
-    G.add_node("node2", id="Entity 2", type="entity", file_id="file1")
+    G.add_node("node2", id="Entity 2", type="entity", file_id="file2")
     G.add_node("node3", id="Passage 1", type="passage", file_id="file1")
     G.add_node("node4", id="Passage 2", type="passage", file_id="file2")
     
@@ -221,7 +221,7 @@ def test_retrieve(mock_sentence_encoder, mock_llm_generator, sample_graph_data, 
     topN = 2
     
     passages, passage_ids = retriever.retrieve(query, topN=topN)
-    
+    print(passages)
     # Verify the output format
     assert len(passages) == topN
     assert len(passage_ids) == topN
