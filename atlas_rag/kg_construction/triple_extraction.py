@@ -25,7 +25,7 @@ from atlas_rag.utils.csv_add_column import add_csv_columns
 from atlas_rag.utils.convert_csv2npy import convert_csv_to_npy
 from atlas_rag.utils.compute_embedding import compute_embedding
 from atlas_rag.utils.create_index import build_faiss_from_npy
-from atlas_rag.retriever.embedding_model import BaseEmbeddingModel
+from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
 
 
 
