@@ -40,12 +40,25 @@ def sample_graph():
     G.add_node("node9", type="concept", id="Concept 2")
     
     # Add edges connecting different types of nodes
+    # Entity to Entity edges
+    G.add_edge("node1", "node2", relation="related_to")
+    G.add_edge("node2", "node3", relation="connected_to")
+    
+    # Entity to Event edges
     G.add_edge("node1", "node4", relation="causes")
     G.add_edge("node2", "node5", relation="triggers")
+    
+    # Event to Passage edges
     G.add_edge("node4", "node6", relation="described_in")
     G.add_edge("node5", "node7", relation="documented_in")
+    
+    # Passage to Concept edges
     G.add_edge("node6", "node8", relation="about")
     G.add_edge("node7", "node9", relation="related_to")
+    
+    # Add some bidirectional edges
+    G.add_edge("node3", "node1", relation="references")
+    G.add_edge("node9", "node6", relation="appears_in")
     
     return G
 
@@ -137,9 +150,17 @@ def test_create_embeddings_and_index(sentence_encoder, sample_graph, temp_workin
             # Should have entity, event, and concept nodes
             assert all(sample_graph.nodes[node]["type"] in ["entity", "event", "concept"] for node in result["node_list"])
         
-        # Verify that we have edges
-        assert len(result["edge_list"]) > 0
-        assert len(result["edge_embeddings"]) > 0
+        # Verify that we have edges and edge embeddings
+        assert len(result["edge_list"]) > 0, "Edge list should not be empty"
+        assert len(result["edge_embeddings"]) > 0, "Edge embeddings should not be empty"
+        assert len(result["edge_list"]) == len(result["edge_embeddings"]), "Number of edges should match number of edge embeddings"
+        
+        # Verify edge structure
+        for edge in result["edge_list"]:
+            source, target = edge
+            assert source in result["node_list"], f"Source node {source} should be in node_list"
+            assert target in result["node_list"], f"Target node {target} should be in node_list"
+            assert sample_graph.has_edge(source, target), f"Edge {source}->{target} should exist in original graph"
 
 def test_create_embeddings_and_index_invalid_combination(sentence_encoder, sample_graph, temp_working_dir):
     # Create necessary directory structure

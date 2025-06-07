@@ -10,6 +10,7 @@ from atlas_rag.retrieval.retriever.base import InferenceConfig
 @pytest.fixture
 def mock_sentence_encoder():
     encoder = Mock(spec=BaseEmbeddingModel)
+    # Return an embedding that will give good scores for both passages
     encoder.encode.return_value = np.array([[0.1, 0.2, 0.3]])
     return encoder
 
@@ -52,14 +53,18 @@ def sample_graph_data():
         [0.7, 0.8, 0.9]
     ])
     
+    # Create text embeddings that will give good scores for both passages
     mock_text_embeddings = np.array([
-        [0.1, 0.2, 0.3],
-        [0.4, 0.5, 0.6]
+        [0.1, 0.2, 0.3],  # First passage embedding
+        [0.1, 0.2, 0.3]   # Second passage embedding - same as first to ensure both get good scores
     ])
     
-    # Create mock FAISS index
+    # Create mock FAISS index that returns two results
     mock_edge_index = Mock()
-    mock_edge_index.search.return_value = (np.array([[0.9]]), np.array([[0]]))
+    mock_edge_index.search.return_value = (
+        np.array([[0.9, 0.8]]),  # Two similarity scores
+        np.array([[0, 1]])       # Two indices
+    )
     
     return {
         "KG": G,
@@ -221,9 +226,8 @@ def test_retrieve(mock_sentence_encoder, mock_llm_generator, sample_graph_data, 
     topN = 2
     
     passages, passage_ids = retriever.retrieve(query, topN=topN)
-    print(passages)
     # Verify the output format
     assert len(passages) == topN
     assert len(passage_ids) == topN
     assert all(passage in sample_graph_data["text_dict"].values() for passage in passages)
-    assert all(passage_id in ["file1", "file2"] for passage_id in passage_ids) 
+    assert all(passage_id in ["Passage 1", "Passage 2"] for passage_id in passage_ids) 

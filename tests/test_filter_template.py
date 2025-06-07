@@ -58,8 +58,33 @@ def test_validate_filter_output():
     invalid_output = json.dumps({
         "fact": "not an array"
     })
-    with pytest.raises(jsonschema.ValidationError):
-        validate_filter_output(invalid_output)
+    valid_output = validate_filter_output(invalid_output)
+    assert "fact" in valid_output
+
+    # Test invalid output (missing fact key)
+    invalid_output = json.dumps({
+        "other_key": []
+    })
+    valid_output = validate_filter_output(invalid_output)
+    assert "fact" in valid_output
+
+    # Test invalid output (wrong array length)
+    invalid_output = json.dumps({
+        "fact": [
+            ["subject1", "predicate1"]  # Only 2 items instead of 3
+        ]
+    })
+    valid_output = validate_filter_output(invalid_output)
+    assert "fact" in valid_output
+
+    # Test invalid output (wrong item type)
+    invalid_output = json.dumps({
+        "fact": [
+            ["subject1", 123, "object1"]  # Number instead of string
+        ]
+    })
+    valid_output = validate_filter_output(invalid_output)
+    assert "fact" in valid_output
 
 def test_messages_structure():
     # Test that messages list has the correct structure

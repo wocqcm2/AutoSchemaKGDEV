@@ -16,11 +16,23 @@ def mock_sentence_encoder():
 @pytest.fixture
 def mock_llm_generator():
     generator = Mock(spec=LLMGenerator)
-    generator._generate_response.side_effect = [
-        "entity1, entity2",  # For NER
-        "4",  # For path rating
-        "yes"  # For reasoning
-    ]
+    
+    def mock_generate_response(messages):
+        # Check the content of the messages to determine what type of response to return
+        content = messages[1]['content']  # Get the user's message content
+        
+        if "rating" in content.lower():
+            # For path rating requests
+            return "4"
+        elif "reasoning" in content.lower():
+            # For reasoning requests
+            return "yes"
+        else:
+            # For NER requests
+            return "entity1, entity2"
+    
+    # Set up the mock to use our custom function
+    generator._generate_response.side_effect = mock_generate_response
     return generator
 
 @pytest.fixture
