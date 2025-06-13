@@ -128,19 +128,19 @@ class LLMGenerator():
         # return self._generate_response(messages, max_new_tokens=max_new_tokens, frequency_penalty=frequency_penalty, temperature = temperature, seed = seed)
         return self._generate_response(messages, max_new_tokens=max_new_tokens, temperature = temperature)
 
-    def generate_with_context_one_shot(self, question, context, max_new_tokens=4096):
+    def generate_with_context_one_shot(self, question, context, max_new_tokens=4096, frequency_penalty=None, temperature = 0.7, seed = None):
         messages = deepcopy(prompt_template)
         messages.append(
             {"role": "user", "content": f"{context}\n\nQuestions:{question}\nThought:"},
             
         )
-        return self._generate_response(messages, max_new_tokens=max_new_tokens)
-    def generate_with_context_kg(self, question, context, max_new_tokens=1024):
+        return self._generate_response(messages, max_new_tokens=max_new_tokens, temperature = temperature)
+    def generate_with_context_kg(self, question, context, max_new_tokens=1024, frequency_penalty=None, temperature = 0.7, seed = None):
         messages = [
             {"role": "system", "content": self.cot_system_instruction_kg},
             {"role": "user", "content": f"{context}\n\n{question}"},
         ]
-        return self._generate_response(messages, max_new_tokens=max_new_tokens)
+        return self._generate_response(messages, max_new_tokens=max_new_tokens, temperature = temperature)
 
     def filter_triples_with_entity(self,question, nodes, max_new_tokens=1024):
         messages = [
