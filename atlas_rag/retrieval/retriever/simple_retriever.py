@@ -19,11 +19,11 @@ class SimpleGraphRetriever(BaseEdgeRetriever):
         self.edge_faiss_index = data["edge_faiss_index"]
 
 
-    def retrieve(self, query, topk=5, **kwargs):
+    def retrieve(self, query, topN=5, **kwargs):
         # retrieve the top k edges
         topk_edges = []
         query_embedding = self.sentence_encoder.encode([query], query_type='edge')
-        D, I = self.edge_faiss_index.search(query_embedding, topk)
+        D, I = self.edge_faiss_index.search(query_embedding, topN)
 
         topk_edges += [self.edge_list[i] for i in I[0]]
 
@@ -40,10 +40,10 @@ class SimpleTextRetriever(BasePassageRetriever):
         self.passage_keys = list(passage_dict.keys())
         self.text_embeddings = data["text_embeddings"]
         
-    def retrieve(self, query, topk=5, **kwargs):
+    def retrieve(self, query, topN=5, **kwargs):
         query_emb = self.sentence_encoder.encode([query], query_type="passage")
         sim_scores = self.text_embeddings @ query_emb[0].T
-        topk_indices = np.argsort(sim_scores)[-topk:][::-1]  # Get indices of top-k scores
+        topk_indices = np.argsort(sim_scores)[-topN:][::-1]  # Get indices of top-k scores
 
         # Retrieve top-k passages
         topk_passages = [self.passage_list[i] for i in topk_indices]
