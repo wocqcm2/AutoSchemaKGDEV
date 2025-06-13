@@ -195,9 +195,9 @@ class RAGBenchmark:
             average_recall_2 = sum([result[f"{retriever_name}_recall@2"] for result in result_list]) / len(result_list)
             average_recall_5 = sum([result[f"{retriever_name}_recall@5"] for result in result_list]) / len(result_list)
             summary_dict.update( {
-                "average_f1": average_f1,
-                "average_em": average_em,
-                "average_recall@2": average_recall_2,
-                "average_recall@5": average_recall_5,
+                f"{retriever_name}_average_f1": average_f1,
+                f"{retriever_name}_average_em": average_em,
+                f"{retriever_name}_average_recall@2": average_recall_2,
+                f"{retriever_name}_average_recall@5": average_recall_5,
             })
         return summary_dict
