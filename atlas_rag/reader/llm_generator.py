@@ -7,6 +7,9 @@ from atlas_rag.retrieval.prompt_template import prompt_template
 from atlas_rag.billion.prompt_template import ner_prompt, validate_keyword_output, keyword_filtering_prompt
 from transformers.pipelines import Pipeline
 import jsonschema
+from typing import Union
+from logging import Logger
+from atlas_rag.retrieval.retriever.base import BaseEdgeRetriever, BasePassageRetriever
 
 # from https://github.com/OSU-NLP-Group/HippoRAG/blob/main/src/qa/qa_reader.py
 # prompts from hipporag qa_reader
@@ -231,3 +234,166 @@ class LLMGenerator():
         except (json.JSONDecodeError, jsonschema.ValidationError) as e:
             return []  # Fallback to empty list or raise custom exception
  
+    @retry(stop=(stop_after_delay(60) | stop_after_attempt(6)), wait=wait_fixed(2))
+    def large_kg_ner(self, text):
+        messages = deepcopy(ner_prompt)
+        messages.append(
+            {
+                "role": "user", 
+                "content": f"[[ ## question ## ]]\n{text}" 
+            }
+        )
+        
+        # Generate raw response from LLM
+        raw_response = self._generate_response(messages, max_new_tokens=4096, temperature=0.7, frequency_penalty=1.1, response_format={"type": "json_object"})
+        
+        try:
+            # Validate and clean the response
+            cleaned_data = validate_keyword_output(raw_response)
+            return cleaned_data['keywords']
+        
+        except (json.JSONDecodeError, jsonschema.ValidationError) as e:
+            return []  # Fallback to empty list or raise custom exception
+
+    def generate_with_react(self, question, context=None, max_new_tokens=1024, search_history=None, logger=None):
+        react_system_instruction = (
+            'You are an advanced AI assistant that uses the ReAct framework to solve problems through iterative search. '
+            'Follow these steps in your response:\n'
+            '1. Thought: Think step by step and analyze if the current context is sufficient to answer the question. If not, review the current context and think critically about what can be searched to help answer the question.\n'
+            '   - Break down the question into *1-hop* sub-questions if necessary (e.g., identify key entities like people or places before addressing specific events).\n'
+            '   - Use the available context to make inferences about key entities and their relationships.\n'
+            '   - If a previous search query (prefix with "Previous search attempt") was not useful, reflect on why and adjust your strategy—avoid repeating similar queries and consider searching for general information about key entities or related concepts.\n'
+            '2. Action: Choose one of:\n'
+            '   - Search for [Query]: If you need more information, specify a new query. The [Query] must differ from previous searches in wording and direction to explore new angles.\n'
+            '   - No Action: If the current context is sufficient.\n'
+            '3. Answer: Provide one of:\n'
+            '   - A concise, definitive response as a noun phrase if you can answer.\n'
+            '   - "Need more information" if you need to search.\n\n'
+            'Format your response exactly as:\n'
+            'Thought: [your reasoning]\n'
+            'Action: [Search for [Query] or No Action]\n'
+            'Answer: [concise noun phrase if you can answer, or "Need more information" if you need to search]\n\n'
+        )
+        
+        # Build context with search history if available
+        full_context = []
+        if search_history:
+            for i, (thought, action, observation) in enumerate(search_history):
+                search_history_text = f"\nPrevious search attempt {i}:\n"
+                search_history_text += f"{action}\n  Result: {observation}\n"
+                full_context.append(search_history_text)
+        if context:
+            full_context_text = f"Current Retrieved Context:\n{context}\n"
+            full_context.append(full_context_text)
+        if logger:
+            logger.info(f"Full context for ReAct generation: {full_context}")
+        
+        # Combine few-shot examples with system instruction and user query
+        messages = [
+            {"role": "system", "content": react_system_instruction},
+            {"role": "user", "content": f"Search History:\n\n{''.join(full_context)}\n\nQuestion: {question}" 
+            if full_context else f"Question: {question}"}
+        ]
+        if logger:
+            logger.info(f"Messages for ReAct generation: {search_history}Question: {question}")
+        return self._generate_response(messages, max_new_tokens=max_new_tokens)
+
+    def generate_with_rag_react(self, question: str, retriever: Union['BaseEdgeRetriever', 'BasePassageRetriever'], max_iterations: int = 5, max_new_tokens: int = 1024, logger: Logger = None):
+        """
+        Generate a response using RAG with ReAct framework, starting with an initial search using the original query.
+        
+        Args:
+            question (str): The question to answer
+            retriever: The retriever instance to use for searching
+            max_iterations (int): Maximum number of ReAct iterations
+            max_new_tokens (int): Maximum number of tokens to generate per iteration
+            
+        Returns:
+            tuple: (final_answer, search_history)
+                - final_answer: The final answer generated
+                - search_history: List of (thought, action, observation) tuples
+        """
+        search_history = []
+        
+        # Perform initial search with the original query
+        if isinstance(retriever, BaseEdgeRetriever):
+            initial_context, _ = retriever.retrieve(question, topN=5)
+            current_context = ". ".join(initial_context)
+        elif isinstance(retriever, BasePassageRetriever):
+            initial_context, _ = retriever.retrieve(question, topN=5)
+            current_context = "\n".join(initial_context)
+        
+        # Start ReAct process with the initial context
+        for iteration in range(max_iterations):
+            # First, analyze if we can answer with current context
+            analysis_response = self.generate_with_react(
+                question=question,
+                context=current_context,
+                max_new_tokens=max_new_tokens,
+                search_history=search_history,
+                logger = logger
+            )
+            
+            if logger:
+                logger.info(f"Analysis response: {analysis_response}")
+                
+            try:
+                # Parse the analysis response
+                thought = analysis_response.split("Thought:")[1].split("\n")[0]
+                if logger:
+                    logger.info(f"Thought: {thought}")
+                action = analysis_response.split("Action:")[1].split("\n")[0]
+                answer = analysis_response.split("Answer:")[1].strip()
+                
+                # If the answer indicates we can answer with current context
+                if answer.lower() != "need more information":
+                    search_history.append((thought, action, "Using current context"))
+                    return answer, search_history
+                
+                # If we need more information, perform the search
+                if "search" in action.lower():
+                    # Extract search query from the action
+                    search_query = action.split("search for")[-1].strip()
+                    
+                    # Perform the search
+                    if isinstance(retriever, BaseEdgeRetriever):
+                        new_context, _ = retriever.retrieve(search_query, topN=3)
+                        # Filter out contexts that are already in current_context
+                        current_contexts = current_context.split(". ")
+                        new_context = [ctx for ctx in new_context if ctx not in current_contexts]
+                        new_context = ". ".join(new_context)
+                    elif isinstance(retriever, BasePassageRetriever):
+                        new_context, _ = retriever.retrieve(search_query, topN=3)
+                        # Filter out contexts that are already in current_context
+                        current_contexts = current_context.split("\n")
+                        new_context = [ctx for ctx in new_context if ctx not in current_contexts]
+                        new_context = "\n".join(new_context)
+                    
+                    # Store the search results as observation
+                    if new_context:
+                        observation = f"Found information: {new_context}"
+                    else:
+                        observation = "No new information found. Consider searching for related entities or events."
+                    search_history.append((thought, action, observation))
+                    
+                    # Update context with new search results
+                    if new_context:
+                        current_context = f"{current_context}\n{new_context}"
+                        if logger:
+                            logger.info(f"New search results: {new_context}")
+                    else:
+                        if logger:
+                            logger.info("No new information found, suggesting to try related entities")
+
+                else:
+                    # If no search is needed but we can't answer, something went wrong
+                    search_history.append((thought, action, "No action taken but answer not found"))
+                    return "Unable to find answer", search_history
+                
+            except Exception as e:
+                if logger:
+                    logger.error(f"Error parsing ReAct response: {e}")
+                return analysis_response, search_history
+        
+        # If we've reached max iterations, return the last answer
+        return answer, search_history

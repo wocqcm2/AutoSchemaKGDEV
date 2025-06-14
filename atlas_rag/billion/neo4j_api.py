@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException, Response
 from typing import List, Literal, Optional, Union
 from pydantic import BaseModel, Field
 from logging import Logger
-from atlas_rag.billion.retriever.retreiver import BaseLargeKGRetriever
+from atlas_rag.billion.retriever.base import BaseLargeKGRetriever, BaseLargeKGEdgeRetriever
 from atlas_rag.billion.utils import start_up_large_kg_index_graph
 from atlas_rag.reader import LLMGenerator
 from neo4j import Driver
@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 @dataclass
 class LargeKGConfig:
-    largekg_retriever: BaseLargeKGRetriever = None
+    largekg_retriever: BaseLargeKGRetriever | BaseLargeKGEdgeRetriever = None
     reader_llm_generator : LLMGenerator = None
     driver: Driver = None
     logger: Logger = None
