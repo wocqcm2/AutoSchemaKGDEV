@@ -1,1 +1,1 @@
-from .retreiver import LargeKGRetriever
+from .lkgr import LargeKGRetriever

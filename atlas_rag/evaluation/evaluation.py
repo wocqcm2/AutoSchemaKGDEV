@@ -22,7 +22,9 @@ class QAJudger:
         """Direct copy of the normalization from QAExactMatch/QAF1Score"""
         # Lowercase and normalize whitespace
         answer = answer.lower()
-        # Remove punctuation (matches original implementation)
+        # Replace hyphens with spaces
+        answer = answer.replace('-', ' ')
+        # Remove all other punctuation
         answer = re.sub(r'[^\w\s]', '', answer)
         # Standardize whitespace
         return ' '.join(answer.split())

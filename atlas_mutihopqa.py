@@ -2,7 +2,7 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '3' 
 from configparser import ConfigParser
 from openai import OpenAI
-from atlas_rag.retriever import NvEmbed, HippoRAG2Retriever
+from atlas_rag.retrieval import NvEmbed, HippoRAG2Retriever
 from atlas_rag.reader import LLMGenerator
 from atlas_rag.evaluation import BenchMarkConfig, RAGBenchmark
 from atlas_rag import create_embeddings_and_index, setup_logger

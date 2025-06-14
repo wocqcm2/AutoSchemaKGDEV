@@ -36,15 +36,20 @@ dependencies = [
     "fastapi>=0.95.0",
     "uvicorn>=0.21.0",
     "openai>=1.0.0",
-    "tenacity>=8.2.0",
+    "tenacity>=9.1.2",
     "pandas>=2.0.0",
-    "sentence-transformers>=2.7.0",
-    "transformers>=4.42.4",
+    "sentence-transformers>=4.1.0",
+    # Transformers support Nvidia-embed v2 until 4.47.1, due to the changes to Mistral.
+    "transformers>=4.42.4,<=4.47.1",
     "datasets",
     "einops",
-    "accelerate>=0.26.0",
+    "accelerate>=1.7.0",
     "nltk",
     "graphdatascience"
+    "azure-ai-projects",
+    "azure-cli",
+    "azure-ai-inference",
+    "azure-identity"
 ]
 [project.optional-dependencies]
 gpu = [

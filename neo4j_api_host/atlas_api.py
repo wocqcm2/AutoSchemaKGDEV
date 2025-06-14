@@ -9,7 +9,7 @@ import datetime
 import logging
 from logging.handlers import RotatingFileHandler
 import os
-from atlas_rag.billion.retriever.retreiver import LargeKGRetriever
+from atlas_rag.billion.retriever import LargeKGRetriever
 from atlas_rag.billion.neo4j_api import LargeKGConfig, start_app
 
 # use sentence embedding if you want to use sentence transformer
