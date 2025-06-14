@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "atlas-rag"
-version = "0.0.1"
+version = "0.0.1.post1"
 authors = [
     {name = "Jiaxin Bai", email = "jbai@connect.ust.hk"},
     {name = "Hong Ting TSANG", email = "httsangaj@connect.ust.hk"},
@@ -45,7 +45,7 @@ dependencies = [
     "einops",
     "accelerate>=1.7.0",
     "nltk",
-    "graphdatascience"
+    "graphdatascience",
     "azure-ai-projects",
     "azure-cli",
     "azure-ai-inference",
