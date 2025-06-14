@@ -1,26 +1,17 @@
 name:ID,type,concepts,synsets,:LABEL
-Agent Alex Mercer,entity,[],[],Node
+Alex Mercer,entity,[],[],Node
 dwarfed,entity,[],[],Node
 projectors,entity,[],[],Node
-smile,entity,[],[],Node
-folder,entity,[],[],Node
-compliance,entity,[],[],Node
-seat,entity,[],[],Node
-Taylor's gaze,entity,[],[],Node
 Taylor Cruz,entity,[],[],Node
-Agent Mercer,entity,[],[],Node
-dismissively,entity,[],[],Node
-reprimand,entity,[],[],Node
+a smile,entity,[],[],Node
 Jordan Hayes,entity,[],[],Node
-eyes,entity,[],[],Node
-supportive nod,entity,[],[],Node
-head,entity,[],[],Node
-spark of understanding,entity,[],[],Node
+a supportive nod,entity,[],[],Node
 Sam Rivera,entity,[],[],Node
-comment,entity,[],[],Node
-transmission logs,entity,[],[],Node
-group,entity,[],[],Node
-determination,entity,[],[],Node
+a comment,entity,[],[],Node
+dismissively,entity,[],[],Node
+in his seat,entity,[],[],Node
+the struggle,entity,[],[],Node
+a quiet resolve,entity,[],[],Node
 The thrumming of monitors cast a stark contrast to the rigid silence enveloping the group.,event,[],[],Node
 "Agent Alex Mercer, unfailingly determined on paper, seemed dwarfed by the enormity of the sterile briefing room where Paranormal Military Squad's elite convened.",event,[],[],Node
 "With dulled eyes, he scanned the projectors outlining their impending odyssey into Operation: Dulce.",event,[],[],Node
@@ -40,9 +31,10 @@ They knew well enough the struggle of aligning personal convictions with overarc
 "As everyone began to collect their binders and prepare for departure, a quiet resolve took form within Alex, galvanized by the groundwork laid by their interactions.",event,[],[],Node
 "He may have spoken in compliance, but his determination had merely taken a subtler form — one that wouldn't surrender so easily to the forthcoming shadows.",event,[],[],Node
 Agent Alex Mercer scanned the projectors outlining their impending odyssey into Operation: Dulce.,event,[],[],Node
+Agent Alex Mercer,entity,[],[],Node
 Taylor Cruz asked Agent Mercer if he was having second thoughts.,event,[],[],Node
 Alex replied that he was not having second thoughts.,event,[],[],Node
-Jordan Hayes offered a supportive nod to Alex.,event,[],[],Node
+Jordan Hayes offered a supportive nod.,event,[],[],Node
 Sam Rivera added that Alex and Jordan could make sense of the anomalies.,event,[],[],Node
 Taylor Cruz told the group to focus and follow protocols.,event,[],[],Node
 Alex agreed to follow protocols.,event,[],[],Node
@@ -53,7 +45,7 @@ screens,entity,[],[],Node
 comm signals,entity,[],[],Node
 decrypt,entity,[],[],Node
 keyboard,entity,[],[],Node
-Alex Mercer,entity,[],[],Node
+thin air,entity,[],[],Node
 neck,entity,[],[],Node
 brow,entity,[],[],Node
 words,entity,[],[],Node
@@ -83,53 +75,46 @@ Alex Mercer stood gazing at the concealed elevator that would deliver them into 
 "Jordan Hayes remarked, approaching Mercer.",event,[],[],Node
 "Their voice was low, a blend of confidence and hidden apprehension.",event,[],[],Node
 Dulce,entity,[],[],Node
-"The cybersecurity expert craned their neck upwards, met by the ever-so-slight furrow in Alex's brow.",event,[],[],Node
-"'Got a minute, Rivera?'",event,[],[],Node
-"'Always,' Sam said, a smile surfacing as they swiveled to face their mentor more directly.",event,[],[],Node
-"'Our tech is top-tier, but the silence from Dulce... It's not just technology that will see us through, it's intuition and... trust.'",event,[],[],Node
-"'Intuition,' they mirrored thoughtfully.",event,[],[],Node
-I guess sometimes the numbers don't have all the answers.,event,[],[],Node
-"Their shared silence held a newfound understanding, a recognition that between the ones and zeros, it was their combined human insights that might prevail against the impossible.",event,[],[],Node
-facility,entity,[],[],Node
+"Alex hesitated, weighing his words carefully. 'Our tech is top-tier, but the silence from Dulce... It's not just technology that will see us through, it's intuition and... trust.'",event,[],[],Node
+facility inhabitants,entity,[],[],Node
 "Shadows played against the walls of the cramped underground meeting room, where Alex Mercer stood gazing at the concealed elevator that would deliver them into the bowels of Dulce base.",event,[],[],Node
-"'I know what you're thinking,' Jordan Hayes remarked, approaching Mercer.",event,[],[],Node
+Dulce base,entity,[],[],Node
+"I know what you're thinking,' Jordan Hayes remarked, approaching Mercer. Their voice was low, a blend of confidence and hidden apprehension.",event,[],[],Node
 Alex,entity,[],[],Node
 rescue,entity,[],[],Node
+game,entity,[],[],Node
 pawns,entity,[],[],Node
 Jordan,entity,[],[],Node
-dynamics,entity,[],[],Node
+feeling,entity,[],[],Node
+layer,entity,[],[],Node
 briefing,entity,[],[],Node
 Taylor,entity,[],[],Node
 exchange,entity,[],[],Node
-Cruz,entity,[],[],Node
 Sam,entity,[],[],Node
 luck,entity,[],[],Node
-data,entity,[],[],Node
+blind spot,entity,[],[],Node
 "Alex turned, his features a mask of uneasy resolve.",event,[],[],Node
 "This feels like more than a rescue or reconnaissance mission, doesn't it?",event,[],[],Node
 "Jordan gave a short nod, their analytical mind colliding with the uncertain dynamics of this operation.",event,[],[],Node
 "I've felt that way since the briefing. Like there's a layer we’re not seeing. And yet, we have no choice but to play along.",event,[],[],Node
 "Their eyes locked with Alex's, silently exchanging a vow to remain vigilant.",event,[],[],Node
 "Taylor Cruz interjected sharply, stepping into their exchange.",event,[],[],Node
-"The authority in Taylor's voice brooked no argument, it was their way of pulling everyone back to the now.",event,[],[],Node
 "Alex's response was measured, more assertive than moments ago.",event,[],[],Node
 He gripped his rifle with a newfound firmness.,event,[],[],Node
-"As they congregated at the elevator, a tension palpable, Sam Rivera piped in with a tone of balanced levity.",event,[],[],Node
+Sam Rivera piped in with a tone of balanced levity.,event,[],[],Node
 Their laughter served as a brief respite from the gravity of their mission.,event,[],[],Node
 "Then, as one, they stepped into the elevator.",event,[],[],Node
 "The doors closed with a silent hiss, and they descended into the darkness together.",event,[],[],Node
 Dr. Jordan Hayes couldn't help but muse over the layers of data that could wait below.,event,[],[],Node
-To think that this reluctance to accept other possibilities may have been my biggest blind spot.,event,[],[],Node
 Alex caught Jordan's reflective gaze and leaned in.,event,[],[],Node
-"Once we're down there, keep that analytical edge sharp.",event,[],[],Node
 The compliment was unexpected and weighed differently than praise from others.,event,[],[],Node
-This was an acknowledgment from someone who stood on the front lines of the unknown with eyes wide open.,event,[],[],Node
-You can count on me.,event,[],[],Node
+"The team was descending into the earth, carrying with them not only the weight of their equipment but also the silent pressure of the invisible war they were about to fight.",event,[],[],Node
 "Sam Rivera piped in with a tone of balanced levity, 'Hope everyone’s brought their good luck charms.'",event,[],[],Node
 The team stepped into the elevator.,event,[],[],Node
 Dr. Jordan Hayes,entity,[],[],Node
 "The team descended into the earth, carrying with them not only the weight of their equipment but also the silent pressure of the invisible war they were about to fight.",event,[],[],Node
 walls,entity,[],[],Node
+Cruz,entity,[],[],Node
 expression,entity,[],[],Node
 command,entity,[],[],Node
 agents,entity,[],[],Node
@@ -140,11 +125,11 @@ Martians,entity,[],[],Node
 team,entity,[],[],Node
 chuckles,entity,[],[],Node
 halting,entity,[],[],Node
+group,entity,[],[],Node
 threshold,entity,[],[],Node
 depths,entity,[],[],Node
 door,entity,[],[],Node
 hallway,entity,[],[],Node
-Dulce base,entity,[],[],Node
 Agents,entity,[],[],Node
 altar,entity,[],[],Node
 pace,entity,[],[],Node
@@ -184,63 +169,67 @@ Agents Alex Mercer,entity,[],[],Node
 panel,entity,[],[],Node
 drone,entity,[],[],Node
 shoulders,entity,[],[],Node
-Rivera,entity,[],[],Node
 onward,entity,[],[],Node
 resolve,entity,[],[],Node
-mainframe room,entity,[],[],Node
+doors,entity,[],[],Node
+ajar,entity,[],[],Node
+deeper,entity,[],[],Node
 heart,entity,[],[],Node
 unknown,entity,[],[],Node
-Operation: Dulce,entity,[],[],Node
-destinies,entity,[],[],Node
 Jordan Hayes paused at an innocuous looking panel.,event,[],[],Node
-"the panel, to the trained eye, appeared out of place—a facade",event,[],[],Node
-Jordan Hayes explained their reasoning as Sam approached.,event,[],[],Node
-Jordan explained that the panel is a recent addition — covering something they didn't want found,event,[],[],Node
+the panel seemed just another part of the base's infrastructure,event,[],[],Node
+Jordan Hayes explained their reasoning.,event,[],[],Node
+"Sam approached, instinctively understanding the significance of what lay beneath",event,[],[],Node
+Alex joined Jordan's side.,event,[],[],Node
+"examining the panel which, at a mere glance, seemed just another part of the base's infrastructure",event,[],[],Node
 The soft whir of an approaching drone cut through their muffled exchange.,event,[],[],Node
-Jordan Hayes explained their reasoning as Sam approached,event,[],[],Node
+Before Alex could respond,event,[],[],Node
 Taylor had looped back upon hearing the commotion.,event,[],[],Node
 The soft whir of an approaching drone cut through their muffled exchange,event,[],[],Node
 Cruz’s voice trailed off as the small airborne device came into view.,event,[],[],Node
-Taylor had looped back upon hearing the commotion,event,[],[],Node
-"Sam was the first to react, their tech-savvy mind already steps ahead.",event,[],[],Node
 "The drone lingered, its scan seeming more curious than hostile",event,[],[],Node
-"The drone lingered, its scan seeming more curious than hostile.",event,[],[],Node
-"Sam was the first to react, their tech-savvy mind already steps ahead",event,[],[],Node
+Sam was the first to react.,event,[],[],Node
+"Sam declared, fingers flying over the controls of their own gadgetry to ward off the impending threat.",event,[],[],Node
+Sam was the first to react,event,[],[],Node
+The drone retreated into the shadows as if accepting a silent truce.,event,[],[],Node
+"Sam declared, fingers flying over the controls of their own gadgetry to ward off the impending threat",event,[],[],Node
 "The crew exhaled, a moment of collective relief palpable in the air.",event,[],[],Node
-"Cruz squared their shoulders, clearly ruffled but not conceding any ground.",event,[],[],Node
+The drone retreated into the shadows as if accepting a silent truce,event,[],[],Node
+"Cruz directed, a hint more forceful than before.",event,[],[],Node
 "The crew exhaled, a moment of collective relief palpable in the air",event,[],[],Node
-"The team pressed onward, the quiet now filled with the soft beeps of regular comms checks.",event,[],[],Node
-"Cruz squared their shoulders, clearly ruffled but not conceding any ground",event,[],[],Node
-"The imposing doors to the mainframe room stood ajar — an invitation or a trap, neither option comforting.",event,[],[],Node
-"The team pressed onward, the quiet now filled with the soft beeps of regular comms checks",event,[],[],Node
+The team pressed onward.,event,[],[],Node
+"Cruz directed, a hint more forceful than before",event,[],[],Node
+The imposing doors to the mainframe room stood ajar.,event,[],[],Node
+The team pressed onward,event,[],[],Node
 "Without a word, they fortified their resolve and stepped through the threshold.",event,[],[],Node
-"The imposing doors to the mainframe room stood ajar — an invitation or a trap, neither option comforting",event,[],[],Node
-It was in that unwavering march towards the unknown that their destinies were forever cemented to the legacy of Operation: Dulce.,event,[],[],Node
+The imposing doors to the mainframe room stood ajar,event,[],[],Node
+They moved deeper into the heart of the enigma.,event,[],[],Node
 "Without a word, they fortified their resolve and stepped through the threshold",event,[],[],Node
-Jordan Hayes paused at an innocuous looking panel,event,[],[],Node
-Jordan Hayes called out to Mercer and Rivera,event,[],[],Node
-Alex joined Jordan's side to examine the panel,event,[],[],Node
-Jordan explained their reasoning to Sam,event,[],[],Node
-Sam approached and instinctively understood the significance of the panel,event,[],[],Node
-Taylor looped back upon hearing the commotion,event,[],[],Node
-Cruz's voice trailed off as the drone came into view,event,[],[],Node
-Sam reacted to the approaching drone,event,[],[],Node
-Sam used their gadgetry to ward off the drone,event,[],[],Node
-The crew exhaled in collective relief,event,[],[],Node
-The crew,entity,[],[],Node
-Cruz directed the team to move out,event,[],[],Node
-"The team pressed onward, conducting comms checks",event,[],[],Node
-The team,entity,[],[],Node
-The team fortified their resolve and stepped through the threshold into the mainframe room,event,[],[],Node
-The team moved deeper into the heart of the enigma,event,[],[],Node
-a table,entity,[],[],Node
+Jordan called out to Mercer and Rivera to see the panel.,event,[],[],Node
+Rivera,entity,[],[],Node
+Alex joined Jordan's side to examine the panel.,event,[],[],Node
+Jordan explained their reasoning to Sam.,event,[],[],Node
+Sam approached and instinctively understood the significance of the panel.,event,[],[],Node
+Taylor looped back upon hearing the commotion.,event,[],[],Node
+A drone approached the group.,event,[],[],Node
+Cruz's voice trailed off as the drone came into view.,event,[],[],Node
+Sam reacted to the drone and declared they had it under control.,event,[],[],Node
+Sam used their gadgetry to ward off the drone.,event,[],[],Node
+The drone retreated into the shadows after being interfered with by Sam.,event,[],[],Node
+The crew exhaled in relief after the drone left.,event,[],[],Node
+crew,entity,[],[],Node
+Cruz directed the team to move out.,event,[],[],Node
+Cruz told Rivera to keep their trick handy.,event,[],[],Node
+The team pressed onward despite the confrontation.,event,[],[],Node
+The team converged upon a central hub.,event,[],[],Node
+The team fortified their resolve and stepped through the threshold into the mainframe room.,event,[],[],Node
+The team moved deeper into the heart of the enigma.,event,[],[],Node
 alien technology,entity,[],[],Node
 a translucent component,entity,[],[],Node
 Agent Alex Mercer's eyes,entity,[],[],Node
+Dr. Jordan Hayes' eyes,entity,[],[],Node
 Agent Alex Mercer and Dr. Jordan Hayes,entity,[],[],Node
 the device,entity,[],[],Node
-Dr. Jordan Hayes's eyes,entity,[],[],Node
-Taylor Cruz's eyes,entity,[],[],Node
 "The cooling vents hummed in a monotonous drone, but it was the crackle of the comms system coming to life that cut through the lab’s tension.",event,[],[],Node
 "Dr. Jordan Hayes hovered over a table arrayed with alien technology, their fingers delicately probing the enigmatic circuitry retrieved from the crash site.",event,[],[],Node
 "Agent Alex Mercer watched, admiration blooming in silent solidarity for Jordan's deft touch and unspoken drive.",event,[],[],Node
@@ -274,9 +263,9 @@ inward nod,entity,[],[],Node
 paths,entity,[],[],Node
 here,entity,[],[],Node
 reasons,entity,[],[],Node
-together,entity,[],[],Node
+each other,entity,[],[],Node
 desires,entity,[],[],Node
-pulse,entity,[],[],Node
+anticipation,entity,[],[],Node
 lights,entity,[],[],Node
 efforts,entity,[],[],Node
 machinery,entity,[],[],Node
@@ -285,60 +274,60 @@ artifacts,entity,[],[],Node
 future,entity,[],[],Node
 briefing room,entity,[],[],Node
 facts,entity,[],[],Node
-truths,entity,[],[],Node
-past,entity,[],[],Node
+hidden truths,entity,[],[],Node
+files,entity,[],[],Node
+curiosity,entity,[],[],Node
 signal inconsistencies,entity,[],[],Node
+past,entity,[],[],Node
 patterns,entity,[],[],Node
-nothing,entity,[],[],Node
-mission,entity,[],[],Node
+anomaly,entity,[],[],Node
 no one,entity,[],[],Node
 hierarchy,entity,[],[],Node
 understanding,entity,[],[],Node
-nexus,entity,[],[],Node
+mission,entity,[],[],Node
+nexus point,entity,[],[],Node
 They had all been brought here by different paths and for different reasons.,event,[],[],Node
-"beneath the veneer of duty, the enticement of the vast unknown pulled them inexorably together",event,[],[],Node
+"beneath the veneer of duty, the enticement of the vast unknown pulled them inexorably together, coalescing their distinct desires into a shared pulse of anticipation.",event,[],[],Node
 "They refocused their efforts, each movement sharpened by the knowledge that beyond understanding the unearthly artifacts, they might be piecing together the future of their species.",event,[],[],Node
-the blink of lights and whir of machinery,event,[],[],Node
+Marshaled back to the moment by the blink of lights and whir of machinery,event,[],[],Node
 "Sam Rivera sat in the briefing room, his demeanor an artful balance of focus and a casual disguise of his razor-sharp talent with technology.",event,[],[],Node
+"Amidst the sterility of the briefing room, the liminal space between the facts laid out and the hidden truths",event,[],[],Node
 "Alex Mercer lingered in thought, the mental cogs turning as each file on Dulce stirred more than curiosity—it beckoned to a past both honored and burdensome.",event,[],[],Node
 "Alex noted, catching the younger man's contemplative gaze.",event,[],[],Node
-"You've been quiet, Sam' }",event,[],[],Node
+"'You've been quiet, Sam,' Alex noted, catching the younger man's contemplative gaze.",event,[],[],Node
 "Sam nodded, recognizing the space afforded to him, and he couldn't help but feel the weight of expectation pressing upon his shoulders.",event,[],[],Node
-"It wasn't just the mission that was immense, it was the trust being placed in him.",event,[],[],Node
 "Sam admitted, hesitant but driven.",event,[],[],Node
-The patterns are... off' },event,[],[],Node
+"'The patterns are... off,' Sam admitted, hesitant but driven.",event,[],[],Node
 Alex's eyes brightened with a subtle approval that crossed the distance like a silent nod.,event,[],[],Node
-Good. Keen eyes will keep us ahead—or at least not blindsided' },event,[],[],Node
-Their exchange was cut short by Taylor Cruz's abrupt arrival.,event,[],[],Node
-"Taylor announced, his voice carrying an iron resolve that knew the costs of hesitation—though whether the cost was calculated in human or career terms was an ambiguity he wore like a badge of honor.",event,[],[],Node
-Time to gear up. Dulce waits for no one' },event,[],[],Node
-"As Sam and Alex nodded in unison, the icy chasm of hierarchy and cryptic protocols seemed momentarily to bridge over with an understanding—this mission was convergence, a nexus point that would challenge each of their motives and strength.",event,[],[],Node
+Taylor Cruz's abrupt arrival cut short their exchange.,event,[],[],Node
+Their exchange was cut short by Taylor Cruz's abrupt arrival,event,[],[],Node
 "They filed out of the briefing room, their footsteps synchronized, a rhythm that spoke volumes of the unknown cadence they would soon march to within the base's veins.",event,[],[],Node
+Taylor Cruz's abrupt arrival cut short their exchange,event,[],[],Node
 They,entity,[],[],Node
 "Yet, beneath the veneer of duty, the enticement of the vast unknown pulled them inexorably together, coalescing their distinct desires into a shared pulse of anticipation.",event,[],[],Node
 "Marshaled back to the moment by the blink of lights and whir of machinery, they refocused their efforts, each movement sharpened by the knowledge that beyond understanding the unearthly artifacts, they might be piecing together the future of their species.",event,[],[],Node
 "Amidst the sterility of the briefing room, the liminal space between the facts laid out and the hidden truths, sat Sam Rivera, his demeanor an artful balance of focus and a casual disguise of his razor-sharp talent with technology.",event,[],[],Node
 "Across from him, Alex Mercer lingered in thought, the mental cogs turning as each file on Dulce stirred more than curiosity—it beckoned to a past both honored and burdensome.",event,[],[],Node
-"'You've been quiet, Sam,' Alex noted, catching the younger man's contemplative gaze.",event,[],[],Node
+'Your take on these signal inconsistencies?',event,[],[],Node
 "There was a respect in Alex's tone, though a respectful distance remained—a gulf of experience and a hint of protective mentorship that stood between them.",event,[],[],Node
-"'The patterns are... off,' Sam admitted, hesitant but driven.",event,[],[],Node
 "'If I'm right, what we're looking at isn't random—it's a structured anomaly. We need to be ready for anything.'",event,[],[],Node
 "'Good. Keen eyes will keep us ahead—or at least not blindsided,' he said, affirming the belief that inscribed Sam's role as more than the tech personnel—he was to be a guiding intellect in the heart of uncertainty.",event,[],[],Node
 "Their exchange was cut short by Taylor Cruz's abrupt arrival, his gait brimming with a robust confidence that veiled the sharp undercurrents of his striving nature.",event,[],[],Node
 "'Time to gear up. Dulce waits for no one,' Taylor announced, his voice carrying an iron resolve that knew the costs of hesitation—though whether the cost was calculated in human or career terms was an ambiguity he wore like a badge of honor.",event,[],[],Node
+"As Sam and Alex nodded in unison, the icy chasm of hierarchy and cryptic protocols seemed momentarily to bridge over with an understanding—this mission was convergence, a nexus point that would challenge each of their motives and strength.",event,[],[],Node
+"For Alex Mercer, the link with Sam Rivera, though distant, was now poised with a mutuality ready to face the challenges ahead.",event,[],[],Node
 initiative,entity,[],[],Node
-anticipation,entity,[],[],Node
 mask,entity,[],[],Node
 alone,entity,[],[],Node
 joined,entity,[],[],Node
-volatile embrace,entity,[],[],Node
-Taylor Cruz felt the initiative like a heartbeat,event,[],[],Node
+towards,entity,[],[],Node
+embrace,entity,[],[],Node
+Operation: Dulce,entity,[],[],Node
+Taylor Cruz felt the initiative like a heartbeat.,event,[],[],Node
 the initiative pulsed like a heartbeat,event,[],[],Node
 anticipation thinly veiled behind a mask of duty,event,[],[],Node
-They were each alone,event,[],[],Node
+They were each alone yet irrevocably joined.,event,[],[],Node
 stepping closer towards the volatile embrace of Operation: Dulce,event,[],[],Node
-they were irrevocably joined,event,[],[],Node
-They were each alone yet irrevocably joined,event,[],[],Node
-They were in the midst of the descent,event,[],[],Node
+in the midst of the descent,event,[],[],Node
 "the initiative pulsed like a heartbeat, anticipation thinly veiled behind a mask of duty",event,[],[],Node
 "they were each alone yet irrevocably joined, stepping closer towards the volatile embrace of Operation: Dulce",event,[],[],Node

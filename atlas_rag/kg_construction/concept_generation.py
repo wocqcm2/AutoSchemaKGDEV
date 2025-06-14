@@ -6,6 +6,7 @@ import os
 import hashlib
 import re
 from atlas_rag.utils.triple_generator import TripleGenerator
+from atlas_rag.utils.csv_to_graphml import csvs_to_temp_graphml, get_node_id
 
 # Increase the field size limit
 csv.field_size_limit(10 * 1024 * 1024)  # 10 MB limit
@@ -40,17 +41,28 @@ ENTITY_PROMPT = '''I will give you an ENTITY. You need to give several phrases c
             4. Do not repeat the same word and the input in the answer.
             5. Stop immediately if you can't think of any more phrases, and no explanation is needed.
 
-            ENTITY: apple
-            Your answer: fruit, food, sweet, healthy
-            ENTITY: thinkpad
-            Your answer: laptop, machine, device, hardware, computer, brand
+            ENTITY: Soul
+            CONTEXT: premiered BFI London Film Festival, became highest-grossing Pixar release
+            Your answer: movie, film
+
+            ENTITY: Thinkpad X60
+            CONTEXT: Richard Stallman announced he is using Trisquel on a Thinkpad X60
+            Your answer: Thinkpad, laptop, machine, device, hardware, computer, brand
+
             ENTITY: Harry Callahan
-            Your answer: person, Amarican, actor
-            ENTITY: Black Mountain College.
+            CONTEXT: bluffs another robber, tortures Scorpio
+            Your answer: person, Amarican, character, police officer, detective
+
+            ENTITY: Black Mountain College
+            CONTEXT: was started by John Andrew Rice, attracted faculty
             Your answer: college, university, school, liberal arts college
-            EVENT: 21st April
-            Your answer: date, day, time
+
+            EVENT: 1st April
+            CONTEXT: Utkal Dibas celebrates
+            Your answer: date, day, time, festival
+
             ENTITY: [ENTITY]
+            CONTEXT: [CONTEXT]
             Your answer:
             '''
 
@@ -206,6 +218,8 @@ def conceptualize(model: TripleGenerator,
 
 def generate_concept(model: TripleGenerator,
             input_file = 'processed_data/triples_csv', 
+            input_triple_nodes_file = 'processed_data/triple_nodes.csv',
+            input_triple_edges_file = 'processed_data/triple_edges.csv',
             output_folder = 'processed_data/triples_conceptualized', 
             output_file = 'output.json', 
             logging_file = 'processed_data/logging.txt', 
@@ -227,6 +241,8 @@ def generate_concept(model: TripleGenerator,
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     logging.getLogger().addHandler(file_handler)
     
+    temp_kg = csvs_to_temp_graphml(input_triple_nodes_file, input_triple_edges_file)
+
     # read data
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
@@ -260,6 +276,7 @@ def generate_concept(model: TripleGenerator,
         for batch_type, batch in tqdm(all_batches, desc="Shard_{}".format(shard)):
             # print("batch_type", batch_type)
             # print("batch", batch)
+            replace_context_token = None
             if batch_type == 'event':
                 template = EVENT_PROMPT
                 node_type = 'event'
@@ -268,6 +285,7 @@ def generate_concept(model: TripleGenerator,
                 template = ENTITY_PROMPT
                 node_type = 'entity'
                 replace_token = '[ENTITY]'
+                replace_context_token = '[CONTEXT]'
             elif batch_type == 'relation':
                 template = RELATION_PROMPT
                 node_type = 'relation'
@@ -275,7 +293,25 @@ def generate_concept(model: TripleGenerator,
 
             inputs = []
             for node in batch:
-                prompt = template.replace(replace_token, node)
+                # sample node from given node and replace context token.
+                if replace_context_token:
+                    node_id = get_node_id(node)
+                    entity_predecessors = list(temp_kg.predecessors(node_id))
+                    entity_successors = list(temp_kg.successors(node_id))
+
+                    context = ""
+
+                    if len(entity_predecessors) > 0:
+                        random_two_neighbors = random.sample(entity_predecessors, min(1, len(entity_predecessors)))
+                        context += ", ".join([f"{temp_kg.nodes[neighbor]['id']} {temp_kg[neighbor][node_id]['relation']}" for neighbor in random_two_neighbors])
+                    
+                    if len(entity_successors) > 0:
+                        random_two_neighbors = random.sample(entity_successors, min(1, len(entity_successors)))
+                        context += ", ".join([f"{temp_kg[node_id][neighbor]['relation']} {temp_kg.nodes[neighbor]['id']}" for neighbor in random_two_neighbors])
+                    
+                    prompt = template.replace(replace_token, node).replace(replace_context_token, context)
+                else:
+                    prompt = template.replace(replace_token, node)
                 constructed_input = [
                     {"role": "system", "content": "You are a helpful AI assistant."},
                     {"role": "user", "content": f"{prompt}"},

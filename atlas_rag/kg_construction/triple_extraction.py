@@ -3,7 +3,8 @@
 Knowledge Graph Extraction Pipeline
 Extracts entities, relations, and events from text data using transformer models.
 """
-
+import hashlib
+import networkx as nx
 import json
 import os
 import argparse
@@ -422,6 +423,8 @@ class KnowledgeGraphExtractor:
         generate_concept(
             model=self.model,
             input_file=f"{self.config.output_directory}/triples_csv/missing_concepts_{self.config.filename_pattern}_from_json.csv",
+            input_triple_nodes_file=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_without_emb.csv",
+            input_triple_edges_file=f"{self.config.output_directory}/triples_csv/triple_edges_{self.config.filename_pattern}_from_json_without_emb.csv",
             output_folder=f"{self.config.output_directory}/concepts",
             output_file="concept.json",
             logging_file=f"{self.config.output_directory}/concepts/logging.txt",
@@ -517,9 +520,6 @@ class KnowledgeGraphExtractor:
             index_path=f"{self.config.output_directory}/vector_index/triple_edges_{self.config.filename_pattern}_from_json_with_concept_with_emb_non_norm.index",
             npy_path=f"{self.config.output_directory}/vector_index/triple_edges_{self.config.filename_pattern}_from_json_with_concept_with_emb.npy",
         )
-    
-       
-    
 
 def parse_command_line_arguments() -> ProcessingConfig:
     """Parse command line arguments and return configuration."""

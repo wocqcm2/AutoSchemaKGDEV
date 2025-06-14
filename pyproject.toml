@@ -39,6 +39,7 @@ dependencies = [
     "tenacity>=9.1.2",
     "pandas>=2.0.0",
     "sentence-transformers>=4.1.0",
+    # Transformers support Nvidia-embed v2 until 4.47.1, due to the changes to Mistral.
     "transformers>=4.42.4,<=4.47.1",
     "datasets",
     "einops",
