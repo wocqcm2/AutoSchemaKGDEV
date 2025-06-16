@@ -156,9 +156,13 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
             # Query Node relationships
             start_time = time.time()
             outgoing_query = """
-            MATCH (n:Node)-[r:Relation]-(m:Node)
-            WHERE n.numeric_id IN $last_node_ids
-            RETURN n.numeric_id AS source, n.name as source_name, r.relation AS rel_type, m.numeric_id AS target, m.name AS target_name, 'Node' AS target_type
+            CALL apoc.cypher.runTimeboxed(
+            "MATCH (n:Node)-[r:Relation]-(m:Node) WHERE n.numeric_id IN $last_node_ids RETURN n.numeric_id AS source, n.name AS source_name, r.relation AS rel_type, m.numeric_id AS target, m.name AS target_name, 'Node' AS target_type",
+            {last_node_ids: $last_node_ids},
+            60000
+            )
+            YIELD value
+            RETURN value.source AS source, value.source_name AS source_name, value.rel_type AS rel_type, value.target AS target, value.target_name AS target_name, value.target_type AS target_type
             """
             outgoing_result = session.run(outgoing_query, last_node_ids=last_node_ids)
             outgoing = [(record["source"], record['source_name'], record["rel_type"], record["target"], record["target_name"], record["target_type"]) 
