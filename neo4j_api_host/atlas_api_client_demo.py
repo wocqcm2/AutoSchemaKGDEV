@@ -13,14 +13,19 @@ message = [
     }
 ]
 
-base_url ="http://0.0.0.0:10089/v1/"
-client = OpenAI(api_key="EMPTY", base_url=base_url)
+wiki_base_url = "http://0.0.0.0:10087/v1/"
+wiki_client = OpenAI(api_key="EMPTY", base_url=wiki_base_url)
+pes2o_base_url = "http://0.0.0.0:10088/v1/"
+pes2o_client = OpenAI(api_key="EMPTY", base_url=pes2o_base_url)
+cc_base_url ="http://0.0.0.0:10089/v1/"
+cc_client = OpenAI(api_key="EMPTY", base_url=cc_base_url)
 
 # knowledge graph en_simple_wiki_v0
-response = client.chat.completions.create(
-    model="llama",
-    messages=message,
-    max_tokens=2048,
-    temperature=0.5,
-)
-print(response.choices[0].message.content)
+for client in [wiki_client, pes2o_client, cc_client]:
+    response = client.chat.completions.create(
+        model="llama",
+        messages=message,
+        max_tokens=2048,
+        temperature=0.5,
+    )
+    print(response.choices[0].message.content)

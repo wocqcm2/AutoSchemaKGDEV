@@ -1,3 +1,5 @@
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '7'
 from openai import OpenAI
 from atlas_rag.reader import LLMGenerator
 from configparser import ConfigParser
@@ -8,20 +10,20 @@ import faiss
 import datetime
 import logging
 from logging.handlers import RotatingFileHandler
-import os
 from atlas_rag.billion.retriever import LargeKGRetriever
 from atlas_rag.billion.retriever.tog import LargeKGToGRetriever
 from atlas_rag.billion.neo4j_api import LargeKGConfig, start_app
 
 # use sentence embedding if you want to use sentence transformer
 # use NvEmbed if you want to use NvEmbed-v2 model
-sentence_model = SentenceTransformer('all-MiniLM-L12-v2',truncate_dim=32)
+sentence_model = SentenceTransformer('all-MiniLM-L12-v2',truncate_dim=32, device='cuda:0')
 sentence_encoder = SentenceEmbedding(sentence_model)
 # Load OpenRouter API key from config file
 config = ConfigParser()
 config.read('config.ini')
 # reader_model_name = "meta-llama/llama-3.3-70b-instruct"
-reader_model_name = "meta-llama/Llama-3.3-70B-Instruct"
+retriever_model_name = "meta-llama/Llama-3.3-70B-Instruct"
+reader_model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 client = OpenAI(
   # base_url="https://openrouter.ai/api/v1",
   # api_key=config['settings']['OPENROUTER_API_KEY'],
@@ -30,20 +32,21 @@ client = OpenAI(
 )
 llm_generator = LLMGenerator(client=client, model_name=reader_model_name)
 
+retriever_llm_generator = LLMGenerator(client=client, model_name=retriever_model_name)
 
 # prepare necessary objects for instantiation of LargeKGRetriever: neo4j driver, faiss index etc.
-neo4j_uri = "bolt://localhost:8013" # use bolt port for driver connection
+neo4j_uri = "bolt://localhost:8011" # use bolt port for driver connection
 user = "neo4j"
 password = "admin2024"
-keyword = 'cc_en' # can be wiki or pes2o  # keyword to identify the cc_en dataset
+keyword = 'en_simple_wiki_v0' # can be wiki or pes2o  # keyword to identify the cc_en dataset
 driver = GraphDatabase.driver(neo4j_uri, auth=(user, password))
 
-text_index = faiss.read_index(f"/data/httsangaj/GraphRAG/import/text_nodes_cc_en_from_json_with_emb_non_norm.index", faiss.IO_FLAG_MMAP)
-node_index = faiss.read_index(f"/data/httsangaj/GraphRAG/import/triple_nodes_cc_en_from_json_non_norm.index", faiss.IO_FLAG_MMAP)
+text_index = faiss.read_index(f"/data/httsangaj/GraphRAG/import/text_nodes_en_simple_wiki_v0_from_json_with_emb_non_norm.index", faiss.IO_FLAG_MMAP)
+node_index = faiss.read_index(f"/data/httsangaj/GraphRAG/import/triple_nodes_en_simple_wiki_v0_from_json_non_norm.index", faiss.IO_FLAG_MMAP)
 
 # setup logger
 date_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")    
-log_file_path = f'./log/LargeKGRAG.log'
+log_file_path = f'./log/LargeKGRAG_en_simple_wiki_v0.log'
 logger = logging.getLogger("LargeKGRAG")
 logger.setLevel(logging.INFO)
 max_bytes = 50 * 1024 * 1024  # 50 MB
@@ -54,7 +57,7 @@ logger.addHandler(handler)
 
 retriever = LargeKGRetriever(keyword = keyword,
                              neo4j_driver=driver,
-                             llm_generator=llm_generator,
+                             llm_generator=retriever_llm_generator,
                              sentence_encoder=sentence_encoder,
                              node_index= node_index,
                              passage_index=text_index,
@@ -68,9 +71,9 @@ tog_retriever = LargeKGToGRetriever(
     topN = 5,
     Dmax = 2,
     Wmax = 3,
-    llm_generator=llm_generator,
+    llm_generator=retriever_llm_generator,
     sentence_encoder=sentence_encoder,
-    filter_encoder = SentenceEmbedding(SentenceTransformer('all-MiniLM-L12-v2')),
+    filter_encoder = SentenceEmbedding(SentenceTransformer('all-MiniLM-L12-v2',device='cuda:0')),
     node_index = node_index,
     logger=logger
 )
@@ -85,4 +88,4 @@ large_kg_config = LargeKGConfig(
     
 )
 
-start_app(user_config=large_kg_config, host="0.0.0.0", port = 10089, reload=False)
+start_app(user_config=large_kg_config, host="0.0.0.0", port = 10087, reload=False)

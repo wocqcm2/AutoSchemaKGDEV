@@ -235,14 +235,11 @@ class LLMGenerator():
             return []  # Fallback to empty list or raise custom exception
  
     @retry(stop=(stop_after_delay(60) | stop_after_attempt(6)), wait=wait_fixed(2))
-    def large_kg_ner(self, text):
-        messages = deepcopy(ner_prompt)
-        messages.append(
-            {
-                "role": "user", 
-                "content": f"[[ ## question ## ]]\n{text}" 
-            }
-        )
+    def large_kg_tog_ner(self, text):
+        messages = [
+            {"role": "system", "content": "You are an advanced AI assistant that extracts named entities from given text. "},
+            {"role": "user", "content": f"Extract the named entities from: {text}"}
+        ]
         
         # Generate raw response from LLM
         raw_response = self._generate_response(messages, max_new_tokens=4096, temperature=0.7, frequency_penalty=1.1, response_format={"type": "json_object"})

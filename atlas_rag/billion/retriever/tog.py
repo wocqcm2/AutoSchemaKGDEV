@@ -8,6 +8,9 @@ import logging
 from atlas_rag.reader.llm_generator import LLMGenerator
 from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
 from atlas_rag.billion.retriever.base import BaseLargeKGEdgeRetriever
+import nltk
+from nltk.corpus import stopwords
+nltk.download('stopwords')
 
 class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
     def __init__(self, keyword: str, neo4j_driver: GraphDatabase, 
@@ -83,8 +86,6 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
             initial_nodes.extend([str(i) for i in I[0]])
         # no need filtering as ToG pruning will handle it.
         topk_nodes_ids = list(set(initial_nodes))
-        if len(topk_nodes_ids) > 2 * len(entities):
-            topk_nodes_ids = topk_nodes_ids[:2 * len(entities)]
 
         with self.neo4j_driver.session() as session:
             start_time = time.time()
@@ -126,7 +127,8 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
         paths_end_with_node = []
         paths_end_with_node_id = []
         paths_end_with_node_type = []
-
+        if self.verbose:
+            self.logger.info(f"Expanding paths, current paths: {P}")
         for p, pid, ptype in zip(P, PIDS, PTYPES):
             t = ptype[-1]
             if t == "Text":
@@ -210,6 +212,25 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
             #     if target == last_node_id and source not in p:
             #         new_path = p + [rel_type, source_name]
                     
+        # filter path contain stop words
+        for last_node, new_paths in last_node_to_new_paths.items():
+            filtered_new_paths = []
+            filtered_new_paths_ids = []
+            filtered_new_paths_types = []
+
+            for index, path in enumerate(new_paths):
+                too_common = False
+                for word in path:
+                    if word.lower() in stopwords.words('english'):
+                        too_common = True
+                        break
+                if not too_common:
+                    filtered_new_paths.append(path)
+                    filtered_new_paths_ids.append(last_node_to_new_paths_ids[last_node][index])
+                    filtered_new_paths_types.append(last_node_to_new_paths_types[last_node][index])
+            last_node_to_new_paths[last_node] = filtered_new_paths
+            last_node_to_new_paths_ids[last_node] = filtered_new_paths_ids
+            last_node_to_new_paths_types[last_node] = filtered_new_paths_types
 
         num_paths = 0
         for last_node, new_paths in last_node_to_new_paths.items():
@@ -221,32 +242,33 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
         new_ptypes = []
         if self.verbose:
             self.logger.info(f"Number of new paths before filtering: {num_paths}")
-            self.logger.info(f"Last node to new paths: {last_node_to_new_paths}")
+            self.logger.info(f"last nodes: {last_node_to_new_paths.keys()}")
         #### TODO: Filter by width , separated by Node Type and Text Type####
         if num_paths > len(last_node_ids) * width:
+            # Apply filtering when total paths exceed threshold
             for last_node, new_ps in last_node_to_new_paths.items():
                 if len(new_ps) > width:
                     path_embeddings = self.filter_encoder.encode(new_ps)
                     query_embeddings = self.filter_encoder.encode([query])
                     scores = np.dot(path_embeddings, query_embeddings.T).flatten()
                     top_indices = np.argsort(scores)[-width:]
-                    new_paths = new_paths + [new_ps[i] for i in top_indices]
-                    new_pids = new_pids + [last_node_to_new_paths_ids[last_node][i] for i in top_indices]
-                    new_ptypes = new_ptypes + [last_node_to_new_paths_types[last_node][i] for i in top_indices]
-
-            # for last_node, new_paths in last_node_to_new_paths_text.items():
-            #     if len(new_ps) > width:
-            #         path_embeddings = self.filter_encoder.encode(new_ps)
-            #         query_embeddings = self.filter_encoder.encode([query])
-            #         scores = np.dot(path_embeddings, query_embeddings.T).flatten()
-            #         top_indices = np.argsort(scores)[-width:]
-            #         new_paths = new_paths + [new_ps[i] for i in top_indices]
-            #         new_pids = new_pids + [last_node_to_new_paths_text_ids[last_node][i] for i in top_indices]
-            #         new_ptypes = new_ptypes + [last_node_to_new_paths_text_types[last_node][i] for i in top_indices]
+                    new_paths.extend([new_ps[i] for i in top_indices])
+                    new_pids.extend([last_node_to_new_paths_ids[last_node][i] for i in top_indices])
+                    new_ptypes.extend([last_node_to_new_paths_types[last_node][i] for i in top_indices])
+                else:
+                    new_paths.extend(new_ps)
+                    new_pids.extend(last_node_to_new_paths_ids[last_node])
+                    new_ptypes.extend(last_node_to_new_paths_types[last_node])
+        else:
+            # Collect all paths without filtering when total is at or below threshold
+            for last_node, new_ps in last_node_to_new_paths.items():
+                new_paths.extend(new_ps)
+                new_pids.extend(last_node_to_new_paths_ids[last_node])
+                new_ptypes.extend(last_node_to_new_paths_types[last_node])
 
         if self.verbose:
             self.logger.info(f"Expanded paths count: {len(new_paths)}")
-            self.logger.info(f"Filtered Paths: {new_paths}")
+            self.logger.info(f"Expanded paths: {new_paths}")
         return new_paths, new_pids, new_ptypes
 
     def path_to_string(self, path: List[str]) -> str:
@@ -287,22 +309,60 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
             List[List[str]]: Top N paths.
         """
         path_strings = P
-        ratings = []
-        for path_str in path_strings:
-            prompt = f"Please rate the following path based on relevance to the query (1-5, 0 if not relevant).\nQuery: {query}\nPath: {path_str}"
-            messages = [
-                {"role": "system", "content": "Provide a single integer rating (0-5)."},
-                {"role": "user", "content": prompt}
-            ]
-            response = self.llm_generator._generate_response(messages)
-            rating = int(response.strip()) if response.strip().isdigit() else 0
-            ratings.append(rating)
-        sorted_paths = [path for _, path in sorted(zip(ratings, P), key=lambda x: x[0], reverse=True)]
-        top_paths = sorted_paths[:topN]
-        top_pids = [PIDS[i] for i in range(len(P)) if ratings[i] in sorted(ratings, reverse=True)[:topN]]
-        top_ptypes = [PTYPES[i] for i in range(len(PTYPES)) if ratings[i] in sorted(ratings, reverse=True)[:topN]]
+        # Construct user prompt with all paths listed
+        user_prompt = f"Please rate the following paths based on how well they help answer the query (1-5, 0 if not relevant).\n\nQuery: {query}\n\nPaths:\n"
+        for i, path_str in enumerate(path_strings, 1):
+            user_prompt += f"{i}. {path_str}\n"
+        user_prompt += "\nProvide a list of integers, each corresponding to the rating of the path's ability to help answer the query."
+
+        # Define system prompt to expect a list of integers
+        system_prompt = "You are a rating machine that only provides a list of comma-separated integers (0-5) as a response, each rating how well the corresponding path helps answer the query."
+        
+        # Send single prompt to the language model
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+        response = self.llm_generator._generate_response(messages)
+        if self.verbose:
+            self.logger.info(f"LLM response for pruning: {response}")
+        # Parse the response into a list of ratings
+        rating_str = response.strip()
+        ratings = [int(r) for r in rating_str.split(',') if r.strip().isdigit()]
+        
+        # Ensure ratings length matches number of paths, padding with 0s if necessary
+        if len(ratings) < len(path_strings):
+            # self.logger.warning(f"Number of ratings ({len(ratings)}) does not match number of paths ({len(path_strings)}). Padding with 0s.")
+            # ratings += [0] * (len(path_strings) - len(ratings))
+            # fall back to use filter encoder to get topN
+            self.logger.warning(f"Number of ratings ({len(ratings)}) does not match number of paths ({len(path_strings)}). Using filter encoder to get topN paths.")
+            path_embeddings = self.filter_encoder.encode(path_strings)
+            query_embedding = self.filter_encoder.encode([query])
+            scores = np.dot(path_embeddings, query_embedding.T).flatten()
+            top_indices = np.argsort(scores)[-topN:]
+            top_paths = [path_strings[i] for i in top_indices]
+            return top_paths, [PIDS[i] for i in top_indices], [PTYPES[i] for i in top_indices]
+            
+        
+        # Sort indices based on ratings in descending order
+        sorted_indices = sorted(range(len(ratings)), key=lambda i: ratings[i], reverse=True)
+
+        # Filter out indices where the rating is 0
+        filtered_indices = [i for i in sorted_indices if ratings[i] > 0]
+
+        # Take the top N indices from the filtered list
+        top_indices = filtered_indices[:topN]
+
+        # Use the filtered indices to get the top paths, PIDS, and PTYPES
+        top_paths = [path_strings[i] for i in top_indices]
+        top_pids = [PIDS[i] for i in top_indices]
+        top_ptypes = [PTYPES[i] for i in top_indices]
+        
+        
+        # Log top paths if verbose mode is enabled
         if self.verbose:
             self.logger.info(f"Pruned to top {topN} paths: {top_paths}")
+        
         return top_paths, top_pids, top_ptypes
 
     def reasoning(self, query: str, P: List[List[str]]) -> bool:
@@ -325,7 +385,7 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
                     node2_name = path[i + 2]
                     triples.append(f"({node1_name}, {rel}, {node2_name})")
         triples_str = ". ".join(triples)
-        prompt = f"Are these triples sufficient to answer the query?\nQuery: {query}\nTriples: {triples_str}"
+        prompt = f"Are these triples, along with your knowledge, sufficient to answer the query?\nQuery: {query}\nTriples: {triples_str}"
         messages = [
             {"role": "system", "content": "Answer Yes or No."},
             {"role": "user", "content": prompt}
@@ -372,6 +432,10 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
                     self.logger.info("No paths to expand.")
                 break
             P, PIDS, PTYPES = self.prune(query, P, PIDS, PTYPES, topN)
+            if D == Dmax:
+                if self.verbose:
+                    self.logger.info(f"Reached maximum depth {Dmax}, stopping expansion.")
+                break
             if self.reasoning(query, P):
                 if self.verbose:
                     self.logger.info("Paths sufficient, stopping expansion.")
