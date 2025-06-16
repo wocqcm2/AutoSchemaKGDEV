@@ -17,11 +17,17 @@ from atlas_rag.billion.retriever.base import BaseLargeKGRetriever
 class LargeKGRetriever(BaseLargeKGRetriever):
     def __init__(self, keyword:str, neo4j_driver: GraphDatabase, 
                 llm_generator:LLMGenerator, sentence_encoder:BaseEmbeddingModel, 
-                node_index:faiss.Index, passage_index:faiss.Index, logger:Logger = None): 
+                node_index:faiss.Index, passage_index:faiss.Index, 
+                topN: int   = 5,
+                number_of_source_nodes_per_ner: int  = 10,
+                sampling_area : int = 250,logger:Logger = None): 
         # istantiate one kg resources
         self.keyword = keyword
         self.neo4j_driver = neo4j_driver
         self.gds_driver = GraphDataScience(self.neo4j_driver)
+        self.topN = topN
+        self.number_of_source_nodes_per_ner = number_of_source_nodes_per_ner
+        self.sampling_area = sampling_area
         self.llm_generator = llm_generator
         self.sentence_encoder = sentence_encoder
         self.node_faiss_index = node_index
@@ -291,12 +297,12 @@ class LargeKGRetriever(BaseLargeKGRetriever):
             self.logger.info(f"largekgRAG : Personalization dict's number of node: {len(personalization_dict)}")
         return personalization_dict
        
-    def retrieve_passages(self, query, retriever_config:dict):
+    def retrieve_passages(self, query):
         if self.verbose:
             self.logger.info(f"largekgRAG : Retrieving passages for query: {query}")
-        topN = retriever_config.get("topN", 5)
-        number_of_source_nodes_per_ner = retriever_config.get("number_of_source_nodes_per_ner", 5)
-        sampling_area = retriever_config.get("sampling_area", 100)
+        topN = self.topN
+        number_of_source_nodes_per_ner = self.number_of_source_nodes_per_ner
+        sampling_area = self.sampling_area
         personalization_dict = self.retrieve_personalization_dict(query, number_of_source_nodes_per_ner)
         if personalization_dict == {}:
             return [], [0]

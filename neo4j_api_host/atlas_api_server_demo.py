@@ -10,6 +10,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 from atlas_rag.billion.retriever import LargeKGRetriever
+from atlas_rag.billion.retriever.tog import LargeKGToGRetriever
 from atlas_rag.billion.neo4j_api import LargeKGConfig, start_app
 
 # use sentence embedding if you want to use sentence transformer
@@ -37,8 +38,8 @@ password = "admin2024"
 keyword = 'cc_en' # can be wiki or pes2o  # keyword to identify the cc_en dataset
 driver = GraphDatabase.driver(neo4j_uri, auth=(user, password))
 
-node_index = faiss.read_index(f"/data/httsangaj/GraphRAG/import/text_nodes_cc_en_from_json_with_emb_non_norm.index", faiss.IO_FLAG_MMAP)
-text_index = faiss.read_index(f"/data/httsangaj/GraphRAG/import/triple_nodes_cc_en_from_json_non_norm.index", faiss.IO_FLAG_MMAP)
+text_index = faiss.read_index(f"/data/httsangaj/GraphRAG/import/text_nodes_cc_en_from_json_with_emb_non_norm.index", faiss.IO_FLAG_MMAP)
+node_index = faiss.read_index(f"/data/httsangaj/GraphRAG/import/triple_nodes_cc_en_from_json_non_norm.index", faiss.IO_FLAG_MMAP)
 
 # setup logger
 date_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")    
@@ -57,16 +58,31 @@ retriever = LargeKGRetriever(keyword = keyword,
                              sentence_encoder=sentence_encoder,
                              node_index= node_index,
                              passage_index=text_index,
+                             topN = 5,
+                             number_of_source_nodes_per_ner = 10,
+                             sampling_area = 250,
                              logger = logger) # since cc_en is enormous compared to other dataset, we have different retrieval mechanism for it, which here we use keyword to identify cc_en.
-
+tog_retriever = LargeKGToGRetriever(
+    keyword = keyword,
+    neo4j_driver=driver,
+    topN = 5,
+    Dmax = 2,
+    Wmax = 3,
+    llm_generator=llm_generator,
+    sentence_encoder=sentence_encoder,
+    filter_encoder = SentenceEmbedding(SentenceTransformer('all-MiniLM-L12-v2')),
+    node_index = node_index,
+    logger=logger
+)
 
 large_kg_config = LargeKGConfig(
-    largekg_retriever = retriever,
+    largekg_retriever = tog_retriever,
     reader_llm_generator = llm_generator, # you can use the same llm_generator as above or a different one for reading the retrieved passages,
     driver=driver,
     logger=logger,
     is_felm = False,
-    is_mmlu = False
+    is_mmlu = False,
+    
 )
 
 start_app(user_config=large_kg_config, host="0.0.0.0", port = 10089, reload=False)

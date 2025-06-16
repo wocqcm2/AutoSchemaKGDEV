@@ -77,11 +77,12 @@ class ChatCompletionRequest(BaseModel):
     stream: Optional[bool] = False
     tools: Optional[Union[dict, List[dict]]] = None
     repetition_penalty: Optional[float] = 1.1
-    retriever: Optional[str] = "largekg"
     retriever_config: Optional[dict] = {
         "topN": 5,
         "number_of_source_nodes_per_ner": 10,
-        "sampling_area": 250
+        "sampling_area": 250,
+        "Dmax": 2,
+        "Wmax": 3
     }
     class Config:
         extra = "allow"
@@ -128,8 +129,6 @@ async def create_chat_completion(request: ChatCompletionRequest):
             stream=False,
             repetition_penalty=request.repetition_penalty,
             tools=request.tools,
-            retriever=request.retriever,
-            retriever_config=request.retriever_config
         )
 
         last_message = request.messages[-1]
@@ -146,7 +145,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
             rag_text = parts[-1] if len(parts) > 1 else None
         print(f"RAG text: {rag_text}")
         if not is_exemption:
-            passages, passages_score = large_kg_config.largekg_retriever.retrieve_passages(rag_text, request.retriever_config)
+            passages, passages_score = large_kg_config.largekg_retriever.retrieve_passages(rag_text)
             context = "No retrieved context, Please answer the question with your own knowledge." if not passages else "\n".join([f"Passage {i+1}: {text}" for i, text in enumerate(reversed(passages))])
             
         if is_mmlu:
