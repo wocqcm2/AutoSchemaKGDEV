@@ -1,6 +1,7 @@
 from neo4j import GraphDatabase
 import faiss
 import numpy as np
+import random
 from collections import defaultdict
 from typing import List
 import time
@@ -157,7 +158,9 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
             start_time = time.time()
             outgoing_query = """
             CALL apoc.cypher.runTimeboxed(
-            "MATCH (n:Node)-[r:Relation]-(m:Node) WHERE n.numeric_id IN $last_node_ids RETURN n.numeric_id AS source, n.name AS source_name, r.relation AS rel_type, m.numeric_id AS target, m.name AS target_name, 'Node' AS target_type",
+            "MATCH (n:Node)-[r:Relation]-(m:Node) WHERE n.numeric_id IN $last_node_ids 
+            WITH n, r, m ORDER BY rand() LIMIT 60000
+            RETURN n.numeric_id AS source, n.name AS source_name, r.relation AS rel_type, m.numeric_id AS target, m.name AS target_name, 'Node' AS target_type",
             {last_node_ids: $last_node_ids},
             60000
             )
@@ -197,7 +200,8 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
             for source, source_name, rel_type, target, target_name, target_type in outgoing:
                 if source == last_node_id and target not in p:
                     new_path = p + [rel_type, target_name]
-
+                    if target_name.lower() in stopwords.words('english'):
+                        continue
                     last_node_to_new_paths[last_node].append(new_path)
                     last_node_to_new_paths_ids[last_node].append(pid + [target])
                     last_node_to_new_paths_types[last_node].append(ptype + [target_type])
@@ -216,25 +220,6 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
             #     if target == last_node_id and source not in p:
             #         new_path = p + [rel_type, source_name]
                     
-        # filter path contain stop words
-        for last_node, new_paths in last_node_to_new_paths.items():
-            filtered_new_paths = []
-            filtered_new_paths_ids = []
-            filtered_new_paths_types = []
-
-            for index, path in enumerate(new_paths):
-                too_common = False
-                for word in path:
-                    if word.lower() in stopwords.words('english'):
-                        too_common = True
-                        break
-                if not too_common:
-                    filtered_new_paths.append(path)
-                    filtered_new_paths_ids.append(last_node_to_new_paths_ids[last_node][index])
-                    filtered_new_paths_types.append(last_node_to_new_paths_types[last_node][index])
-            last_node_to_new_paths[last_node] = filtered_new_paths
-            last_node_to_new_paths_ids[last_node] = filtered_new_paths_ids
-            last_node_to_new_paths_types[last_node] = filtered_new_paths_types
 
         num_paths = 0
         for last_node, new_paths in last_node_to_new_paths.items():
