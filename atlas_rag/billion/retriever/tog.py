@@ -232,7 +232,6 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
         if self.verbose:
             self.logger.info(f"Number of new paths before filtering: {num_paths}")
             self.logger.info(f"last nodes: {last_node_to_new_paths.keys()}")
-        #### TODO: Filter by width , separated by Node Type and Text Type####
         if num_paths > len(last_node_ids) * width:
             # Apply filtering when total paths exceed threshold
             for last_node, new_ps in last_node_to_new_paths.items():

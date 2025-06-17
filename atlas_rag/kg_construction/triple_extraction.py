@@ -15,7 +15,7 @@ from pathlib import Path
 import torch
 from datasets import load_dataset
 from tqdm import tqdm
-from atlas_rag.utils.json_repair import repair_json
+import json_repair
 from atlas_rag.utils.triple_generator import TripleGenerator
 from atlas_rag.utils.json_2_csv import json2csv
 from atlas_rag.kg_construction.concept_generation import generate_concept
@@ -32,9 +32,10 @@ from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
 
 
 
+
 TRIPLE_INSTRUCTIONS = {
     "entity_relation": """Given a passage, summarize all the important entities and the relations between them in a concise manner. Relations should briefly capture the connections between entities, without repeating information from the head and tail entities. The entities should be as specific as possible. Exclude pronouns from being considered as entities. 
-    You must **strictly output in the following JSON format**:
+    You must **strictly output in the following JSON format**:\n
     [
         {
             "Head": "{a noun}",
@@ -44,7 +45,7 @@ TRIPLE_INSTRUCTIONS = {
     ]""",
 
     "event_entity":  """Please analyze and summarize the participation relations between the events and entities in the given paragraph. Each event is a single independent sentence. Additionally, identify all the entities that participated in the events. Do not use ellipses. 
-    You must **strictly output in the following JSON format**:
+    You must **strictly output in the following JSON format**:\n
     [
         {
             "Event": "{a simple sentence describing an event}",
@@ -53,7 +54,7 @@ TRIPLE_INSTRUCTIONS = {
     ] """,
    
     "event_relation":  """Please analyze and summarize the relationships between the events in the paragraph. Each event is a single independent sentence. Identify temporal and causal relationships between the events using the following types: before, after, at the same time, because, and as a result. Each extracted triple should be specific, meaningful, and able to stand alone.  Do not use ellipses.  
-    You must **strictly output in the following JSON format**:
+    You must **strictly output in the following JSON format**:\n
     [
         {
             "Head": "{a simple sentence describing the event 1}",
@@ -240,36 +241,35 @@ class OutputParser:
         pass
 
     
-    def extract_json_content(self, text: str) -> str:
-        """Extract JSON content from model output."""
+    # def extract_json_content(self, text: str) -> str:
+    #     """Extract JSON content from model output."""
         
-        json_start = text.find("[")
-        json_end = text.rfind("]") + 1
+    #     json_start = text.find("[")
+    #     json_end = text.rfind("]") + 1
         
-        if json_end == 0 or json_end < json_start:
-            json_end = len(text)
+    #     if json_end == 0 or json_end < json_start:
+    #         json_end = len(text)
             
-        return text[json_start:json_end]
+    #     return text[json_start:json_end]
     
-    def parse_json_safely(self, json_text: str) -> List[Dict[str, Any]]:
-        """Safely parse JSON with error handling."""
-        try:
-            # Clean the JSON text
-            cleaned = json_text.strip().replace("\n", "").replace("\r", "").replace("\t", "")
-            repaired = repair_json(cleaned)
-            return json.loads(repaired)
-        except Exception as e:
-            print(f"JSON parsing error: {e}")
-            print(f"Problematic JSON: {json_text}")
-            return []
+    # def parse_json_safely(self, json_text: str) -> List[Dict[str, Any]]:
+    #     """Safely parse JSON with error handling."""
+    #     try:
+    #         # Clean the JSON text
+    #         cleaned = json_text.strip().replace("\n", "").replace("\r", "").replace("\t", "")
+    #         repaired = repair_json(cleaned)
+    #         return json.loads(repaired)
+    #     except Exception as e:
+    #         print(f"JSON parsing error: {e}")
+    #         print(f"Problematic JSON: {json_text}")
+    #         return []
     
     def extract_structured_data(self, outputs: List[str]) -> List[List[Dict[str, Any]]]:
         """Extract structured data from model outputs."""
         results = []
         
         for output in outputs:
-            json_content = self.extract_json_content(output)
-            parsed_data = self.parse_json_safely(json_content)
+            parsed_data = json_repair.loads(output)
             results.append(parsed_data)
             
         return results
@@ -404,6 +404,7 @@ class KnowledgeGraphExtractor:
                     stage_outputs = (stage1_results, stage2_results, stage3_results)
                     
                     # Write results
+
                     for i in range(len(batch_ids)):
                         result = self.prepare_result_dict(batch_data, stage_outputs, i)
                         
