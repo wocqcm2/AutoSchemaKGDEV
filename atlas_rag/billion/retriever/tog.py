@@ -84,7 +84,8 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
             D, I = self.node_faiss_index.search(entity_embedding, top_k_nodes)
             if self.verbose:
                 self.logger.info(f"Entity: {entity}, FAISS Distances: {D}, Indices: {I}")
-            initial_nodes.extend([str(i) for i in I[0]])
+            if len(I[0]) > 0:  # Check if results exist
+                initial_nodes.extend([str(i) for i in I[0]])
         # no need filtering as ToG pruning will handle it.
         topk_nodes_ids = list(set(initial_nodes))
 
@@ -131,6 +132,8 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
         if self.verbose:
             self.logger.info(f"Expanding paths, current paths: {P}")
         for p, pid, ptype in zip(P, PIDS, PTYPES):
+            if not p or not pid or not ptype:  # Skip empty paths
+                continue
             t = ptype[-1]
             if t == "Text":
                 paths_end_with_text.append(p)
@@ -330,7 +333,9 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
             top_indices = np.argsort(scores)[-topN:]
             top_paths = [path_strings[i] for i in top_indices]
             return top_paths, [PIDS[i] for i in top_indices], [PTYPES[i] for i in top_indices]
-            
+        elif len(ratings) > len(path_strings):
+            self.logger.warning(f"Number of ratings ({len(ratings)}) exceeds number of paths ({len(path_strings)}). Trimming ratings.")
+            ratings = ratings[:len(path_strings)]
         
         # Sort indices based on ratings in descending order
         sorted_indices = sorted(range(len(ratings)), key=lambda i: ratings[i], reverse=True)
@@ -342,6 +347,9 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
         top_indices = filtered_indices[:topN]
 
         # Use the filtered indices to get the top paths, PIDS, and PTYPES
+        if self.verbose:
+            self.logger.info(f"Top indices after pruning: {top_indices}")
+            self.logger.info(f"length of path_strings: {len(path_strings)}")
         top_paths = [path_strings[i] for i in top_indices]
         top_pids = [PIDS[i] for i in top_indices]
         top_ptypes = [PTYPES[i] for i in top_indices]
@@ -367,6 +375,8 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
         triples = []
         with self.neo4j_driver.session() as session:
             for path in P:
+                if len(path) < 3:
+                    continue
                 for i in range(0, len(path) - 2, 2):
                     node1_name = path[i]
                     rel = path[i + 1]

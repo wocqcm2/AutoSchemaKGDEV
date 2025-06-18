@@ -6,10 +6,14 @@ message = [
     },
     {
         'role':'user', 
-        'content':"""Given the following question and four candidate answers (A, B, C and D), choose the answer.\n
-    Question: What would be the most likely thing one would do with the compound MgSO4 7H2O?\n
-    A. power a car\nB. blow up a building\n
-    C. soak ones feet\nD. fertilize a lawn\n"""
+        'content':"""Given the following question and four candidate answers (A, B, C and D), choose the answer.
+Question: The openSSL implementation described in “Remote Timing Attacks are Practical” (by Brumley and Boneh) uses the following performance optimizations: Chinese Remainder (CR), Montgomery Representation (MR), Karatsuba Multiplication (KM), and Repeated squaring and Sliding windows (RS). Which of the following options would close the timing channel attack described in the paper if you turned the listed optimizations off?
+1. RS and KM
+2. RS and MR
+A. True, True
+B. False, False
+C. True, False
+D. False, True"""
     }
 ]
 
