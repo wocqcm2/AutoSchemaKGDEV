@@ -15,3 +15,4 @@ neo4j-server-dulce/
 import.report
 *with_emb.csv
 dist
+test.py

@@ -39,8 +39,7 @@ dependencies = [
     "tenacity>=9.1.2",
     "pandas>=2.0.0",
     "sentence-transformers>=4.1.0",
-    # Transformers support Nvidia-embed v2 until 4.47.1, due to the changes to Mistral.
-    "transformers>=4.42.4,<=4.47.1",
+    "transformers",
     "datasets",
     "einops",
     "accelerate>=1.7.0",
@@ -50,22 +49,11 @@ dependencies = [
     "azure-cli",
     "azure-ai-inference",
     "azure-identity",
-    "tensordict<=0.5.0",
+    "tensordict",
     "torchdata"
 ]
 [project.optional-dependencies]
-gpu = [
-    "torch>=2.5.1",
-    "torchvision>=0.20.1",
-    "torchaudio>=2.5.1",
-    "flash-attn>=2.2.0",
-]
-
-dev = [
-    "torch>=2.5.1",
-    "torchvision>=0.20.1",
-    "torchaudio>=2.5.1",
-    "flash-attn>=2.2.0",
-    "pytest",
-    "pytest-mock"
+nvembed = [
+    "transformers>=4.42.4,<=4.47.1",
+    "tensordict<=0.5.0"
 ]

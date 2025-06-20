@@ -68,7 +68,7 @@ TRIPLE_INSTRUCTIONS = {
 PASSAGE_START = "Here is the passage. "
 
 # Constants
-TOKEN_LIMIT = 1024
+TOKEN_LIMIT = 2048
 INSTRUCTION_TOKEN_ESTIMATE = 200
 CHAR_TO_TOKEN_RATIO = 3.5
 
@@ -153,19 +153,10 @@ class DatasetProcessor:
     def prepare_dataset(self, raw_dataset) -> List[Dict[str, Any]]:
         """Process raw dataset into chunks suitable for processing."""
         processed_samples = []
-        sample_count = 0
         
-        for sample in raw_dataset:
-            sample_count += 1
-            
-            # Check data size limit
-            if (self.config.debug_mode and sample_count >= 20) or \
-               (hasattr(self.config, 'max_data_size') and 
-                self.config.max_data_size and sample_count >= self.config.max_data_size):
-                break
-                
-            # Check slicing
-            if not self.should_process_sample(sample_count):
+        for idx, sample in enumerate(raw_dataset):
+            # Check slicing: Process samples where idx % slice_total == slice_current (0-based)
+            if idx % self.config.slice_total != self.config.slice_current:
                 continue
                 
             # Filter non-English content
@@ -176,6 +167,10 @@ class DatasetProcessor:
             chunks = self.create_sample_chunks(sample)
             processed_samples.extend(chunks)
             
+            # Check data size limit (optional, for debug mode)
+            if self.config.debug_mode and len(processed_samples) >= 20:
+                break
+        
         return processed_samples
 
 

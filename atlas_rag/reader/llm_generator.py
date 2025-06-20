@@ -12,7 +12,7 @@ from logging import Logger
 from atlas_rag.retrieval.retriever.base import BaseEdgeRetriever, BasePassageRetriever
 
 retry_decorator = retry(
-    stop=(stop_after_delay(210) | stop_after_attempt(8)),  # Max wait of 2 minutes
+    stop=(stop_after_delay(180) | stop_after_attempt(5)),  # Max wait of 2 minutes
     wait=wait_exponential(multiplier=1, min=1, max=60) + wait_random(min=0, max=5)
 )
 
@@ -45,7 +45,7 @@ class LLMGenerator():
 
     @retry_decorator
     def _generate_response(self, messages, do_sample=True, 
-                           max_new_tokens=32768,
+                           max_new_tokens=8192,
                            temperature = 0.7,
                            frequency_penalty = None,
                            response_format = {"type": "text"}  # Default response format,
@@ -58,6 +58,7 @@ class LLMGenerator():
                 temperature=temperature,
                 frequency_penalty= NOT_GIVEN if frequency_penalty is None else frequency_penalty,
                 response_format = response_format if response_format is not None else {"type": "text"},
+                timeout = 120
             )
             return response.choices[0].message.content
         elif self.inference_type == "pipeline":

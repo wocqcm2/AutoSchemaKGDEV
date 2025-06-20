@@ -20,6 +20,7 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
                  topN : int = 5,
                  Dmax : int = 3,
                  Wmax : int = 3,
+                 prune_size: int = 10,
                  logger: logging.Logger = None):
         """
         Initialize the LargeKGToGRetriever for billion-level KG retrieval using Neo4j.
@@ -43,6 +44,7 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
         self.topN = topN
         self.Dmax = Dmax
         self.Wmax = Wmax
+        self.prune_size = prune_size
 
     def ner(self, text: str) -> List[str]:
         """
@@ -81,7 +83,7 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
         initial_nodes = []
         for entity in entities:
             entity_embedding = self.sentence_encoder.encode([entity])
-            D, I = self.node_faiss_index.search(entity_embedding, top_k_nodes)
+            D, I = self.node_faiss_index.search(entity_embedding, 3)
             if self.verbose:
                 self.logger.info(f"Entity: {entity}, FAISS Distances: {D}, Indices: {I}")
             if len(I[0]) > 0:  # Check if results exist
@@ -201,7 +203,7 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
             last_node_id = pid[-1] 
             # Outgoing Node -> Node
             for source, source_name, rel_type, target, target_name, target_type in outgoing:
-                if source == last_node_id and target not in p:
+                if source == last_node_id and target_name not in p:
                     new_path = p + [rel_type, target_name]
                     if target_name.lower() in stopwords.words('english'):
                         continue
@@ -299,27 +301,40 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
         Returns:
             List[List[str]]: Top N paths.
         """
+        ratings = []
         path_strings = P
-        # Construct user prompt with all paths listed
-        user_prompt = f"Please rate the following paths based on how well they help answer the query (1-5, 0 if not relevant).\n\nQuery: {query}\n\nPaths:\n"
-        for i, path_str in enumerate(path_strings, 1):
-            user_prompt += f"{i}. {path_str}\n"
-        user_prompt += "\nProvide a list of integers, each corresponding to the rating of the path's ability to help answer the query."
-
-        # Define system prompt to expect a list of integers
-        system_prompt = "You are a rating machine that only provides a list of comma-separated integers (0-5) as a response, each rating how well the corresponding path helps answer the query."
         
-        # Send single prompt to the language model
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-        response = self.llm_generator._generate_response(messages)
-        if self.verbose:
-            self.logger.info(f"LLM response for pruning: {response}")
-        # Parse the response into a list of ratings
-        rating_str = response.strip()
-        ratings = [int(r) for r in rating_str.split(',') if r.strip().isdigit()]
+        # Process paths in chunks of 10
+        for i in range(0, len(path_strings), self.prune_size):
+            chunk = path_strings[i:i + self.prune_size]
+            
+            # Construct user prompt with the current chunk of paths listed
+            user_prompt = f"Please rate the following paths based on how well they help answer the query (1-5, 0 if not relevant).\n\nQuery: {query}\n\nPaths:\n"
+            for j, path_str in enumerate(chunk, 1):
+                user_prompt += f"{j + i}. {path_str}\n"
+            user_prompt += "\nProvide a list of integers, each corresponding to the rating of the path's ability to help answer the query."
+
+            # Define system prompt to expect a list of integers
+            system_prompt = "You are a rating machine that only provides a list of comma-separated integers (0-5) as a response, each rating how well the corresponding path helps answer the query."
+            
+            # Send the prompt to the language model
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ]
+            
+            response = self.llm_generator._generate_response(messages, max_new_tokens=1024, temperature=0.0)
+            if self.verbose:
+                self.logger.info(f"LLM response for chunk {i // self.prune_size + 1}: {response}")
+            
+            # Parse the response into a list of ratings
+            rating_str = response.strip()
+            chunk_ratings = [int(r) for r in rating_str.split(',') if r.strip().isdigit()]
+            if len(chunk_ratings) > len(chunk):
+                chunk_ratings = chunk_ratings[:len(chunk)]
+                if self.verbose:
+                    self.logger.warning(f"Received more ratings ({len(chunk_ratings)}) than paths in chunk ({len(chunk)}). Trimming ratings.")
+            ratings.extend(chunk_ratings)  # Concatenate ratings
         
         # Ensure ratings length matches number of paths, padding with 0s if necessary
         if len(ratings) < len(path_strings):
@@ -385,10 +400,10 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
         triples_str = ". ".join(triples)
         prompt = f"Are these triples, along with your knowledge, sufficient to answer the query?\nQuery: {query}\nTriples: {triples_str}"
         messages = [
-            {"role": "system", "content": "Answer Yes or No."},
+            {"role": "system", "content": "Answer Yes or No only."},
             {"role": "user", "content": prompt}
         ]
-        response = self.llm_generator._generate_response(messages)
+        response = self.llm_generator._generate_response(messages,max_new_tokens=512)
         if self.verbose:
             self.logger.info(f"Reasoning result: {response}")
         return "yes" in response.lower()
