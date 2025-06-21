@@ -32,7 +32,7 @@ from atlas_rag.kg_construction.prompt import TRIPLE_INSTRUCTIONS
 
 
 # Constants
-TOKEN_LIMIT = 2048
+TOKEN_LIMIT = 1024
 INSTRUCTION_TOKEN_ESTIMATE = 200
 CHAR_TO_TOKEN_RATIO = 3.5
 
@@ -373,7 +373,7 @@ class KnowledgeGraphExtractor:
                         if self.config.debug_mode:
                             self.debug_print_result(result)
                         
-                        output_stream.write(json.dumps(result) + "\n")
+                        output_stream.write(json.dumps(result, ensure_ascii=False) + "\n")
                         output_stream.flush()
 
     def convert_json_to_csv(self):
@@ -382,7 +382,7 @@ class KnowledgeGraphExtractor:
                  data_dir=f"{self.config.output_directory}/kg_extraction"
                  )
     
-    def generate_concept_csv_temp(self, batch_size: int = 64):
+    def generate_concept_csv_temp(self, batch_size: int = 64, **kwargs):
         generate_concept(
             model=self.model,
             input_file=f"{self.config.output_directory}/triples_csv/missing_concepts_{self.config.filename_pattern}_from_json.csv",
@@ -392,6 +392,7 @@ class KnowledgeGraphExtractor:
             output_file="concept.json",
             logging_file=f"{self.config.output_directory}/concepts/logging.txt",
             batch_size=batch_size,
+            **kwargs
         )
     
     def create_concept_csv(self):

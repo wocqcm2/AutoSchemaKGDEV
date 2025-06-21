@@ -7,82 +7,10 @@ import hashlib
 import re
 from atlas_rag.utils.triple_generator import TripleGenerator
 from atlas_rag.utils.csv_to_graphml import csvs_to_temp_graphml, get_node_id
-
+from atlas_rag.kg_construction.prompt import CONCEPT_INSTRUCTIONS
 # Increase the field size limit
 csv.field_size_limit(10 * 1024 * 1024)  # 10 MB limit
 
-EVENT_PROMPT = '''I will give you an EVENT. You need to give several phrases containing 1-2 words for the ABSTRACT EVENT of this EVENT.
-            You must return your answer in the following format: phrases1, phrases2, phrases3,...
-            You can't return anything other than answers.
-            These abstract event words should fulfill the following requirements.
-            1. The ABSTRACT EVENT phrases can well represent the EVENT, and it could be the type of the EVENT or the related concepts of the EVENT.    
-            2. Strictly follow the provided format, do not add extra characters or words.
-            3. Write at least 3 or more phrases at different abstract level if possible.
-            4. Do not repeat the same word and the input in the answer.
-            5. Stop immediately if you can't think of any more phrases, and no explanation is needed.
-
-            EVENT: A man retreats to mountains and forests.
-            Your answer: retreat, relaxation, escape, nature, solitude
-            EVENT: A cat chased a prey into its shelter
-            Your answer: hunting, escape, predation, hidding, stalking
-            EVENT: Sam playing with his dog
-            Your answer: relaxing event, petting, playing, bonding, friendship
-            EVENT: [EVENT]
-            Your answer:
-            '''
-
-ENTITY_PROMPT = '''I will give you an ENTITY. You need to give several phrases containing 1-2 words for the ABSTRACT ENTITY of this ENTITY.
-            You must return your answer in the following format: phrases1, phrases2, phrases3,...
-            You can't return anything other than answers.
-            These abstract intention words should fulfill the following requirements.
-            1. The ABSTRACT ENTITY phrases can well represent the ENTITY, and it could be the type of the ENTITY or the related concepts of the ENTITY.
-            2. Strictly follow the provided format, do not add extra characters or words.
-            3. Write at least 3 or more phrases at different abstract level if possible.
-            4. Do not repeat the same word and the input in the answer.
-            5. Stop immediately if you can't think of any more phrases, and no explanation is needed.
-
-            ENTITY: Soul
-            CONTEXT: premiered BFI London Film Festival, became highest-grossing Pixar release
-            Your answer: movie, film
-
-            ENTITY: Thinkpad X60
-            CONTEXT: Richard Stallman announced he is using Trisquel on a Thinkpad X60
-            Your answer: Thinkpad, laptop, machine, device, hardware, computer, brand
-
-            ENTITY: Harry Callahan
-            CONTEXT: bluffs another robber, tortures Scorpio
-            Your answer: person, Amarican, character, police officer, detective
-
-            ENTITY: Black Mountain College
-            CONTEXT: was started by John Andrew Rice, attracted faculty
-            Your answer: college, university, school, liberal arts college
-
-            EVENT: 1st April
-            CONTEXT: Utkal Dibas celebrates
-            Your answer: date, day, time, festival
-
-            ENTITY: [ENTITY]
-            CONTEXT: [CONTEXT]
-            Your answer:
-            '''
-
-RELATION_PROMPT = '''I will give you an RELATION. You need to give several phrases containing 1-2 words for the ABSTRACT RELATION of this RELATION.
-            You must return your answer in the following format: phrases1, phrases2, phrases3,...
-            You can't return anything other than answers.
-            These abstract intention words should fulfill the following requirements.
-            1. The ABSTRACT RELATION phrases can well represent the RELATION, and it could be the type of the RELATION or the simplest concepts of the RELATION.
-            2. Strictly follow the provided format, do not add extra characters or words.
-            3. Write at least 3 or more phrases at different abstract level if possible.
-            4. Do not repeat the same word and the input in the answer.
-            5. Stop immediately if you can't think of any more phrases, and no explanation is needed.
-            
-            RELATION: participated in
-            Your answer: become part of, attend, take part in, engage in, involve in
-            RELATION: be included in
-            Your answer: join, be a part of, be a member of, be a component of
-            RELATION: [RELATION]
-            Your answer:
-            '''
 
 
 def build_batch_data(sessions, batch_size):
@@ -183,7 +111,8 @@ def conceptualize(model: TripleGenerator,
                   sample_num=None, 
                   batch_size=32, 
                   shard=0, 
-                  num_shards=1):
+                  num_shards=1,
+                  **kwargs):
     """
     Encapsulates the logic for parsing arguments, setting up the environment, and calling the generate function.
 
@@ -214,7 +143,8 @@ def conceptualize(model: TripleGenerator,
              sample_num=sample_num,
              batch_size=batch_size,
              shard=shard,
-             num_shards=num_shards)
+             num_shards=num_shards,
+             **kwargs)
 
 def generate_concept(model: TripleGenerator,
             input_file = 'processed_data/triples_csv', 
@@ -226,7 +156,8 @@ def generate_concept(model: TripleGenerator,
             sample_num=None, 
             batch_size=32, 
             shard=0, 
-            num_shards=1):
+            num_shards=1,
+            **kwargs):
     log_dir = os.path.dirname(logging_file)
     if log_dir and not os.path.exists(log_dir):
         os.makedirs(log_dir)
@@ -234,6 +165,8 @@ def generate_concept(model: TripleGenerator,
     # Create the log file if it doesn't exist
     if not os.path.exists(logging_file):
         open(logging_file, 'w').close()
+
+    language = kwargs.get('language', 'en')
 
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     file_handler = logging.FileHandler(logging_file)
@@ -278,16 +211,16 @@ def generate_concept(model: TripleGenerator,
             # print("batch", batch)
             replace_context_token = None
             if batch_type == 'event':
-                template = EVENT_PROMPT
+                template = CONCEPT_INSTRUCTIONS[language]['event']
                 node_type = 'event'
                 replace_token = '[EVENT]'
             elif batch_type == 'entity':
-                template = ENTITY_PROMPT
+                template = CONCEPT_INSTRUCTIONS[language]['entity']
                 node_type = 'entity'
                 replace_token = '[ENTITY]'
                 replace_context_token = '[CONTEXT]'
             elif batch_type == 'relation':
-                template = RELATION_PROMPT
+                template = CONCEPT_INSTRUCTIONS[language]['relation']
                 node_type = 'relation'
                 replace_token = '[RELATION]'
 
