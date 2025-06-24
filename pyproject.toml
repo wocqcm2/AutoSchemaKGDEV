@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "atlas-rag"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
     {name = "Jiaxin Bai", email = "jbai@connect.ust.hk"},
     {name = "Hong Ting TSANG", email = "httsangaj@connect.ust.hk"},
@@ -49,11 +49,8 @@ dependencies = [
     "azure-cli",
     "azure-ai-inference",
     "azure-identity",
-    "tensordict",
-    "torchdata"
 ]
 [project.optional-dependencies]
 nvembed = [
     "transformers>=4.42.4,<=4.47.1",
-    "tensordict<=0.5.0"
 ]
