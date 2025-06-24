@@ -9,6 +9,7 @@ from atlas_rag.billion.utils import start_up_large_kg_index_graph
 from atlas_rag.reader import LLMGenerator
 from neo4j import Driver
 from dataclasses import dataclass
+import traceback
 
 @dataclass
 class LargeKGConfig:
@@ -209,7 +210,52 @@ async def create_chat_completion(request: ChatCompletionRequest):
     except Exception as e:
         print("ERROR: ", e)
         print("Catched error")
-        raise HTTPException(status_code=500, detail=str(e))
+        traceback.print_exc()
+        system_prompt = 'You are a helpful assistant.'
+        gen_params = dict(
+            messages=request.messages,
+            temperature=0.8,
+            top_p=request.top_p,
+            max_tokens=request.max_tokens or 1024,
+            echo=False,
+            stream=False,
+            repetition_penalty=request.repetition_penalty,
+            tools=request.tools,
+        )
+        last_message = request.messages[-1]
+        system_prompt = 'You are a helpful assistant.'
+        question = last_message.content if last_message.role == 'user' else request.messages[-2].content
+        rag_chat_content = [
+                {
+                    "role": "system",
+                    "content": f"{system_prompt}"
+                },
+                {
+                    "role": "user",
+                    "content": f"""{question} """
+                }
+            ]
+        response = large_kg_config.reader_llm_generator.generate_with_custom_messages(
+            custom_messages=rag_chat_content,
+            max_new_tokens=gen_params["max_tokens"],
+            temperature=gen_params["temperature"],
+            frequency_penalty = 1.1
+        )
+        message = ChatMessage(
+            role="assistant",
+            content=response.strip()
+        )
+        choice_data = ChatCompletionResponseChoice(
+            index=0,
+            message=message,
+            finish_reason="stop"
+        )
+        return ChatCompletionResponse(
+            model=request.model,
+            id="",
+            object="chat.completion",
+            choices=[choice_data]
+        )
 
 
 def start_app(user_config:LargeKGConfig, host="0.0.0.0", port=10090, reload=False):

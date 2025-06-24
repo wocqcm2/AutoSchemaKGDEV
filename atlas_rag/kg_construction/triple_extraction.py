@@ -27,45 +27,9 @@ from atlas_rag.utils.convert_csv2npy import convert_csv_to_npy
 from atlas_rag.utils.compute_embedding import compute_embedding
 from atlas_rag.utils.create_index import build_faiss_from_npy
 from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
+from atlas_rag.kg_construction.prompt import TRIPLE_INSTRUCTIONS
 
 
-
-
-
-
-TRIPLE_INSTRUCTIONS = {
-    "entity_relation": """Given a passage, summarize all the important entities and the relations between them in a concise manner. Relations should briefly capture the connections between entities, without repeating information from the head and tail entities. The entities should be as specific as possible. Exclude pronouns from being considered as entities. 
-    You must **strictly output in the following JSON format**:\n
-    [
-        {
-            "Head": "{a noun}",
-            "Relation": "{a verb}",
-            "Tail": "{a noun}",
-        }...
-    ]""",
-
-    "event_entity":  """Please analyze and summarize the participation relations between the events and entities in the given paragraph. Each event is a single independent sentence. Additionally, identify all the entities that participated in the events. Do not use ellipses. 
-    You must **strictly output in the following JSON format**:\n
-    [
-        {
-            "Event": "{a simple sentence describing an event}",
-            "Entity": ["entity 1", "entity 2", "..."]
-        }...
-    ] """,
-   
-    "event_relation":  """Please analyze and summarize the relationships between the events in the paragraph. Each event is a single independent sentence. Identify temporal and causal relationships between the events using the following types: before, after, at the same time, because, and as a result. Each extracted triple should be specific, meaningful, and able to stand alone.  Do not use ellipses.  
-    You must **strictly output in the following JSON format**:\n
-    [
-        {
-            "Head": "{a simple sentence describing the event 1}",
-            "Relation": "{temporal or causality relation between the events}",
-            "Tail": "{a simple sentence describing the event 2}"
-        }...
-    ]"""
-        
-}
-
-PASSAGE_START = "Here is the passage. "
 
 # Constants
 TOKEN_LIMIT = 1024
@@ -119,20 +83,17 @@ class TextChunker:
 class DatasetProcessor:
     """Processes and prepares dataset for knowledge graph extraction."""
     
-    def __init__(self, config: ProcessingConfig, instructions: Dict[str, str]):
+    def __init__(self, config: ProcessingConfig):
         self.config = config
-        self.instructions = instructions
         self.chunker = TextChunker()
         
-    def filter_english_content(self, sample: Dict[str, Any]) -> bool:
+    def filter_language_content(self, sample: Dict[str, Any]) -> bool:
         """Check if content is in English."""
         metadata = sample.get("metadata", {})
-        language = metadata.get("lang", "en")
-        return language == "en"
+        language = metadata.get("lang", "en")  # Default to English if not specified
+        supported_languages = list(TRIPLE_INSTRUCTIONS.keys())
+        return language in supported_languages
     
-    def should_process_sample(self, index: int) -> bool:
-        """Determine if sample should be processed based on slicing."""
-        return index % self.config.slice_total == self.config.slice_current
     
     def create_sample_chunks(self, sample: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Create chunks from a single sample."""
@@ -151,31 +112,58 @@ class DatasetProcessor:
         return chunks
     
     def prepare_dataset(self, raw_dataset) -> List[Dict[str, Any]]:
-        """Process raw dataset into chunks suitable for processing."""
-        processed_samples = []
-        sample_count = 0
+        """Process raw dataset into chunks suitable for processing with generalized slicing."""
         
-        for sample in raw_dataset:
-            sample_count += 1
+        processed_samples = []
+        total_texts = len(raw_dataset)
+        
+        # Handle edge cases
+        if total_texts == 0:
+            print(f"No texts found for slice {self.config.slice_current+1}/{self.config.slice_total}")
+            return processed_samples
+        
+        # Calculate base and remainder for fair distribution
+        base_texts_per_slice = total_texts // self.config.slice_total
+        remainder = total_texts % self.config.slice_total
+        
+        # Calculate start index
+        if self.config.slice_current < remainder:
+            start_idx = self.config.slice_current * (base_texts_per_slice + 1)
+        else:
+            start_idx = remainder * (base_texts_per_slice + 1) + (self.config.slice_current - remainder) * base_texts_per_slice
+        
+        # Calculate end index
+        if self.config.slice_current < remainder:
+            end_idx = start_idx + (base_texts_per_slice + 1)
+        else:
+            end_idx = start_idx + base_texts_per_slice
+        
+        # Ensure indices are within bounds
+        start_idx = min(start_idx, total_texts)
+        end_idx = min(end_idx, total_texts)
+        
+        print(f"Processing slice {self.config.slice_current+1}/{self.config.slice_total} "
+            f"(texts {start_idx}-{end_idx-1} of {total_texts}, {end_idx - start_idx} documents)")
+        
+        # Process documents in assigned slice
+        for idx in range(start_idx, end_idx):
+            sample = raw_dataset[idx]
             
-            # Check data size limit
-            if (self.config.debug_mode and sample_count >= 20) or \
-               (hasattr(self.config, 'max_data_size') and 
-                self.config.max_data_size and sample_count >= self.config.max_data_size):
-                break
-                
-            # Check slicing
-            if not self.should_process_sample(sample_count):
-                continue
-                
-            # Filter non-English content
-            if not self.filter_english_content(sample):
+            # Filter by language
+            if not self.filter_language_content(sample):
+                print(f"Unsupported language in sample {idx}, skipping.")
                 continue
                 
             # Create chunks
             chunks = self.create_sample_chunks(sample)
             processed_samples.extend(chunks)
             
+            # Debug mode early termination
+            if self.config.debug_mode and len(processed_samples) >= 20:
+                print("Debug mode: Stopping at 20 chunks")
+                break
+        
+        print(f"Generated {len(processed_samples)} chunks for slice {self.config.slice_current+1}/{self.config.slice_total}")
         return processed_samples
 
 
@@ -186,29 +174,39 @@ class CustomDataLoader:
         self.raw_dataset = dataset
         self.processor = processor
         self.processed_data = processor.prepare_dataset(dataset)
+        self.stage_to_prompt_dict = {
+            "stage_1": "entity_relation",
+            "stage_2": "event_entity",
+            "stage_3": "event_relation"
+        }
         
     def __len__(self) -> int:
         return len(self.processed_data)
     
     def create_batch_instructions(self, batch_data: List[Dict[str, Any]]) -> List[str]:
-        """Create instruction strings for a batch."""
         messages_dict = {
             'stage_1': [],
             'stage_2': [],
             'stage_3': []
         }
         for item in batch_data:
+            # get language
+            language = item.get("metadata",{}).get("lang", "en")
+            system_msg = TRIPLE_INSTRUCTIONS.get(language, TRIPLE_INSTRUCTIONS["en"])['system'] 
+            stage_1_msg = TRIPLE_INSTRUCTIONS.get(language, TRIPLE_INSTRUCTIONS["en"])['entity_relation'] + TRIPLE_INSTRUCTIONS.get(language, TRIPLE_INSTRUCTIONS["en"])['passage_start'] + '\n' + item["text"]
+            stage_2_msg = TRIPLE_INSTRUCTIONS.get(language, TRIPLE_INSTRUCTIONS["en"])['event_entity'] + TRIPLE_INSTRUCTIONS.get(language, TRIPLE_INSTRUCTIONS["en"])['passage_start'] + '\n'+ item["text"]
+            stage_3_msg = TRIPLE_INSTRUCTIONS.get(language, TRIPLE_INSTRUCTIONS["en"])['event_relation'] + TRIPLE_INSTRUCTIONS.get(language, TRIPLE_INSTRUCTIONS["en"])['passage_start'] + '\n'+ item["text"]
             stage_one_message = [
-                {"role": "system", "content": self.processor.instructions["system"]},
-                {"role": "user", "content": self.processor.instructions["stage_1"]+item["text"]}
+                {"role": "system", "content": system_msg},
+                {"role": "user", "content": stage_1_msg}
             ]
             stage_two_message = [
-                {"role": "system", "content": self.processor.instructions["system"]},
-                {"role": "user", "content": self.processor.instructions["stage_2"]+item["text"]}
+                {"role": "system", "content": system_msg},
+                {"role": "user", "content": stage_2_msg}
             ]
             stage_three_message = [
-                {"role": "system", "content": self.processor.instructions["system"]},
-                {"role": "user", "content": self.processor.instructions["stage_3"]+item["text"]}
+                {"role": "system", "content": system_msg},
+                {"role": "user", "content": stage_3_msg}
             ]
             messages_dict['stage_1'].append(stage_one_message)
             messages_dict['stage_2'].append(stage_two_message)
@@ -240,30 +238,6 @@ class OutputParser:
     def __init__(self):
         pass
 
-    
-    # def extract_json_content(self, text: str) -> str:
-    #     """Extract JSON content from model output."""
-        
-    #     json_start = text.find("[")
-    #     json_end = text.rfind("]") + 1
-        
-    #     if json_end == 0 or json_end < json_start:
-    #         json_end = len(text)
-            
-    #     return text[json_start:json_end]
-    
-    # def parse_json_safely(self, json_text: str) -> List[Dict[str, Any]]:
-    #     """Safely parse JSON with error handling."""
-    #     try:
-    #         # Clean the JSON text
-    #         cleaned = json_text.strip().replace("\n", "").replace("\r", "").replace("\t", "")
-    #         repaired = repair_json(cleaned)
-    #         return json.loads(repaired)
-    #     except Exception as e:
-    #         print(f"JSON parsing error: {e}")
-    #         print(f"Problematic JSON: {json_text}")
-    #         return []
-    
     def extract_structured_data(self, outputs: List[str]) -> List[List[Dict[str, Any]]]:
         """Extract structured data from model outputs."""
         results = []
@@ -285,18 +259,6 @@ class KnowledgeGraphExtractor:
         self.model = model
         self.model_name = model.model_name
         self.parser = OutputParser()
-        self.setup_templates()
-        
-    def setup_templates(self):
-        """Setup chat templates and instructions."""
-
-        # Setup instruction templates
-        self.message_template = {
-            "system": "You are a helpful assistant who always response in a valid JSON array",
-            "stage_1": TRIPLE_INSTRUCTIONS["entity_relation"] + PASSAGE_START,
-            "stage_2": TRIPLE_INSTRUCTIONS["event_entity"] + PASSAGE_START,
-            "stage_3": TRIPLE_INSTRUCTIONS["event_relation"] + PASSAGE_START,
-        }
     
     def load_dataset(self) -> Any:
         """Load and prepare dataset."""
@@ -380,7 +342,7 @@ class KnowledgeGraphExtractor:
             print("Debug mode: Processing only 20 samples")
         
         # Create data processor and loader
-        processor = DatasetProcessor(self.config, self.message_template)
+        processor = DatasetProcessor(self.config)
         data_loader = CustomDataLoader(dataset["train"], processor)
         
         output_file = self.create_output_filename()
@@ -404,14 +366,14 @@ class KnowledgeGraphExtractor:
                     stage_outputs = (stage1_results, stage2_results, stage3_results)
                     
                     # Write results
-
+                    print(f"Processed {batch_counter} batches ({batch_counter * self.config.batch_size} chunks)")
                     for i in range(len(batch_ids)):
                         result = self.prepare_result_dict(batch_data, stage_outputs, i)
                         
                         if self.config.debug_mode:
                             self.debug_print_result(result)
                         
-                        output_stream.write(json.dumps(result) + "\n")
+                        output_stream.write(json.dumps(result, ensure_ascii=False) + "\n")
                         output_stream.flush()
 
     def convert_json_to_csv(self):
@@ -420,7 +382,7 @@ class KnowledgeGraphExtractor:
                  data_dir=f"{self.config.output_directory}/kg_extraction"
                  )
     
-    def generate_concept_csv_temp(self, batch_size: int = 64):
+    def generate_concept_csv_temp(self, batch_size: int = 64, **kwargs):
         generate_concept(
             model=self.model,
             input_file=f"{self.config.output_directory}/triples_csv/missing_concepts_{self.config.filename_pattern}_from_json.csv",
@@ -430,6 +392,7 @@ class KnowledgeGraphExtractor:
             output_file="concept.json",
             logging_file=f"{self.config.output_directory}/concepts/logging.txt",
             batch_size=batch_size,
+            **kwargs
         )
     
     def create_concept_csv(self):

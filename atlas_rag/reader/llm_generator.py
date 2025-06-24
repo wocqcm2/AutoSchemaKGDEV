@@ -1,6 +1,6 @@
 import json
 from openai import OpenAI, NOT_GIVEN
-from tenacity import retry, wait_fixed, stop_after_delay, stop_after_attempt
+from tenacity import retry, stop_after_attempt, stop_after_delay, wait_fixed, wait_exponential, wait_random
 from copy import deepcopy
 from atlas_rag.retrieval.filter_template import messages as filter_messages, validate_filter_output
 from atlas_rag.retrieval.prompt_template import prompt_template
@@ -10,6 +10,11 @@ import jsonschema
 from typing import Union
 from logging import Logger
 from atlas_rag.retrieval.retriever.base import BaseEdgeRetriever, BasePassageRetriever
+
+retry_decorator = retry(
+    stop=(stop_after_delay(180) | stop_after_attempt(5)),  # Max wait of 2 minutes
+    wait=wait_exponential(multiplier=1, min=1, max=60) + wait_random(min=0, max=5)
+)
 
 # from https://github.com/OSU-NLP-Group/HippoRAG/blob/main/src/qa/qa_reader.py
 # prompts from hipporag qa_reader
@@ -38,9 +43,9 @@ class LLMGenerator():
         self.cot_system_instruction_no_doc = "".join(cot_system_instruction_no_doc)
         self.cot_system_instruction_kg = "".join(cot_system_instruction_kg)
 
-    @retry(stop=(stop_after_delay(60) | stop_after_attempt(6)), wait=wait_fixed(5))
+    @retry_decorator
     def _generate_response(self, messages, do_sample=True, 
-                           max_new_tokens=32768,
+                           max_new_tokens=8192,
                            temperature = 0.7,
                            frequency_penalty = None,
                            response_format = {"type": "text"}  # Default response format,
@@ -53,6 +58,7 @@ class LLMGenerator():
                 temperature=temperature,
                 frequency_penalty= NOT_GIVEN if frequency_penalty is None else frequency_penalty,
                 response_format = response_format if response_format is not None else {"type": "text"},
+                timeout = 120
             )
             return response.choices[0].message.content
         elif self.inference_type == "pipeline":

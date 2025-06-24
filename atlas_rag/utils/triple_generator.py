@@ -80,7 +80,7 @@ class TripleGenerator:
         # Normalize messages input
         if isinstance(messages[0], dict):
             messages = [messages]  # Wrap single message list in a list
-
+        # messages is list of list of dict
         for input_data in messages:
             try:
                 corrected = generate_and_validate(
