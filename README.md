@@ -8,6 +8,8 @@ This project uses the following paper and data:
 *   **Full Data:** [Download the dataset](https://hkustconnect-my.sharepoint.com/:f:/g/personal/jbai_connect_ust_hk/EgJCqoU91KpAlSSOi6dzgccB6SCL4YBpsCyEtGiRBV4WNg) (onedrive)
 *   **Neo4j CSV Dumps:** [Download the dataset](https://huggingface.co/datasets/AlexFanWei/AutoSchemaKG) (huggingface dataset)
 
+### Update
+(24/06) - Add: ToG, Chinese KG construction. Separate NV-embed-v2 transformers dependency.
 
 ## AutoSchemaKG Overview
 
@@ -64,6 +66,10 @@ The project is organized into several key components:
 ## Install atlas-rag through pip
 ```bash
 pip install atlas-rag
+```
+To support NV-embed-v2, install the transformers package with the version constraint >=4.42.4,<=4.47.1 by running:
+```bash
+pip install atlas-rag[nvembed]
 ```
 
 ### KG Construction with ATLAS
