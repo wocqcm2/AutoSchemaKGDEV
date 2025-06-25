@@ -9,7 +9,7 @@ This project uses the following paper and data:
 *   **Neo4j CSV Dumps:** [Download the dataset](https://huggingface.co/datasets/AlexFanWei/AutoSchemaKG) (huggingface dataset)
 
 ### Update
-(24/06) - Add: ToG, Chinese KG construction. Separate NV-embed-v2 transformers dependency.
+(24/06) - Add: ToG, Chinese KG construction (refer to example_scripts for KG construction with different language). Separate NV-embed-v2 transformers dependency.
 
 ## AutoSchemaKG Overview
 
