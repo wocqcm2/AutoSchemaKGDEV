@@ -80,7 +80,7 @@ def fix_and_validate_response(response: str, prompt_type: str):
         response = "[" + response.strip() + "]"
     parsed_objects = json_repair.loads(response)
     if len(parsed_objects) == 0:
-        return corrected_json_string, True
+        return "[]", True
     # Define required keys for each prompt type
     required_keys = {
         "entity_relation": {"Head", "Relation", "Tail"},
