@@ -77,14 +77,22 @@ def build_batched_relations(all_node_list, batch_size):
     
     return batched_relations
 
-def batched_inference(model:TripleGenerator, inputs):
-    responses = model.generate(inputs)
+def batched_inference(model:TripleGenerator, inputs, record=False):
+    responses = model.generate(inputs, record = record)
     answers = []
-    for i in range(len(responses)):
-        answer = responses[i]
+    if record:
+        text_responses = [response[0] for response in responses]
+        usages = [response[1] for response in responses]
+    else:
+        text_responses = responses
+    for i in range(len(text_responses)):
+        answer = text_responses[i]
         answers.append([x.strip().lower() for x in answer.split(",")])
     
-    return answers
+    if record:
+        return answers, usages
+    else:
+        return answers
 
 def load_data_with_shard(input_file, shard_idx, num_shards):
 
@@ -167,6 +175,7 @@ def generate_concept(model: TripleGenerator,
         open(logging_file, 'w').close()
 
     language = kwargs.get('language', 'en')
+    record = kwargs.get('record', False)
 
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     file_handler = logging.FileHandler(logging_file)
@@ -253,7 +262,12 @@ def generate_concept(model: TripleGenerator,
 
             try:
                 # print("inputs", inputs)
-                answers = batched_inference(model, inputs)
+                if record:
+                    # If recording, we will get both answers and responses
+                    answers, usages = batched_inference(model, inputs, record=record)
+                else:
+                    answers = batched_inference(model, inputs, record=record)
+                    usages = None
                 # print("answers", answers)
             except Exception as e:
                 logging.error(f"Error processing {batch_type} batch: {e}")
@@ -264,8 +278,10 @@ def generate_concept(model: TripleGenerator,
             #     logging.error(f"Error processing {batch_type} batch: {e}")
             #     continue
 
-            for node, answer in zip(batch, answers):
+            for i,(node, answer) in enumerate(zip(batch, answers)):
                 # print(node, answer, node_type)
+                if usages is not None:
+                    logging.info(f"Usage log: Node {node}, completion_usage: {usages[i]}")
                 csv_writer.writerow([node, ", ".join(answer), node_type])
                 file.flush()
     # count unique conceptualized nodes

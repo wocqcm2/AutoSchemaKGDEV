@@ -132,7 +132,8 @@ def json2csv(dataset, data_dir, output_dir, test=False):
 
                             entity_triples.append((head_entity, relation, tail_entity))
                         except:
-                            pass
+                            print(f"Error processing entity triple: {entity_triple}")
+                            continue
 
                     # Process event triples
                     event_triples = []
@@ -141,11 +142,10 @@ def json2csv(dataset, data_dir, output_dir, test=False):
                             assert isinstance(event_triple["Head"], str)
                             assert isinstance(event_triple["Relation"], str)
                             assert isinstance(event_triple["Tail"], str)
-
                             head_event = event_triple["Head"]
                             relation = event_triple["Relation"]
                             tail_event = event_triple["Tail"]
-
+                            
                             # Clean the text
                             head_event = clean_text(head_event)
                             relation = clean_text(relation)
@@ -156,7 +156,7 @@ def json2csv(dataset, data_dir, output_dir, test=False):
 
                             event_triples.append((head_event, relation, tail_event))
                         except:
-                            pass
+                            print(f"Error processing event triple: {event_triple}")
 
                     # Process event-entity triples
                     event_entity_triples = []

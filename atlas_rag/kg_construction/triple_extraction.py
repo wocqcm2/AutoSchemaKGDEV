@@ -50,6 +50,7 @@ class ProcessingConfig:
     use_8bit: bool = False
     debug_mode: bool = False
     resume_from: int = 0
+    record : bool = False
 
 
 class TextChunker:
@@ -282,12 +283,16 @@ class KnowledgeGraphExtractor:
     
     def generate_with_model(self, model_inputs: Dict[str, str], max_tokens: int =8192, stage = 1) -> List[str]:
         """Generate text using the model."""
-        return self.model.generate(messages=model_inputs, max_tokens=max_tokens, stage=stage)
+        return self.model.generate(messages=model_inputs, max_tokens=max_tokens, stage=stage, record=self.config.record)
     
     def process_stage(self, instructions: Dict[str, str], stage = 1) -> Tuple[List[str], List[List[Dict[str, Any]]]]:
         """Process first stage: entity-relation extraction."""
         outputs = self.generate_with_model(instructions, stage = stage)
-        structured_data = self.parser.extract_structured_data(outputs)
+        if self.config.record:
+            text_outputs = [output[0] for output in outputs]
+        else:
+            text_outputs = outputs
+        structured_data = self.parser.extract_structured_data(text_outputs)
         return outputs, structured_data
     
     def create_output_filename(self) -> str:
@@ -306,8 +311,18 @@ class KnowledgeGraphExtractor:
     def prepare_result_dict(self, batch_data: Tuple, stage_outputs: Tuple, index: int) -> Dict[str, Any]:
         """Prepare result dictionary for a single sample."""
         ids, original_texts, metadata = batch_data
-        (stage1_outputs, entity_relations), (stage2_outputs, event_entities), (stage3_outputs, event_relations) = stage_outputs
-        
+        (stage1_results, entity_relations), (stage2_results, event_entities), (stage3_results, event_relations) = stage_outputs
+        if self.config.record:
+            stage1_outputs = [output[0] for output in stage1_results]
+            stage1_usage = [output[1] for output in stage1_results]
+            stage2_outputs = [output[0] for output in stage2_results]
+            stage2_usage = [output[1] for output in stage2_results]
+            stage3_outputs = [output[0] for output in stage3_results]
+            stage3_usage = [output[1] for output in stage3_results]
+        else:
+            stage1_outputs = stage1_results
+            stage2_outputs = stage2_results
+            stage3_outputs = stage3_results
         result = {
             "id": ids[index],
             "metadata": metadata[index],
@@ -317,8 +332,12 @@ class KnowledgeGraphExtractor:
             "event_relation_dict": event_relations[index],
             "output_stage_one": stage1_outputs[index],
             "output_stage_two": stage2_outputs[index],
-            "output_stage_three": stage3_outputs[index]
+            "output_stage_three": stage3_outputs[index],
         }
+        if self.config.record:
+            result['usage_stage_one'] = stage1_usage[index]
+            result['usage_stage_two'] = stage2_usage[index]
+            result['usage_stage_three'] = stage3_usage[index]
         
         # Handle date serialization
         if 'date_download' in result['metadata']:
@@ -364,7 +383,7 @@ class KnowledgeGraphExtractor:
                     # Combine results
                     batch_data = (batch_ids, batch_texts, batch_metadata)
                     stage_outputs = (stage1_results, stage2_results, stage3_results)
-                    
+
                     # Write results
                     print(f"Processed {batch_counter} batches ({batch_counter * self.config.batch_size} chunks)")
                     for i in range(len(batch_ids)):
@@ -372,7 +391,7 @@ class KnowledgeGraphExtractor:
                         
                         if self.config.debug_mode:
                             self.debug_print_result(result)
-                        
+   
                         output_stream.write(json.dumps(result, ensure_ascii=False) + "\n")
                         output_stream.flush()
 
