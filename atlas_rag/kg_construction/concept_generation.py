@@ -5,9 +5,11 @@ import csv
 import os
 import hashlib
 import re
-from atlas_rag.kg_construction.triple_generator import KnowledgeGraphGenerator
-from atlas_rag.utils.csv_processing.csv_to_graphml import csvs_to_temp_graphml, get_node_id
+from atlas_rag.llm_generator import LLMGenerator
+from atlas_rag.kg_construction import ProcessingConfig
+from atlas_rag.kg_construction.utils.csv_processing.csv_to_graphml import csvs_to_temp_graphml, get_node_id
 from atlas_rag.llm_generator.prompt.triple_extraction_prompt import CONCEPT_INSTRUCTIONS
+import pickle
 # Increase the field size limit
 csv.field_size_limit(10 * 1024 * 1024)  # 10 MB limit
 
@@ -77,8 +79,8 @@ def build_batched_relations(all_node_list, batch_size):
     
     return batched_relations
 
-def batched_inference(model:KnowledgeGraphGenerator, inputs, record=False):
-    responses = model.generate(inputs, record = record)
+def batched_inference(model:LLMGenerator, inputs, record=False):
+    responses = model.generate_with_custom_messages(inputs, record = record)
     answers = []
     if record:
         text_responses = [response[0] for response in responses]
@@ -111,57 +113,14 @@ def load_data_with_shard(input_file, shard_idx, num_shards):
     
     return data[start_idx:end_idx]
 
-def conceptualize(model: KnowledgeGraphGenerator,
-                  input_file = 'processed_data/triples_csv', 
-                  output_folder = 'processed_data/triples_conceptualized', 
-                  output_file = 'output.json', 
-                  logging_file = 'processed_data/logging.txt', 
-                  sample_num=None, 
-                  batch_size=32, 
-                  shard=0, 
-                  num_shards=1,
-                  **kwargs):
-    """
-    Encapsulates the logic for parsing arguments, setting up the environment, and calling the generate function.
-
-    Args:
-        model (TripleGenerator): The model to use for generating concepts.
-        input_file (str): Path to the input file.
-        output_folder (str): Path to the output folder.
-        output_file (str): Path to the output file.
-        logging_file (str): Path to the logging file.
-        sample_num (int): Sample number of sessions.
-        batch_size (int): Number of sessions processed at the same time.
-        shard (int): Shard id.
-        num_shards (int): Total number of shards.
-    """
-    # Set random seed for reproducibility
-
-    # Print environment information
-    # print("\n>>>Shard id:", shard)
-    # print("CUDA Device Count:", torch.cuda.device_count())
-    # print("VISIBLE DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES", None))
-    # print("Current CUDA Device:", torch.cuda.current_device())
-
-    # Call the generate function with the provided arguments
-    generate_concept(model,input_file=input_file,
-             output_folder=output_folder,
-             output_file=output_file,
-             logging_file=logging_file,
-             sample_num=sample_num,
-             batch_size=batch_size,
-             shard=shard,
-             num_shards=num_shards,
-             **kwargs)
-
-def generate_concept(model: KnowledgeGraphGenerator,
+def generate_concept(model: LLMGenerator,
             input_file = 'processed_data/triples_csv', 
             input_triple_nodes_file = 'processed_data/triple_nodes.csv',
             input_triple_edges_file = 'processed_data/triple_edges.csv',
             output_folder = 'processed_data/triples_conceptualized', 
             output_file = 'output.json', 
             logging_file = 'processed_data/logging.txt', 
-            sample_num=None, 
+            config:ProcessingConfig=None, 
             batch_size=32, 
             shard=0, 
             num_shards=1,
@@ -183,7 +142,7 @@ def generate_concept(model: KnowledgeGraphGenerator,
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     logging.getLogger().addHandler(file_handler)
     
-    temp_kg = csvs_to_temp_graphml(input_triple_nodes_file, input_triple_edges_file)
+    temp_kg = pickle.load(f"{config.output_directory}/kg_graphml/{config.filename_pattern}_without_concept.pkl")
 
     # read data
     if not os.path.exists(output_folder):

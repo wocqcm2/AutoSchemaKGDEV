@@ -1,2 +1,2 @@
-from .triple_extraction import KnowledgeGraphExtractor, ProcessingConfig
+from .triple_extraction import KnowledgeGraphExtractor, ProcessingConfig, KnowledgeGraphGenerator
 from .concept_generation import generate_concept

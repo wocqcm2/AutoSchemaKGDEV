@@ -1,44 +1,53 @@
 import json
-from openai import OpenAI, NOT_GIVEN
+from openai import OpenAI, AzureOpenAI, NOT_GIVEN
 from tenacity import retry, stop_after_attempt, stop_after_delay, wait_fixed, wait_exponential, wait_random
 from copy import deepcopy
 
 from atlas_rag.llm_generator.prompt.rag_prompt import cot_system_instruction, cot_system_instruction_kg, cot_system_instruction_no_doc, prompt_template
-from atlas_rag.llm_generator.prompt.filter_triple_prompt import validate_filter_output, filter_messages
-
+from atlas_rag.llm_generator.prompt.filter_triple_prompt import validate_filter_output, messages as filter_messages
 from atlas_rag.llm_generator.prompt.lkg_prompt import ner_prompt, validate_keyword_output, keyword_filtering_prompt
+from atlas_rag.retriever.base import BaseEdgeRetriever, BasePassageRetriever
+from atlas_rag.kg_construction.utils.json_processing.json_repair import fix_and_validate_response
+
 from transformers.pipelines import Pipeline
 import jsonschema
 from typing import Union
 from logging import Logger
-from atlas_rag.retriever.base import BaseRetriever, BaseEdgeRetriever, BasePassageRetriever
 
+
+import time
+stage_to_prompt_type = {
+    1: "entity_relation",
+    2: "event_entity",
+    3: "event_relation",
+}
 retry_decorator = retry(
-    stop=(stop_after_delay(180) | stop_after_attempt(5)),  # Max wait of 2 minutes
-    wait=wait_exponential(multiplier=1, min=1, max=60) + wait_random(min=0, max=5)
+    stop=(stop_after_delay(120) | stop_after_attempt(5)),  # Max 2 minutes or 5 attempts
+    wait=wait_exponential(multiplier=1, min=2, max=30) + wait_random(min=0, max=2),
 )
 class LLMGenerator():
     def __init__(self, client, model_name):
         self.model_name = model_name
         self.client : OpenAI|Pipeline  = client
-        if isinstance(client, OpenAI):
+        if isinstance(client, OpenAI|AzureOpenAI):
             self.inference_type = "openai"
         elif isinstance(client, Pipeline):
             self.inference_type = "pipeline"
         else:
             raise ValueError("Unsupported client type. Please provide either an OpenAI client or a Huggingface Pipeline Object.")
-        self.cot_system_instruction = "".join(cot_system_instruction)
-        self.cot_system_instruction_no_doc = "".join(cot_system_instruction_no_doc)
-        self.cot_system_instruction_kg = "".join(cot_system_instruction_kg)
 
     @retry_decorator
     def _generate_response(self, messages, do_sample=True, 
                            max_new_tokens=8192,
                            temperature = 0.7,
                            frequency_penalty = None,
-                           response_format = {"type": "text"}  # Default response format,
+                           response_format = {"type": "text"},
+                           return_text_only=True,
+                           return_thinking=False,
+                           reasoning_effort=None
                            ):
         if self.inference_type == "openai":
+            start_time = time.time()
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=messages,
@@ -46,99 +55,85 @@ class LLMGenerator():
                 temperature=temperature,
                 frequency_penalty= NOT_GIVEN if frequency_penalty is None else frequency_penalty,
                 response_format = response_format if response_format is not None else {"type": "text"},
-                timeout = 120
+                timeout = 120,
+                reasoning_effort= NOT_GIVEN if reasoning_effort is None else reasoning_effort,
             )
-            return response.choices[0].message.content
+            time_cost = time.time() - start_time
+            content = response.choices[0].message.content
+            if content is None and hasattr(response.choices[0].message, 'reasoning_content'):
+                content = response.choices[0].message.reasoning_content
+            else:
+                content = response.choices[0].message.content
+            if '</think>' in content and not return_thinking:
+                content = content.split('</think>')[-1].strip()
+            else:
+                if hasattr(response.choices[0].message, 'reasoning_content') and response.choices[0].message.reasoning_content is not None:
+                    content = '<think>' + response.choices[0].message.reasoning_content + '</think>' + content
+            if return_text_only:
+                return content
+            else:
+                completion_usage_dict = response.usage.model_dump()
+                completion_usage_dict['time'] = time.time() - start_time 
+                return content, completion_usage_dict
+                
         elif self.inference_type == "pipeline":
             # Convert messages to a single string for Hugging Face
-            input_text = " ".join([msg["content"] for msg in messages])
+            start_time = time.time()
             response = self.client(
                 messages,
                 max_new_tokens=max_new_tokens,
                 temperature=temperature,
-                do_sample=True,
+                do_sample=do_sample,
             )
-            return response[0]["generated_text"]
+            time_cost = time.time() - start_time
+            content = response[0]['generated_text'].strip()
+            if '</think>' in content and not return_thinking:
+                content = content.split('</think>')[-1].strip()
+
+            if return_text_only:
+                return content
+            else:
+                # return both content and usage
+                content = response[0]['generated_text'].strip()
+                token_count = len(content.split())  # Approximate token count
+                time_cost = time.time() - start_time  # Calculate time cost
+                completion_usage_dict = {
+                    'completion_tokens': token_count,
+                    'time': time_cost
+                }
+                return content, completion_usage_dict
         else:
-            raise ValueError(f"Unsupported client type: {self.client_type}")
-    
-    @retry(stop=(stop_after_delay(60) | stop_after_attempt(6)), wait=wait_fixed(5))
-    def filter_generation(self, messages):
-        """
-        Filter the generation using the configured client.
+            raise ValueError(f"Unsupported client type: {self.inference_type}")
 
-        Args:
-            messages: The input messages for the model.
-
-        Returns:
-            The filtered response.
-        """
-        if self.inference_type == "openai":
-            response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=messages,
-                temperature=0.0,
-                top_p=0.1,
-                max_tokens=4096,
-                response_format={"type": "json_object"},
-                frequency_penalty=0,
-                presence_penalty=0,
-            )
-            return response.choices[0].message.content
-        elif self.inference_type == "huggingface":
-            response = self.client(
-                messages,
-                max_new_tokens=4096,
-                temperature=0.0,
-                top_p=0.1,
-                do_sample=True,
-            )
-            return response[0]["generated_text"]
-        else:
-            raise ValueError(f"Unsupported client type: {self.client_type}")
-
-    # def _generate_batch_response(self, batch_messages, max_new_tokens=32768, temperature=0.7):
-    #     # Use ThreadPoolExecutor for concurrent requests if using API
-    #     with ThreadPoolExecutor() as executor:
-    #         future_to_index = {
-    #             executor.submit(self._generate_response, msg, max_new_tokens, temperature): idx 
-    #             for idx, msg in enumerate(batch_messages)
-    #         }
-    #         results = [None] * len(batch_messages)  # Pre-allocate results list
-    #         for future in as_completed(future_to_index):
-    #             index = future_to_index[future]  # Get the original index
-    #             results[index] = future.result()  # Place the result in the correct position
-    #     return results
-
-    def generate(self, question, max_new_tokens=1024):
+    def generate_cot(self, question, max_new_tokens=1024):
         messages = [
-            {"role": "system", "content": self.cot_system_instruction_no_doc},
+            {"role": "system", "content": "".join(cot_system_instruction_no_doc)},
             {"role": "user", "content": question},
         ]
         return self._generate_response(messages, max_new_tokens=max_new_tokens)
 
-    def generate_with_context(self, question, context, max_new_tokens=1024, frequency_penalty=None, temperature = 0.7, seed = None):
+    def generate_with_context(self, question, context, max_new_tokens=1024, temperature = 0.7):
         messages = [
-            {"role": "system", "content": self.cot_system_instruction},
+            {"role": "system", "content": "".join(cot_system_instruction)},
             {"role": "user", "content": f"{context}\n\n{question}\nThought:"},
         ]
-        # return self._generate_response(messages, max_new_tokens=max_new_tokens, frequency_penalty=frequency_penalty, temperature = temperature, seed = seed)
         return self._generate_response(messages, max_new_tokens=max_new_tokens, temperature = temperature)
 
-    def generate_with_context_one_shot(self, question, context, max_new_tokens=4096, frequency_penalty=None, temperature = 0.7, seed = None):
+    def generate_with_context_one_shot(self, question, context, max_new_tokens=4096, temperature = 0.7):
         messages = deepcopy(prompt_template)
         messages.append(
             {"role": "user", "content": f"{context}\n\nQuestions:{question}\nThought:"},
-            
         )
         return self._generate_response(messages, max_new_tokens=max_new_tokens, temperature = temperature)
-    def generate_with_context_kg(self, question, context, max_new_tokens=1024, frequency_penalty=None, temperature = 0.7, seed = None):
+    
+    def generate_with_context_kg(self, question, context, max_new_tokens=1024, temperature = 0.7):
         messages = [
-            {"role": "system", "content": self.cot_system_instruction_kg},
+            {"role": "system", "content": "".join(cot_system_instruction_kg)},
             {"role": "user", "content": f"{context}\n\n{question}"},
         ]
         return self._generate_response(messages, max_new_tokens=max_new_tokens, temperature = temperature)
 
+    @retry_decorator
     def filter_triples_with_entity(self,question, nodes, max_new_tokens=1024):
         messages = [
             {"role": "system", "content": """
@@ -158,7 +153,8 @@ class LLMGenerator():
         except Exception as e:
             # If all retries fail, return the original triples
             return json.loads(nodes)
-
+        
+    @retry_decorator
     def filter_triples_with_entity_event(self,question, triples):
         messages = deepcopy(filter_messages)
         messages.append(
@@ -167,14 +163,14 @@ class LLMGenerator():
 
         [[ ## fact_before_filter ## ]]
         {triples}"""})
-        
         try:
-            response = self.filter_generation(messages)
+            response = self._generate_response(messages, max_new_tokens=4096, temperature=0.0, response_format={"type": "json_object"})
             cleaned_data = validate_filter_output(response)
             return cleaned_data['fact']
         except Exception as e:
             # If all retries fail, return the original triples
             return []
+        
     def generate_with_custom_messages(self, custom_messages, do_sample=True, max_new_tokens=1024, temperature=0.8, frequency_penalty = None):
         return self._generate_response(custom_messages, do_sample, max_new_tokens, temperature, frequency_penalty)
     
@@ -388,3 +384,45 @@ class LLMGenerator():
         
         # If we've reached max iterations, return the last answer
         return answer, search_history
+    
+    @retry_decorator
+    def triple_extraction(self, messages, max_tokens=4096, stage=None, record = False):
+        prompt_type = stage_to_prompt_type.get(stage, None)
+        responses = []
+
+        # Normalize messages input
+        if isinstance(messages[0], dict):
+            messages = [messages]  # Wrap single message list in a list
+        # messages is list of list of dict
+        for input_data in messages:
+            try:
+                content, completion_usage_dict = self._generate_response(
+                    messages = input_data,
+                    max_new_tokens = max_tokens,
+                    temperature=0.0,
+                    frequency_penalty=0.5,
+                    reasoning_effort="none",
+                    return_text_only=False
+                )
+                if prompt_type:
+                    corrected, error = fix_and_validate_response(content, prompt_type)
+                    if error:
+                        raise ValueError(f"Validation failed for prompt_type '{prompt_type}'")
+                if corrected and corrected.strip():
+                    if record:
+                        responses.append((corrected, completion_usage_dict))
+                    else:
+                        responses.append(corrected)
+            except Exception as e:
+                print(f"Failed to generate valid response for input: {input_data} - Error: {str(e)}")
+                # add empty response to maintain index alignment
+                if record:
+                    completion_usage_dict = {
+                        'completion_tokens': 0,
+                        'total_tokens': 0,
+                        'time': 0
+                    }
+                    responses.append(("[]", completion_usage_dict))
+                else:
+                    responses.append("[]")
+        return responses

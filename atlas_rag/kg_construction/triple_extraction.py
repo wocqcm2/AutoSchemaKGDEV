@@ -14,19 +14,17 @@ import torch
 from datasets import load_dataset
 from tqdm import tqdm
 import json_repair
-from atlas_rag.kg_construction.triple_generator import KnowledgeGraphGenerator
-from atlas_rag.utils.json_processing.json_to_csv import json2csv
+from atlas_rag.llm_generator import LLMGenerator
+from atlas_rag.kg_construction.utils.json_processing.json_to_csv import json2csv
 from atlas_rag.kg_construction.concept_generation import generate_concept
-from atlas_rag.utils.csv_processing.merge_csv import merge_csv_files
-from atlas_rag.utils.csv_processing.csv_to_graphml import csvs_to_graphml
+from atlas_rag.kg_construction.utils.csv_processing.merge_csv import merge_csv_files
+from atlas_rag.kg_construction.utils.csv_processing.csv_to_graphml import csvs_to_graphml, csvs_to_temp_graphml
 from atlas_rag.kg_construction.concept_to_csv import all_concept_triples_csv_to_csv
-from atlas_rag.utils.csv_processing.csv_add_numeric_id import add_csv_columns
-from atlas_rag.utils.csv_processing.csv_to_npy import convert_csv_to_npy
-from atlas_rag.utils.csv_processing.compute_embedding import compute_embedding
+from atlas_rag.kg_construction.utils.csv_processing.csv_add_numeric_id import add_csv_columns
+from atlas_rag.kg_construction.utils.csv_processing.csv_to_npy import convert_csv_to_npy
+from atlas_rag.vectorstore.embedding_model import BaseEmbeddingModel
 from atlas_rag.vectorstore.create_index import build_faiss_from_npy
-from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
 from atlas_rag.llm_generator.prompt.triple_extraction_prompt import TRIPLE_INSTRUCTIONS
-
 
 # Constants
 TOKEN_LIMIT = 1024
@@ -40,14 +38,18 @@ class ProcessingConfig:
     model_path: str
     data_directory: str
     filename_pattern: str
-    batch_size: int = 16
+    batch_size_triple: int = 16
+    batch_size_concept: int = 64
     output_directory: str = "./generation_result_debug"
-    slice_total: int = 1
-    slice_current: int = 0
+    total_shards_triple: int = 1
+    current_shard_triple: int = 0
+    total_shards_concept: int = 1
+    current_shard_concept: int = 0
     use_8bit: bool = False
     debug_mode: bool = False
     resume_from: int = 0
     record : bool = False
+    max_new_tokens: int = 8192
 
 
 class TextChunker:
@@ -117,21 +119,21 @@ class DatasetProcessor:
         
         # Handle edge cases
         if total_texts == 0:
-            print(f"No texts found for slice {self.config.slice_current+1}/{self.config.slice_total}")
+            print(f"No texts found for slice {self.config.current_shard_triple+1}/{self.config.total_shards_triple}")
             return processed_samples
         
         # Calculate base and remainder for fair distribution
-        base_texts_per_slice = total_texts // self.config.slice_total
-        remainder = total_texts % self.config.slice_total
+        base_texts_per_slice = total_texts // self.config.total_shards_triple
+        remainder = total_texts % self.config.total_shards_triple
         
         # Calculate start index
-        if self.config.slice_current < remainder:
-            start_idx = self.config.slice_current * (base_texts_per_slice + 1)
+        if self.config.current_shard_triple < remainder:
+            start_idx = self.config.current_shard_triple * (base_texts_per_slice + 1)
         else:
-            start_idx = remainder * (base_texts_per_slice + 1) + (self.config.slice_current - remainder) * base_texts_per_slice
+            start_idx = remainder * (base_texts_per_slice + 1) + (self.config.current_shard_triple - remainder) * base_texts_per_slice
         
         # Calculate end index
-        if self.config.slice_current < remainder:
+        if self.config.current_shard_triple < remainder:
             end_idx = start_idx + (base_texts_per_slice + 1)
         else:
             end_idx = start_idx + base_texts_per_slice
@@ -140,7 +142,7 @@ class DatasetProcessor:
         start_idx = min(start_idx, total_texts)
         end_idx = min(end_idx, total_texts)
         
-        print(f"Processing slice {self.config.slice_current+1}/{self.config.slice_total} "
+        print(f"Processing slice {self.config.current_shard_triple+1}/{self.config.total_shards_triple} "
             f"(texts {start_idx}-{end_idx-1} of {total_texts}, {end_idx - start_idx} documents)")
         
         # Process documents in assigned slice
@@ -161,7 +163,7 @@ class DatasetProcessor:
                 print("Debug mode: Stopping at 20 chunks")
                 break
         
-        print(f"Generated {len(processed_samples)} chunks for slice {self.config.slice_current+1}/{self.config.slice_total}")
+        print(f"Generated {len(processed_samples)} chunks for slice {self.config.current_shard_triple+1}/{self.config.total_shards_triple}")
         return processed_samples
 
 
@@ -214,7 +216,7 @@ class CustomDataLoader:
     
     def __iter__(self):
         """Iterate through batches."""
-        batch_size = self.processor.config.batch_size
+        batch_size = self.processor.config.batch_size_triple
         start_idx = self.processor.config.resume_from * batch_size
         
         for i in tqdm(range(start_idx, len(self.processed_data), batch_size)):
@@ -250,7 +252,7 @@ class OutputParser:
 class KnowledgeGraphExtractor:
     """Main class for knowledge graph extraction pipeline."""
     
-    def __init__(self, model:KnowledgeGraphGenerator, config: ProcessingConfig):
+    def __init__(self, model:LLMGenerator, config: ProcessingConfig):
         self.config = config
         self.model = None
         self.parser = None
@@ -260,12 +262,6 @@ class KnowledgeGraphExtractor:
     
     def load_dataset(self) -> Any:
         """Load and prepare dataset."""
-        data_files = self.get_data_files()
-        dataset_config = {"train": data_files}
-        return load_dataset(self.config.data_directory, data_files=dataset_config["train"])
-    
-    def get_data_files(self) -> List[str]:
-        """Get list of data files to process."""
         data_path = Path(self.config.data_directory)
         all_files = os.listdir(data_path)
         
@@ -276,15 +272,13 @@ class KnowledgeGraphExtractor:
         ]
         
         print(f"Found data files: {valid_files}")
-        return valid_files
-    
-    def generate_with_model(self, model_inputs: Dict[str, str], max_tokens: int =8192, stage = 1) -> List[str]:
-        """Generate text using the model."""
-        return self.model.generate(messages=model_inputs, max_tokens=max_tokens, stage=stage, record=self.config.record)
+        data_files = valid_files
+        dataset_config = {"train": data_files}
+        return load_dataset(self.config.data_directory, data_files=dataset_config["train"])
     
     def process_stage(self, instructions: Dict[str, str], stage = 1) -> Tuple[List[str], List[List[Dict[str, Any]]]]:
         """Process first stage: entity-relation extraction."""
-        outputs = self.generate_with_model(instructions, stage = stage)
+        outputs = self.model.triple_extraction(messages=instructions, max_tokens=self.config.max_new_tokens, stage=stage, record=self.config.record)
         if self.config.record:
             text_outputs = [output[0] for output in outputs]
         else:
@@ -298,7 +292,7 @@ class KnowledgeGraphExtractor:
         model_name_safe = self.config.model_path.replace("/", "_")
         
         filename = (f"{model_name_safe}_{self.config.filename_pattern}_output_"
-                   f"{timestamp}_{self.config.slice_current + 1}_in_{self.config.slice_total}.json")
+                   f"{timestamp}_{self.config.current_shard_triple + 1}_in_{self.config.total_shards_triple}.json")
         
         extraction_dir = os.path.join(self.config.output_directory, "kg_extraction")
         os.makedirs(extraction_dir, exist_ok=True)
@@ -382,7 +376,7 @@ class KnowledgeGraphExtractor:
                     stage_outputs = (stage1_results, stage2_results, stage3_results)
 
                     # Write results
-                    print(f"Processed {batch_counter} batches ({batch_counter * self.config.batch_size} chunks)")
+                    print(f"Processed {batch_counter} batches ({batch_counter * self.config.batch_size_triple} chunks)")
                     for i in range(len(batch_ids)):
                         result = self.prepare_result_dict(batch_data, stage_outputs, i)
                         
@@ -397,8 +391,13 @@ class KnowledgeGraphExtractor:
                  output_dir=f"{self.config.output_directory}/triples_csv",
                  data_dir=f"{self.config.output_directory}/kg_extraction"
                  )
+        csvs_to_temp_graphml(
+            triple_node_file=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_without_emb.csv",
+            triple_edge_file=f"{self.config.output_directory}/triples_csv/triple_edges_{self.config.filename_pattern}_from_json_without_emb.csv",
+            config = self.config
+        )
     
-    def generate_concept_csv_temp(self, batch_size: int = 64, **kwargs):
+    def generate_concept_csv_temp(self, batch_size: int = None, **kwargs):
         generate_concept(
             model=self.model,
             input_file=f"{self.config.output_directory}/triples_csv/missing_concepts_{self.config.filename_pattern}_from_json.csv",
@@ -407,8 +406,10 @@ class KnowledgeGraphExtractor:
             output_folder=f"{self.config.output_directory}/concepts",
             output_file="concept.json",
             logging_file=f"{self.config.output_directory}/concepts/logging.txt",
-            batch_size=batch_size,
-            **kwargs
+            config=self.config,
+            batch_size=batch_size if batch_size else self.config.batch_size_concept,
+            shard=self.config.current_shard_concept,
+            num_shards=self.config.total_shards_concept,
         )
     
     def create_concept_csv(self):
@@ -447,9 +448,7 @@ class KnowledgeGraphExtractor:
         )
 
     def compute_embedding(self, encoder_model:BaseEmbeddingModel):
-
-        compute_embedding(
-            model=encoder_model,
+        encoder_model.compute_kg_embedding(
             node_csv_without_emb=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_without_emb.csv",
             node_csv_file=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_with_emb.csv",
             edge_csv_without_emb=f"{self.config.output_directory}/concept_csv/triple_edges_{self.config.filename_pattern}_from_json_with_concept.csv",
@@ -516,10 +515,10 @@ def parse_command_line_arguments() -> ProcessingConfig:
                        help="Batch size for processing")
     parser.add_argument("--output_dir", type=str, default="./generation_result_debug",
                        help="Output directory for results")
-    parser.add_argument("--total_slices", type=int, default=1,
-                       help="Total number of data slices")
-    parser.add_argument("--slice", type=int, default=0,
-                       help="Current slice index")
+    parser.add_argument("--total_shards_triple", type=int, default=1,
+                       help="Total number of data shards")
+    parser.add_argument("--shard", type=int, default=0,
+                       help="Current shard index")
     parser.add_argument("--bit8", action="store_true",
                        help="Use 8-bit quantization")
     parser.add_argument("--debug", action="store_true",
@@ -535,8 +534,8 @@ def parse_command_line_arguments() -> ProcessingConfig:
         filename_pattern=args.file_name,
         batch_size=args.batch_size,
         output_directory=args.output_dir,
-        slice_total=args.total_slices,
-        slice_current=args.slice,
+        total_shards_triple=args.total_shards_triple,
+        current_shard_triple=args.shard,
         use_8bit=args.bit8,
         debug_mode=args.debug,
         resume_from=args.resume
