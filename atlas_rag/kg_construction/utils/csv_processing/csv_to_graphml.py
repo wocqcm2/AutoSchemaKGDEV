@@ -3,7 +3,7 @@ import csv
 import ast
 import hashlib
 import os
-from atlas_rag.kg_construction.triple_extraction import ProcessingConfig
+from atlas_rag.kg_construction.triple_config import ProcessingConfig
 import pickle
 
 def get_node_id(entity_name, entity_to_id={}):

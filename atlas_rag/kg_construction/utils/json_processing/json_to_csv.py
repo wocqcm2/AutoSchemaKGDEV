@@ -265,7 +265,7 @@ def json2csv(dataset, data_dir, output_dir, test=False):
         for relation in all_relations:
             writer.writerow([relation, "Relation"])
 
-    print("Data to CSV completed successfully, start computing embeddings.")
+    print("Data to CSV completed successfully.")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

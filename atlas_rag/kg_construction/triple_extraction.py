@@ -8,7 +8,6 @@ import os
 import argparse
 from datetime import datetime
 from typing import List, Dict, Any, Tuple
-from dataclasses import dataclass
 from pathlib import Path
 import torch
 from datasets import load_dataset
@@ -25,31 +24,12 @@ from atlas_rag.kg_construction.utils.csv_processing.csv_to_npy import convert_cs
 from atlas_rag.vectorstore.embedding_model import BaseEmbeddingModel
 from atlas_rag.vectorstore.create_index import build_faiss_from_npy
 from atlas_rag.llm_generator.prompt.triple_extraction_prompt import TRIPLE_INSTRUCTIONS
-
+from atlas_rag.kg_construction.triple_config import ProcessingConfig
 # Constants
 TOKEN_LIMIT = 1024
 INSTRUCTION_TOKEN_ESTIMATE = 200
 CHAR_TO_TOKEN_RATIO = 3.5
 
-
-@dataclass
-class ProcessingConfig:
-    """Configuration for text processing pipeline."""
-    model_path: str
-    data_directory: str
-    filename_pattern: str
-    batch_size_triple: int = 16
-    batch_size_concept: int = 64
-    output_directory: str = "./generation_result_debug"
-    total_shards_triple: int = 1
-    current_shard_triple: int = 0
-    total_shards_concept: int = 1
-    current_shard_concept: int = 0
-    use_8bit: bool = False
-    debug_mode: bool = False
-    resume_from: int = 0
-    record : bool = False
-    max_new_tokens: int = 8192
 
 
 class TextChunker:
@@ -268,7 +248,7 @@ class KnowledgeGraphExtractor:
         valid_files = [
             filename for filename in all_files
             if filename.startswith(self.config.filename_pattern) and
-            (filename.endswith(".json.gz") or filename.endswith(".json"))
+            (filename.endswith(".json.gz") or filename.endswith(".json") or filename.endswith(".jsonl") or filename.endswith(".jsonl.gz"))
         ]
         
         print(f"Found data files: {valid_files}")
@@ -401,8 +381,6 @@ class KnowledgeGraphExtractor:
         generate_concept(
             model=self.model,
             input_file=f"{self.config.output_directory}/triples_csv/missing_concepts_{self.config.filename_pattern}_from_json.csv",
-            input_triple_nodes_file=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_without_emb.csv",
-            input_triple_edges_file=f"{self.config.output_directory}/triples_csv/triple_edges_{self.config.filename_pattern}_from_json_without_emb.csv",
             output_folder=f"{self.config.output_directory}/concepts",
             output_file="concept.json",
             logging_file=f"{self.config.output_directory}/concepts/logging.txt",

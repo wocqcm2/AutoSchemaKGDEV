@@ -1,6 +1,6 @@
 TRIPLE_INSTRUCTIONS = {
     "en":{
-        "system": "You are a helpful assistant who always response in a valid JSON array",
+        "system": "You are a helpful assistant who always response in a valid array of JSON objects without any explanation",
         "entity_relation": """Given a passage, summarize all the important entities and the relations between them in a concise manner. Relations should briefly capture the connections between entities, without repeating information from the head and tail entities. The entities should be as specific as possible. Exclude pronouns from being considered as entities. 
         You must **strictly output in the following JSON format**:\n
         [

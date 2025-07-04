@@ -6,8 +6,8 @@ import os
 import hashlib
 import re
 from atlas_rag.llm_generator import LLMGenerator
-from atlas_rag.kg_construction import ProcessingConfig
-from atlas_rag.kg_construction.utils.csv_processing.csv_to_graphml import csvs_to_temp_graphml, get_node_id
+from atlas_rag.kg_construction.triple_config import ProcessingConfig
+from atlas_rag.kg_construction.utils.csv_processing.csv_to_graphml import get_node_id
 from atlas_rag.llm_generator.prompt.triple_extraction_prompt import CONCEPT_INSTRUCTIONS
 import pickle
 # Increase the field size limit
@@ -79,8 +79,8 @@ def build_batched_relations(all_node_list, batch_size):
     
     return batched_relations
 
-def batched_inference(model:LLMGenerator, inputs, record=False):
-    responses = model.generate_with_custom_messages(inputs, record = record)
+def batched_inference(model:LLMGenerator, inputs, record=False, **kwargs):
+    responses = model._generate_batch_responses(inputs, return_text_only = not record,  **kwargs)
     answers = []
     if record:
         text_responses = [response[0] for response in responses]
@@ -115,8 +115,6 @@ def load_data_with_shard(input_file, shard_idx, num_shards):
 
 def generate_concept(model: LLMGenerator,
             input_file = 'processed_data/triples_csv', 
-            input_triple_nodes_file = 'processed_data/triple_nodes.csv',
-            input_triple_edges_file = 'processed_data/triple_edges.csv',
             output_folder = 'processed_data/triples_conceptualized', 
             output_file = 'output.json', 
             logging_file = 'processed_data/logging.txt', 
@@ -142,7 +140,8 @@ def generate_concept(model: LLMGenerator,
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     logging.getLogger().addHandler(file_handler)
     
-    temp_kg = pickle.load(f"{config.output_directory}/kg_graphml/{config.filename_pattern}_without_concept.pkl")
+    with open(f"{config.output_directory}/kg_graphml/{config.filename_pattern}_without_concept.pkl", "rb") as f: 
+        temp_kg = pickle.load(f)
 
     # read data
     if not os.path.exists(output_folder):
@@ -223,9 +222,9 @@ def generate_concept(model: LLMGenerator,
                 # print("inputs", inputs)
                 if record:
                     # If recording, we will get both answers and responses
-                    answers, usages = batched_inference(model, inputs, record=record)
+                    answers, usages = batched_inference(model, inputs, record=record, max_workers = config.max_workers)
                 else:
-                    answers = batched_inference(model, inputs, record=record)
+                    answers = batched_inference(model, inputs, record=record, max_workers = config.max_workers)
                     usages = None
                 # print("answers", answers)
             except Exception as e:

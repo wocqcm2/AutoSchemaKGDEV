@@ -2,7 +2,7 @@ import json
 from openai import OpenAI, AzureOpenAI, NOT_GIVEN
 from tenacity import retry, stop_after_attempt, stop_after_delay, wait_fixed, wait_exponential, wait_random
 from copy import deepcopy
-
+from concurrent.futures import ThreadPoolExecutor
 from atlas_rag.llm_generator.prompt.rag_prompt import cot_system_instruction, cot_system_instruction_kg, cot_system_instruction_no_doc, prompt_template
 from atlas_rag.llm_generator.prompt.filter_triple_prompt import validate_filter_output, messages as filter_messages
 from atlas_rag.llm_generator.prompt.lkg_prompt import ner_prompt, validate_keyword_output, keyword_filtering_prompt
@@ -46,6 +46,8 @@ class LLMGenerator():
                            return_thinking=False,
                            reasoning_effort=None
                            ):
+        if temperature == 0.0:
+            do_sample = False
         if self.inference_type == "openai":
             start_time = time.time()
             response = self.client.chat.completions.create(
@@ -62,8 +64,6 @@ class LLMGenerator():
             content = response.choices[0].message.content
             if content is None and hasattr(response.choices[0].message, 'reasoning_content'):
                 content = response.choices[0].message.reasoning_content
-            else:
-                content = response.choices[0].message.content
             if '</think>' in content and not return_thinking:
                 content = content.split('</think>')[-1].strip()
             else:
@@ -84,6 +84,7 @@ class LLMGenerator():
                 max_new_tokens=max_new_tokens,
                 temperature=temperature,
                 do_sample=do_sample,
+                return_full_text=False,
             )
             time_cost = time.time() - start_time
             content = response[0]['generated_text'].strip()
@@ -104,6 +105,45 @@ class LLMGenerator():
                 return content, completion_usage_dict
         else:
             raise ValueError(f"Unsupported client type: {self.inference_type}")
+
+    def _generate_batch_responses(self, batch_messages, do_sample=True, max_new_tokens=8192,
+                                 temperature=0.7, frequency_penalty=None, response_format={"type": "text"},
+                                 return_text_only=True, return_thinking=False, reasoning_effort=None, **kwargs):
+        if self.inference_type == "openai":
+            max_workers = kwargs.get('max_workers', 3)  # Default to 4 workers if not specified
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = [
+                    executor.submit(
+                        self._generate_response, messages, do_sample, max_new_tokens, temperature,
+                        frequency_penalty, response_format, return_text_only, return_thinking, reasoning_effort
+                    ) for messages in batch_messages
+                ]
+                results = [future.result() for future in futures]
+            return results
+        elif self.inference_type == "pipeline":
+            if not hasattr(self.client, 'tokenizer'):
+                raise ValueError("Pipeline must have a tokenizer for batch processing.")
+            start_time = time.time()
+            responses = self.client(
+                batch_messages,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                do_sample=do_sample,
+                return_full_text=False
+            )
+
+            time_cost = time.time() - start_time
+            contents = [resp[0]['generated_text'].strip() for resp in responses]
+            if not return_thinking:
+                contents = [content.split('</think>')[-1].strip() if '</think>' in content else content for content in contents]
+            if return_text_only:
+                return contents
+            else:
+                usage_dicts = [{
+                    'completion_tokens': len(content.split()),
+                    'time': time_cost / len(batch_messages)
+                } for content in contents]
+                return list(zip(contents, usage_dicts))
 
     def generate_cot(self, question, max_new_tokens=1024):
         messages = [
@@ -385,43 +425,49 @@ class LLMGenerator():
         # If we've reached max iterations, return the last answer
         return answer, search_history
     
-    @retry_decorator
-    def triple_extraction(self, messages, max_tokens=4096, stage=None, record = False):
-        prompt_type = stage_to_prompt_type.get(stage, None)
+    def triple_extraction(self, messages, max_tokens=4096, stage=None, record=False):
         responses = []
-
-        # Normalize messages input
         if isinstance(messages[0], dict):
-            messages = [messages]  # Wrap single message list in a list
-        # messages is list of list of dict
-        for input_data in messages:
-            try:
+            messages = [messages]
+        @retry_decorator
+        def process_input(input_data):
+            if record:
                 content, completion_usage_dict = self._generate_response(
-                    messages = input_data,
-                    max_new_tokens = max_tokens,
-                    temperature=0.0,
+                    messages=input_data,
+                    max_new_tokens=max_tokens,
+                    temperature=0.1,
                     frequency_penalty=0.5,
                     reasoning_effort="none",
-                    return_text_only=False
+                    return_text_only= not record
                 )
-                if prompt_type:
-                    corrected, error = fix_and_validate_response(content, prompt_type)
-                    if error:
-                        raise ValueError(f"Validation failed for prompt_type '{prompt_type}'")
-                if corrected and corrected.strip():
-                    if record:
-                        responses.append((corrected, completion_usage_dict))
-                    else:
-                        responses.append(corrected)
-            except Exception as e:
-                print(f"Failed to generate valid response for input: {input_data} - Error: {str(e)}")
-                # add empty response to maintain index alignment
+            else:
+                content = self._generate_response(
+                    messages=input_data,
+                    max_new_tokens=max_tokens,
+                    temperature=0.1,
+                    frequency_penalty=0.5,
+                    reasoning_effort="none",
+                    return_text_only=True
+                )
+            prompt_type = stage_to_prompt_type.get(stage, None)
+            if prompt_type:
+                corrected, error = fix_and_validate_response(content, prompt_type)
+                if error:
+                    raise ValueError(f"Validation failed for prompt_type '{prompt_type}'")
+            if corrected and corrected.strip():
                 if record:
-                    completion_usage_dict = {
-                        'completion_tokens': 0,
-                        'total_tokens': 0,
-                        'time': 0
-                    }
+                    return corrected, completion_usage_dict
+                else:
+                    return corrected
+            raise ValueError("Invalid response")
+
+        for input_data in messages:
+            try:
+                result = process_input(input_data)
+                responses.append(result)
+            except Exception as e:
+                if record:
+                    completion_usage_dict = {'completion_tokens': 0, 'total_tokens': 0, 'time': 0}
                     responses.append(("[]", completion_usage_dict))
                 else:
                     responses.append("[]")
