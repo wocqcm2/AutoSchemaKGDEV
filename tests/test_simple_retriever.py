@@ -4,7 +4,7 @@ import networkx as nx
 from unittest.mock import Mock, patch
 from atlas_rag.retrieval.retriever.simple_retriever import SimpleGraphRetriever, SimpleTextRetriever
 from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
-from atlas_rag.reader.llm_generator import LLMGenerator
+from atlas_rag.llm_generator.llm_generator import LLMGenerator
 
 @pytest.fixture
 def mock_sentence_encoder():

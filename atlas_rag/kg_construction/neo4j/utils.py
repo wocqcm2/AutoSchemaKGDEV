@@ -2,7 +2,7 @@ import faiss
 from neo4j import Driver
 import time
 from graphdatascience import GraphDataScience
-from atlas_rag.billion.retriever.base import BaseLargeKGRetriever
+from atlas_rag.billion.lkg_retriever.base import BaseLargeKGRetriever
 
 def build_projection_graph(driver: GraphDataScience):
     project_graph_1 = "largekgrag_graph"

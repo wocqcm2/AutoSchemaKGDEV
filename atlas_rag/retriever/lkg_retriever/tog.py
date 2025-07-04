@@ -6,9 +6,9 @@ from collections import defaultdict
 from typing import List
 import time
 import logging
-from atlas_rag.reader.llm_generator import LLMGenerator
+from atlas_rag.llm_generator.llm_generator import LLMGenerator
 from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
-from atlas_rag.billion.retriever.base import BaseLargeKGEdgeRetriever
+from atlas_rag.billion.lkg_retriever.base import BaseLargeKGEdgeRetriever
 import nltk
 from nltk.corpus import stopwords
 nltk.download('stopwords')

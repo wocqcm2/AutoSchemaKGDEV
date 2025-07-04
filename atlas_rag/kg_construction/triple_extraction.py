@@ -3,8 +3,6 @@
 Knowledge Graph Extraction Pipeline
 Extracts entities, relations, and events from text data using transformer models.
 """
-import hashlib
-import networkx as nx
 import json
 import os
 import argparse
@@ -16,19 +14,18 @@ import torch
 from datasets import load_dataset
 from tqdm import tqdm
 import json_repair
-from atlas_rag.utils.triple_generator import TripleGenerator
-from atlas_rag.utils.json_2_csv import json2csv
+from atlas_rag.kg_construction.triple_generator import KnowledgeGraphGenerator
+from atlas_rag.utils.json_processing.json_to_csv import json2csv
 from atlas_rag.kg_construction.concept_generation import generate_concept
-from atlas_rag.utils.merge_csv import merge_csv_files
-from atlas_rag.utils.csv_to_graphml import csvs_to_graphml
-from atlas_rag.utils.concept_to_csv import all_concept_triples_csv_to_csv
-from atlas_rag.utils.csv_add_column import add_csv_columns
-from atlas_rag.utils.convert_csv2npy import convert_csv_to_npy
-from atlas_rag.utils.compute_embedding import compute_embedding
-from atlas_rag.utils.create_index import build_faiss_from_npy
+from atlas_rag.utils.csv_processing.merge_csv import merge_csv_files
+from atlas_rag.utils.csv_processing.csv_to_graphml import csvs_to_graphml
+from atlas_rag.kg_construction.concept_to_csv import all_concept_triples_csv_to_csv
+from atlas_rag.utils.csv_processing.csv_add_numeric_id import add_csv_columns
+from atlas_rag.utils.csv_processing.csv_to_npy import convert_csv_to_npy
+from atlas_rag.utils.csv_processing.compute_embedding import compute_embedding
+from atlas_rag.vectorstore.create_index import build_faiss_from_npy
 from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
-from atlas_rag.kg_construction.prompt import TRIPLE_INSTRUCTIONS
-
+from atlas_rag.llm_generator.prompt.triple_extraction_prompt import TRIPLE_INSTRUCTIONS
 
 
 # Constants
@@ -253,7 +250,7 @@ class OutputParser:
 class KnowledgeGraphExtractor:
     """Main class for knowledge graph extraction pipeline."""
     
-    def __init__(self, model:TripleGenerator, config: ProcessingConfig):
+    def __init__(self, model:KnowledgeGraphGenerator, config: ProcessingConfig):
         self.config = config
         self.model = None
         self.parser = None

@@ -11,7 +11,7 @@ from tqdm import tqdm
 import torch
 import torch.nn.functional as F
 from atlas_rag.retrieval.embedding_model import NvEmbed, SentenceEmbedding
-from atlas_rag.reader.llm_generator import LLMGenerator
+from atlas_rag.llm_generator.llm_generator import LLMGenerator
 from atlas_rag.evaluation.evaluation import QAJudger
 from dataclasses import dataclass
 

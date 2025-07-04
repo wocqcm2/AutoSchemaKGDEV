@@ -1,6 +1,6 @@
 from openai import OpenAI, AzureOpenAI
 from transformers import Pipeline
-from atlas_rag.utils.json_repair import fix_and_validate_response
+from atlas_rag.utils.json_processing.json_repair import fix_and_validate_response
 from tenacity import retry, stop_after_attempt, retry_if_exception_type, wait_fixed
 import time
 
@@ -18,7 +18,7 @@ stage_to_prompt_type = {
     3: "event_relation",
 }
 
-def client_generation(model: OpenAI, model_name, messages, max_new_tokens=4096, temperature=0.1, frequency_penalty = 1.1, reasoning_effort = None):
+def client_generation(model: OpenAI, model_name, messages, max_new_tokens=4096, temperature=0.0, frequency_penalty = 1.1, reasoning_effort = None):
     """Generate a response using the OpenAI client."""
     response = model.chat.completions.create(
         model=model_name,
@@ -68,7 +68,7 @@ def generate_and_validate(client: OpenAI | Pipeline, model_name, input_data, max
         return corrected, completion_usage_dict
     return content, completion_usage_dict
     
-class TripleGenerator:
+class KnowledgeGraphGenerator:
     def __init__(self, client: Pipeline | OpenAI | AzureOpenAI, model_name, max_new_tokens=4096, temperature=0.1, frequency_penalty=1.1):
         """Initialize the TripleGenerator with a client and generation parameters."""
         self.client = client

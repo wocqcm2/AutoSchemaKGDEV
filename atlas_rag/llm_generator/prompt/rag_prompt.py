@@ -15,7 +15,6 @@ one_shot_ircot_demo = (
     '\n\n'
 )
 
-
 rag_qa_system = (
     'As an advanced reading comprehension assistant, your task is to analyze text passages and corresponding questions meticulously. '
     'Your response start after "Thought: ", where you will methodically break down the reasoning process, illustrating how you arrive at conclusions. '
@@ -41,3 +40,16 @@ prompt_template = [
     {"role": "assistant", "content": one_shot_rag_qa_output},
 ]
 
+# from https://github.com/OSU-NLP-Group/HippoRAG/blob/main/src/qa/qa_reader.py
+
+cot_system_instruction = ('As an advanced reading comprehension assistant, your task is to analyze text passages and corresponding questions meticulously. If the information is not enough, you can use your own knowledge to answer the question.'
+                          'Your response start after "Thought: ", where you will methodically break down the reasoning process, illustrating how you arrive at conclusions. '
+                          'Conclude with "Answer: " to present a concise, definitive response as a noun phrase, no elaborations.')
+
+cot_system_instruction_no_doc = ('As an advanced reading comprehension assistant, your task is to analyze the questions and then answer them. '
+                                 'Your response start after "Thought: ", where you will methodically break down the reasoning process, illustrating how you arrive at conclusions. '
+                                 'Conclude with "Answer: " to present a concise, definitive response as a noun phrase, no elaborations.')
+
+cot_system_instruction_kg = ('As an advanced reading comprehension assistant, your task is to analyze extracted information and corresponding questions meticulously. If the knowledge graph information is not enough, you can use your own knowledge to answer the question. '
+                                'Your response start after "Thought: ", where you will methodically break down the reasoning process, illustrating how you arrive at conclusions. '
+                                'Conclude with "Answer: " to present a concise, definitive response as a noun phrase, no elaborations.')

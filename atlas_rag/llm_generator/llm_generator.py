@@ -2,33 +2,21 @@ import json
 from openai import OpenAI, NOT_GIVEN
 from tenacity import retry, stop_after_attempt, stop_after_delay, wait_fixed, wait_exponential, wait_random
 from copy import deepcopy
-from atlas_rag.retrieval.filter_template import messages as filter_messages, validate_filter_output
-from atlas_rag.retrieval.prompt_template import prompt_template
-from atlas_rag.billion.prompt_template import ner_prompt, validate_keyword_output, keyword_filtering_prompt
+
+from atlas_rag.llm_generator.prompt.rag_prompt import cot_system_instruction, cot_system_instruction_kg, cot_system_instruction_no_doc, prompt_template
+from atlas_rag.llm_generator.prompt.filter_triple_prompt import validate_filter_output, filter_messages
+
+from atlas_rag.llm_generator.prompt.lkg_prompt import ner_prompt, validate_keyword_output, keyword_filtering_prompt
 from transformers.pipelines import Pipeline
 import jsonschema
 from typing import Union
 from logging import Logger
-from atlas_rag.retrieval.retriever.base import BaseEdgeRetriever, BasePassageRetriever
+from atlas_rag.retriever.base import BaseRetriever, BaseEdgeRetriever, BasePassageRetriever
 
 retry_decorator = retry(
     stop=(stop_after_delay(180) | stop_after_attempt(5)),  # Max wait of 2 minutes
     wait=wait_exponential(multiplier=1, min=1, max=60) + wait_random(min=0, max=5)
 )
-
-# from https://github.com/OSU-NLP-Group/HippoRAG/blob/main/src/qa/qa_reader.py
-# prompts from hipporag qa_reader
-cot_system_instruction = ('As an advanced reading comprehension assistant, your task is to analyze text passages and corresponding questions meticulously. If the information is not enough, you can use your own knowledge to answer the question.'
-                          'Your response start after "Thought: ", where you will methodically break down the reasoning process, illustrating how you arrive at conclusions. '
-                          'Conclude with "Answer: " to present a concise, definitive response as a noun phrase, no elaborations.')
-cot_system_instruction_no_doc = ('As an advanced reading comprehension assistant, your task is to analyze the questions and then answer them. '
-                                 'Your response start after "Thought: ", where you will methodically break down the reasoning process, illustrating how you arrive at conclusions. '
-                                 'Conclude with "Answer: " to present a concise, definitive response as a noun phrase, no elaborations.')
-# This is the instruction for the KG-based QA task
-cot_system_instruction_kg = ('As an advanced reading comprehension assistant, your task is to analyze extracted information and corresponding questions meticulously. If the knowledge graph information is not enough, you can use your own knowledge to answer the question. '
-                                'Your response start after "Thought: ", where you will methodically break down the reasoning process, illustrating how you arrive at conclusions. '
-                                'Conclude with "Answer: " to present a concise, definitive response as a noun phrase, no elaborations.')
-
 class LLMGenerator():
     def __init__(self, client, model_name):
         self.model_name = model_name

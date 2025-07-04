@@ -5,9 +5,9 @@ import csv
 import os
 import hashlib
 import re
-from atlas_rag.utils.triple_generator import TripleGenerator
-from atlas_rag.utils.csv_to_graphml import csvs_to_temp_graphml, get_node_id
-from atlas_rag.kg_construction.prompt import CONCEPT_INSTRUCTIONS
+from atlas_rag.kg_construction.triple_generator import KnowledgeGraphGenerator
+from atlas_rag.utils.csv_processing.csv_to_graphml import csvs_to_temp_graphml, get_node_id
+from atlas_rag.llm_generator.prompt.triple_extraction_prompt import CONCEPT_INSTRUCTIONS
 # Increase the field size limit
 csv.field_size_limit(10 * 1024 * 1024)  # 10 MB limit
 
@@ -77,7 +77,7 @@ def build_batched_relations(all_node_list, batch_size):
     
     return batched_relations
 
-def batched_inference(model:TripleGenerator, inputs, record=False):
+def batched_inference(model:KnowledgeGraphGenerator, inputs, record=False):
     responses = model.generate(inputs, record = record)
     answers = []
     if record:
@@ -111,7 +111,7 @@ def load_data_with_shard(input_file, shard_idx, num_shards):
     
     return data[start_idx:end_idx]
 
-def conceptualize(model: TripleGenerator,
+def conceptualize(model: KnowledgeGraphGenerator,
                   input_file = 'processed_data/triples_csv', 
                   output_folder = 'processed_data/triples_conceptualized', 
                   output_file = 'output.json', 
@@ -154,7 +154,7 @@ def conceptualize(model: TripleGenerator,
              num_shards=num_shards,
              **kwargs)
 
-def generate_concept(model: TripleGenerator,
+def generate_concept(model: KnowledgeGraphGenerator,
             input_file = 'processed_data/triples_csv', 
             input_triple_nodes_file = 'processed_data/triple_nodes.csv',
             input_triple_edges_file = 'processed_data/triple_edges.csv',

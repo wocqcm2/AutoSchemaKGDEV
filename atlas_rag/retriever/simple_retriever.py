@@ -1,7 +1,7 @@
 from typing import Dict
 import numpy as np
 from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
-from atlas_rag.reader.llm_generator import LLMGenerator
+from atlas_rag.llm_generator.llm_generator import LLMGenerator
 from atlas_rag.retrieval.retriever.base import BaseEdgeRetriever, BasePassageRetriever
 class SimpleGraphRetriever(BaseEdgeRetriever):
 

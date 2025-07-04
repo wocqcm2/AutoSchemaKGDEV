@@ -1,8 +1,6 @@
 import csv
 
 def compute_embedding(model, node_csv_without_emb, node_csv_file, edge_csv_without_emb, edge_csv_file, text_node_csv_without_emb, text_node_csv):
-
-
     with open(node_csv_without_emb, "r") as csvfile_node:
         with open(node_csv_file, "w") as csvfile_node_emb:
             reader_node = csv.reader(csvfile_node)

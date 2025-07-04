@@ -1,5 +1,5 @@
 from azure.ai.projects import AIProjectClient
-from atlas_rag import TripleGenerator, KnowledgeGraphExtractor, ProcessingConfig
+from atlas_rag import KnowledgeGraphGenerator, KnowledgeGraphExtractor, ProcessingConfig
 from azure.identity import DefaultAzureCredential
 from atlas_rag.reader import LLMGenerator
 from configparser import ConfigParser
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     # )
     llm_generator = LLMGenerator(client=client, model_name=model_name)
     # check if model name has / if yes then split and use -1
-    triple_generator = TripleGenerator(client, model_name=model_name,
+    triple_generator = KnowledgeGraphGenerator(client, model_name=model_name,
     max_new_tokens = 4096,
     temperature = 0.1,
     frequency_penalty = 1.1)
