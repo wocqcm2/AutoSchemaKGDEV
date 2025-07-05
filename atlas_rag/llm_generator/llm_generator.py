@@ -119,7 +119,7 @@ class LLMGenerator():
             time_cost = time.time() - start_time
             
             # Extract contents
-            contents = [resp[0]['generated_text'].strip() for resp in responses] if is_batch else [responses[0]['generated_text'].strip()]
+            contents = [resp[0]['generated_text'].strip() for resp in responses]
             
             # Validate and collect failed indices
             validate_function = kwargs.get('validate_function', None)
@@ -448,7 +448,6 @@ class LLMGenerator():
         return answer, search_history
     
     def triple_extraction(self, messages, max_tokens=4096, stage=None, record=False, allow_empty=False):
-        responses = []
         if isinstance(messages[0], dict):
             messages = [messages]
         validate_kwargs = {

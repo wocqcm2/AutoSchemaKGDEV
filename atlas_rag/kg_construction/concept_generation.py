@@ -80,7 +80,7 @@ def build_batched_relations(all_node_list, batch_size):
     return batched_relations
 
 def batched_inference(model:LLMGenerator, inputs, record=False, **kwargs):
-    responses = model._generate_batch_responses(inputs, return_text_only = not record,  **kwargs)
+    responses = model.generate_response(inputs, return_text_only = not record,  **kwargs)
     answers = []
     if record:
         text_responses = [response[0] for response in responses]
