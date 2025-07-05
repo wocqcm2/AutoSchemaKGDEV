@@ -1,8 +1,9 @@
 import numpy as np
-from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
+from atlas_rag.vectorstore.embedding_model import BaseEmbeddingModel
 from atlas_rag.llm_generator.llm_generator import LLMGenerator
 from typing import Optional
-from atlas_rag.retrieval.retriever.base import BaseEdgeRetriever, InferenceConfig
+from atlas_rag.retriever.base import BaseEdgeRetriever
+from atlas_rag.retriever.inference_config import InferenceConfig
 
 class TogRetriever(BaseEdgeRetriever):
     def __init__(self, llm_generator, sentence_encoder, data, inference_config: Optional[InferenceConfig] = None):

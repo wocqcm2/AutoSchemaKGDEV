@@ -13,7 +13,7 @@ class BaseEmbeddingModel(ABC):
         """Abstract method to encode queries."""
         pass
     
-    def compute_kg_embedding(self, node_csv_without_emb, node_csv_file, edge_csv_without_emb, edge_csv_file, text_node_csv_without_emb, text_node_csv):
+    def compute_kg_embedding(self, node_csv_without_emb, node_csv_file, edge_csv_without_emb, edge_csv_file, text_node_csv_without_emb, text_node_csv, **kwargs):
         with open(node_csv_without_emb, "r") as csvfile_node:
             with open(node_csv_file, "w") as csvfile_node_emb:
                 reader_node = csv.reader(csvfile_node)
@@ -22,8 +22,8 @@ class BaseEmbeddingModel(ABC):
                 writer_node = csv.writer(csvfile_node_emb)
                 writer_node.writerow(["name:ID", "type", "file_id", "concepts", "synsets", "embedding:STRING", ":LABEL"])
 
-                # the encoding will be processed in batch of 1024
-                batch_size = 2048
+                # the encoding will be processed in batch of 2048
+                batch_size = kwargs.get('batch_size', 2048)
                 batch_nodes = []
                 batch_rows = []
                 for row in reader_node:
@@ -107,14 +107,13 @@ class BaseEmbeddingModel(ABC):
                     if row[0] == "text_id:ID":
                         continue
                     
-                    batch_text_nodes.append(row[0])
+                    batch_text_nodes.append(row[1])
                     batch_rows.append(row)
-                
                     if len(batch_text_nodes) == batch_size:
                         text_node_embeddings = self.encode(batch_text_nodes, batch_size=batch_size, show_progress_bar=False)
                         text_node_embedding_dict = dict(zip(batch_text_nodes, text_node_embeddings))
                         for row in batch_rows:
-                            embedding  = text_node_embedding_dict[row[0]].tolist()
+                            embedding  = text_node_embedding_dict[row[1]].tolist()
                             new_row = [row[0], row[1], row[2], embedding]
                             writer_text_node.writerow(new_row)
 
@@ -125,7 +124,7 @@ class BaseEmbeddingModel(ABC):
                     text_node_embeddings = self.encode(batch_text_nodes, batch_size=batch_size, show_progress_bar=False)
                     text_node_embedding_dict = dict(zip(batch_text_nodes, text_node_embeddings))
                     for row in batch_rows:
-                        embedding  = text_node_embedding_dict[row[0]].tolist()
+                        embedding  = text_node_embedding_dict[row[1]].tolist()
                         new_row = [row[0], row[1], row[2], embedding]
                         
                         writer_text_node.writerow(new_row)
@@ -174,9 +173,9 @@ class NvEmbed(BaseEmbeddingModel):
         # Encode the query
         if isinstance(self.sentence_encoder, SentenceTransformer):
             if query_prefix:
-                query_embeddings = self.sentence_encoder.encode(self.add_eos(query), prompt=query_prefix, normalize_embeddings=normalize_embeddings, **kwargs)
+                query_embeddings = self.sentence_encoder.encode(self.add_eos(query), prompt=query_prefix, **kwargs)
             else:
-                query_embeddings = self.sentence_encoder.encode(self.add_eos(query), normalize_embeddings=normalize_embeddings, **kwargs)
+                query_embeddings = self.sentence_encoder.encode(self.add_eos(query), **kwargs)
         elif isinstance(self.sentence_encoder, AutoModel):
             if query_prefix:
                 query_embeddings = self.sentence_encoder.encode(query, instruction=query_prefix, max_length = 32768, **kwargs)
@@ -195,5 +194,4 @@ class SentenceEmbedding(BaseEmbeddingModel):
         self.sentence_encoder = sentence_encoder
 
     def encode(self, query, **kwargs):
-        normalize_embeddings = kwargs.get('normalize_embeddings', True)
-        return self.sentence_encoder.encode(query, normalize_embeddings=normalize_embeddings, **kwargs)
+        return self.sentence_encoder.encode(query, **kwargs)

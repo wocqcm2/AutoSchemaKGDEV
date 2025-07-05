@@ -2,7 +2,49 @@ import faiss
 import numpy as np
 import time
 import logging
+from atlas_rag.kg_construction.utils.csv_processing.csv_to_npy import convert_csv_to_npy
+def create_faiss_index(output_directory, filename_pattern, index_type="HNSW,Flat"):
+        """
+        Create faiss index for the graph, for index type, see https://github.com/facebookresearch/faiss/wiki/Faiss-indexes
 
+        "IVF65536_HNSW32,Flat" for 1M to 10M nodes
+
+        "HNSW,Flat" for toy dataset
+
+        """
+        # Convert csv to npy
+        convert_csv_to_npy(
+            csv_path=f"{output_directory}/triples_csv/triple_nodes_{filename_pattern}_from_json_with_emb.csv",
+            npy_path=f"{output_directory}/vector_index/triple_nodes_{filename_pattern}_from_json_with_emb.npy",
+        )
+
+        convert_csv_to_npy(
+            csv_path=f"{output_directory}/triples_csv/text_nodes_{filename_pattern}_from_json_with_emb.csv",
+            npy_path=f"{output_directory}/vector_index/text_nodes_{filename_pattern}_from_json_with_emb.npy",
+        )
+
+        convert_csv_to_npy(
+            csv_path=f"{output_directory}/triples_csv/triple_edges_{filename_pattern}_from_json_with_concept_with_emb.csv",
+            npy_path=f"{output_directory}/vector_index/triple_edges_{filename_pattern}_from_json_with_concept_with_emb.npy",
+        )
+
+        build_faiss_from_npy(
+            index_type=index_type,
+            index_path=f"{output_directory}/vector_index/triple_nodes_{filename_pattern}_from_json_with_emb_non_norm.index",
+            npy_path=f"{output_directory}/vector_index/triple_nodes_{filename_pattern}_from_json_with_emb.npy",
+        )
+
+        build_faiss_from_npy(
+            index_type=index_type,
+            index_path=f"{output_directory}/vector_index/text_nodes_{filename_pattern}_from_json_with_emb_non_norm.index",
+            npy_path=f"{output_directory}/vector_index/text_nodes_{filename_pattern}_from_json_with_emb.npy",
+        )
+
+        build_faiss_from_npy(
+            index_type=index_type,
+            index_path=f"{output_directory}/vector_index/triple_edges_{filename_pattern}_from_json_with_concept_with_emb_non_norm.index",
+            npy_path=f"{output_directory}/vector_index/triple_edges_{filename_pattern}_from_json_with_concept_with_emb.npy",
+        )
 
 # cannot avoid loading into memory when training
 # simply try load all to train

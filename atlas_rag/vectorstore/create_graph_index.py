@@ -2,9 +2,10 @@ import os
 import pickle
 import networkx as nx
 from tqdm import tqdm
-from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
+from atlas_rag.vectorstore.embedding_model import BaseEmbeddingModel
 import faiss
 import numpy as np
+import torch
 
 def compute_graph_embeddings(node_list, edge_list_string, sentence_encoder: BaseEmbeddingModel, batch_size=40, normalize_embeddings: bool = False):
     # Encode in batches
@@ -37,8 +38,12 @@ def build_faiss_index(embeddings):
 def compute_text_embeddings(text_list, sentence_encoder: BaseEmbeddingModel, batch_size = 40, normalize_embeddings: bool = False):
     """Separated text embedding computation"""
     text_embeddings = []
+    
     for i in tqdm(range(0, len(text_list), batch_size), desc="Encoding texts"):
         batch = text_list[i:i + batch_size]
+        embeddings = sentence_encoder.encode(batch, normalize_embeddings=normalize_embeddings)
+        if isinstance(embeddings, torch.Tensor):
+            embeddings = embeddings.cpu().numpy()
         text_embeddings.extend(sentence_encoder.encode(batch, normalize_embeddings = normalize_embeddings))
     return text_embeddings
 

@@ -1,8 +1,8 @@
 from typing import Dict
 import numpy as np
-from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
+from atlas_rag.vectorstore.embedding_model import BaseEmbeddingModel
 from atlas_rag.llm_generator.llm_generator import LLMGenerator
-from atlas_rag.retrieval.retriever.base import BaseEdgeRetriever, BasePassageRetriever
+from atlas_rag.retriever.base import BaseEdgeRetriever, BasePassageRetriever
 class SimpleGraphRetriever(BaseEdgeRetriever):
 
     def __init__(self, llm_generator:LLMGenerator, sentence_encoder:BaseEmbeddingModel, 

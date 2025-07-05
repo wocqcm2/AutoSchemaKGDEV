@@ -20,9 +20,8 @@ from atlas_rag.kg_construction.utils.csv_processing.merge_csv import merge_csv_f
 from atlas_rag.kg_construction.utils.csv_processing.csv_to_graphml import csvs_to_graphml, csvs_to_temp_graphml
 from atlas_rag.kg_construction.concept_to_csv import all_concept_triples_csv_to_csv
 from atlas_rag.kg_construction.utils.csv_processing.csv_add_numeric_id import add_csv_columns
-from atlas_rag.kg_construction.utils.csv_processing.csv_to_npy import convert_csv_to_npy
 from atlas_rag.vectorstore.embedding_model import BaseEmbeddingModel
-from atlas_rag.vectorstore.create_index import build_faiss_from_npy
+from atlas_rag.vectorstore.create_neo4j_index import create_faiss_index
 from atlas_rag.llm_generator.prompt.triple_extraction_prompt import TRIPLE_INSTRUCTIONS
 from atlas_rag.kg_construction.triple_config import ProcessingConfig
 # Constants
@@ -425,7 +424,7 @@ class KnowledgeGraphExtractor:
             text_with_numeric_id=f"{self.config.output_directory}/triples_csv/text_nodes_{self.config.filename_pattern}_from_json_with_numeric_id.csv",
         )
 
-    def compute_embedding(self, encoder_model:BaseEmbeddingModel):
+    def compute_kg_embedding(self, encoder_model:BaseEmbeddingModel, batch_size: int = 2048):
         encoder_model.compute_kg_embedding(
             node_csv_without_emb=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_without_emb.csv",
             node_csv_file=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_with_emb.csv",
@@ -433,50 +432,11 @@ class KnowledgeGraphExtractor:
             edge_csv_file=f"{self.config.output_directory}/triples_csv/triple_edges_{self.config.filename_pattern}_from_json_with_concept_with_emb.csv",
             text_node_csv_without_emb=f"{self.config.output_directory}/triples_csv/text_nodes_{self.config.filename_pattern}_from_json.csv",
             text_node_csv=f"{self.config.output_directory}/triples_csv/text_nodes_{self.config.filename_pattern}_from_json_with_emb.csv",
+            batch_size = 2048
         )
 
     def create_faiss_index(self, index_type="HNSW,Flat"):
-        """
-        Create faiss index for the graph, for index type, see https://github.com/facebookresearch/faiss/wiki/Faiss-indexes
-
-        "IVF65536_HNSW32,Flat" for 1M to 10M nodes
-
-        "HNSW,Flat" for toy dataset
-
-        """
-        # Convert csv to npy
-        convert_csv_to_npy(
-            csv_path=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_with_emb.csv",
-            npy_path=f"{self.config.output_directory}/vector_index/triple_nodes_{self.config.filename_pattern}_from_json_with_emb.npy",
-        )
-
-        convert_csv_to_npy(
-            csv_path=f"{self.config.output_directory}/triples_csv/text_nodes_{self.config.filename_pattern}_from_json_with_emb.csv",
-            npy_path=f"{self.config.output_directory}/vector_index/text_nodes_{self.config.filename_pattern}_from_json_with_emb.npy",
-        )
-
-        convert_csv_to_npy(
-            csv_path=f"{self.config.output_directory}/triples_csv/triple_edges_{self.config.filename_pattern}_from_json_with_concept_with_emb.csv",
-            npy_path=f"{self.config.output_directory}/vector_index/triple_edges_{self.config.filename_pattern}_from_json_with_concept_with_emb.npy",
-        )
-
-        build_faiss_from_npy(
-            index_type=index_type,
-            index_path=f"{self.config.output_directory}/vector_index/triple_nodes_{self.config.filename_pattern}_from_json_with_emb_non_norm.index",
-            npy_path=f"{self.config.output_directory}/vector_index/triple_nodes_{self.config.filename_pattern}_from_json_with_emb.npy",
-        )
-
-        build_faiss_from_npy(
-            index_type=index_type,
-            index_path=f"{self.config.output_directory}/vector_index/text_nodes_{self.config.filename_pattern}_from_json_with_emb_non_norm.index",
-            npy_path=f"{self.config.output_directory}/vector_index/text_nodes_{self.config.filename_pattern}_from_json_with_emb.npy",
-        )
-
-        build_faiss_from_npy(
-            index_type=index_type,
-            index_path=f"{self.config.output_directory}/vector_index/triple_edges_{self.config.filename_pattern}_from_json_with_concept_with_emb_non_norm.index",
-            npy_path=f"{self.config.output_directory}/vector_index/triple_edges_{self.config.filename_pattern}_from_json_with_concept_with_emb.npy",
-        )
+        create_faiss_index(self.config.output_directory, self.config.filename_pattern, index_type)
 
 def parse_command_line_arguments() -> ProcessingConfig:
     """Parse command line arguments and return configuration."""

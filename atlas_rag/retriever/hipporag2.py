@@ -7,12 +7,13 @@ from typing import Dict, List, Tuple
 import networkx as nx
 import numpy as np
 import json_repair
-from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
+from atlas_rag.vectorstore.embedding_model import BaseEmbeddingModel
 from atlas_rag.llm_generator.llm_generator import LLMGenerator
 from logging import Logger
 from dataclasses import dataclass
 from typing import Optional
-from atlas_rag.retrieval.retriever.base import BasePassageRetriever, InferenceConfig
+from atlas_rag.retriever.base import BasePassageRetriever
+from atlas_rag.retriever.inference_config import InferenceConfig
 
 def min_max_normalize(x):
     min_val = np.min(x)
