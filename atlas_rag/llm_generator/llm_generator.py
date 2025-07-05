@@ -65,7 +65,7 @@ class LLMGenerator():
         if '</think>' in content and not return_thinking:
             content = content.split('</think>')[-1].strip()
         else:
-            if hasattr(response.choices[0].message, 'reasoning_content') and response.choices[0].message.reasoning_content is not None:
+            if hasattr(response.choices[0].message, 'reasoning_content') and response.choices[0].message.reasoning_content is not None and return_thinking:
                 content = '<think>' + response.choices[0].message.reasoning_content + '</think>' + content
         
         if return_text_only:
@@ -95,7 +95,8 @@ class LLMGenerator():
                             batch_messages[i], max_new_tokens, temperature,
                             frequency_penalty, response_format, return_text_only, return_thinking, reasoning_effort, **kwargs
                         )
-                    except Exception:
+                    except Exception as e:
+                        print(f"Error processing message {i}: {e.last_attempt.result()}")
                         return ""
                 futures = [executor.submit(process_message, i) for i in to_process]
             for i, future in enumerate(futures):
@@ -149,7 +150,6 @@ class LLMGenerator():
                     # Validate retry results and update contents
                     new_failed_indices = []
                     for j, i in enumerate(failed_indices):
-                        print(retry_contents[j])
                         try:
                             if validate_function:
                                 retry_contents[j] = validate_function(retry_contents[j], **kwargs)
@@ -270,13 +270,16 @@ class LLMGenerator():
                 "content": f"[[ ## question ## ]]\n{text}" 
             }
         )
-        
+        validation_args = {
+            "schema": lkg_keyword_json_schema,
+            "fix_function": fix_lkg_keywords
+        }
         # Generate raw response from LLM
-        raw_response = self.generate_response(messages, max_new_tokens=4096, temperature=0.7, frequency_penalty=1.1, response_format={"type": "json_object"})
+        raw_response = self.generate_response(messages, max_new_tokens=4096, temperature=0.7, frequency_penalty=1.1, response_format={"type": "json_object"}, validate_output=validate_output, **validation_args)
         
         try:
             # Validate and clean the response
-            cleaned_data = validate_output(raw_response, lkg_keyword_json_schema, fix_lkg_keywords)
+            cleaned_data = json_repair.loads(raw_response)
             return cleaned_data['keywords']
         
         except (json.JSONDecodeError, jsonschema.ValidationError) as e:
@@ -290,11 +293,15 @@ class LLMGenerator():
         ]
         
         # Generate raw response from LLM
-        raw_response = self.generate_response(messages, max_new_tokens=4096, temperature=0.7, frequency_penalty=1.1, response_format={"type": "json_object"})
+        validation_args = {
+            "schema": lkg_keyword_json_schema,
+            "fix_function": fix_lkg_keywords
+        }
+        raw_response = self.generate_response(messages, max_new_tokens=4096, temperature=0.7, frequency_penalty=1.1, response_format={"type": "json_object"}, validate_output=validate_output, **validation_args)
         
         try:
             # Validate and clean the response
-            cleaned_data = validate_output(raw_response, lkg_keyword_json_schema, fix_lkg_keywords)
+            cleaned_data = json_repair.loads(raw_response)
             return cleaned_data['keywords']
         
         except (json.JSONDecodeError, jsonschema.ValidationError) as e:

@@ -8,9 +8,9 @@ from nltk.corpus import stopwords
 nltk.download('stopwords')
 from graphdatascience import GraphDataScience
 from atlas_rag.llm_generator.llm_generator import LLMGenerator
-from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
+from atlas_rag.vectorstore.embedding_model import BaseEmbeddingModel
 import string
-from atlas_rag.billion.lkg_retriever.base import BaseLargeKGRetriever
+from atlas_rag.retriever.lkg_retriever.base import BaseLargeKGRetriever
 
 
 

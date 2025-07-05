@@ -4,8 +4,8 @@ from fastapi import FastAPI, HTTPException, Response
 from typing import List, Literal, Optional, Union
 from pydantic import BaseModel, Field
 from logging import Logger
-from atlas_rag.billion.lkg_retriever.base import BaseLargeKGRetriever, BaseLargeKGEdgeRetriever
-from atlas_rag.billion.utils import start_up_large_kg_index_graph
+from atlas_rag.retriever.lkg_retriever.base import BaseLargeKGRetriever, BaseLargeKGEdgeRetriever
+from atlas_rag.kg_construction.neo4j.utils import start_up_large_kg_index_graph
 from atlas_rag.llm_generator import LLMGenerator
 from neo4j import Driver
 from dataclasses import dataclass
@@ -187,7 +187,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
             large_kg_config.logger.info(rag_chat_content)
 
         response = large_kg_config.reader_llm_generator.generate_response(
-            custom_messages=rag_chat_content,
+            batch_messages=rag_chat_content,
             max_new_tokens=gen_params["max_tokens"],
             temperature=gen_params["temperature"],
             frequency_penalty = 1.1
@@ -236,7 +236,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
                 }
             ]
         response = large_kg_config.reader_llm_generator.generate_response(
-            custom_messages=rag_chat_content,
+            batch_messages=rag_chat_content,
             max_new_tokens=gen_params["max_tokens"],
             temperature=gen_params["temperature"],
             frequency_penalty = 1.1
@@ -262,6 +262,6 @@ def start_app(user_config:LargeKGConfig, host="0.0.0.0", port=10090, reload=Fals
     """Function to start the FastAPI application."""
     global large_kg_config
     large_kg_config = user_config  # Use the passed context if provided
-    # modify the app name for your own api app.
-    uvicorn.run(f"atlas_rag.billion.neo4j_api:app", host=host, port=port, reload=reload)
+
+    uvicorn.run(f"atlas_rag.kg_construction.neo4j.neo4j_api:app", host=host, port=port, reload=reload)
     

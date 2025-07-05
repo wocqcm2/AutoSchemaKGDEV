@@ -7,8 +7,8 @@ from typing import List
 import time
 import logging
 from atlas_rag.llm_generator.llm_generator import LLMGenerator
-from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
-from atlas_rag.billion.lkg_retriever.base import BaseLargeKGEdgeRetriever
+from atlas_rag.vectorstore.embedding_model import BaseEmbeddingModel
+from atlas_rag.retriever.lkg_retriever.base import BaseLargeKGEdgeRetriever
 import nltk
 from nltk.corpus import stopwords
 nltk.download('stopwords')
@@ -323,7 +323,7 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
                 {"role": "user", "content": user_prompt}
             ]
             
-            response = self.llm_generator._generate_response(messages, max_new_tokens=1024, temperature=0.0)
+            response = self.llm_generator.generate_response(messages, max_new_tokens=1024, temperature=0.0)
             if self.verbose:
                 self.logger.info(f"LLM response for chunk {i // self.prune_size + 1}: {response}")
             
@@ -403,7 +403,7 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
             {"role": "system", "content": "Answer Yes or No only."},
             {"role": "user", "content": prompt}
         ]
-        response = self.llm_generator._generate_response(messages,max_new_tokens=512)
+        response = self.llm_generator.generate_response(messages,max_new_tokens=512)
         if self.verbose:
             self.logger.info(f"Reasoning result: {response}")
         return "yes" in response.lower()
