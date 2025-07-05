@@ -387,6 +387,8 @@ class KnowledgeGraphExtractor:
             batch_size=batch_size if batch_size else self.config.batch_size_concept,
             shard=self.config.current_shard_concept,
             num_shards=self.config.total_shards_concept,
+            record = self.config.record,
+            **kwargs
         )
     
     def create_concept_csv(self):
