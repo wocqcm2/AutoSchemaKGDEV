@@ -57,53 +57,6 @@ The output must be parseable according to JSON schema:
     }
 ]
 
-def flatten_and_filter_keywords(data: dict) -> dict:
-    """
-    Extract and flatten keywords into a list of strings, filtering invalid types.
-    """
-    processed_keywords = []
-    
-    def collect_strings(element: Any) -> None:
-        if isinstance(element, str):
-            processed_keywords.append(element)
-        elif isinstance(element, list):
-            for item in element:
-                collect_strings(item)
-    
-    # Start processing from the root "keywords" field
-    collect_strings(data.get("keywords", []))
-    
-    return {"keywords": processed_keywords}
-
-def validate_keyword_output(output_json: str) -> dict:
-    schema = {
-        "type": "object",
-        "properties": {
-            "keywords": {
-                "type": "array",
-                "items": {
-                    "type": "string"
-                }
-            }
-        },
-        "required": ["keywords"]
-    }
-    
-    parsed_data = json.loads(output_json)
-    cleaned_data = flatten_and_filter_keywords(parsed_data)
-    
-    # Validate against schema
-    jsonschema.validate(instance=cleaned_data, schema=schema)
-    
-    # Additional quality checks
-    if not cleaned_data["keywords"]:
-        raise ValueError("Keywords array cannot be empty")
-    if any(len(kw) > 100 for kw in cleaned_data["keywords"]):
-        # filter that keyword
-        cleaned_data["keywords"] = [kw for kw in cleaned_data["keywords"] if len(kw) <= 100]
-    
-    return cleaned_data
-
 keyword_filtering_prompt = [
     {
         "role": "system",

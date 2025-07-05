@@ -1,20 +1,60 @@
 import json
-from typing import List, Optional
+from typing import List, Any
 import json_repair
+import jsonschema
 
 def normalize_key(key):
     return key.strip().lower()
 
-def fix_and_validate_response(response: str, prompt_type: str):
+# recover function can be fix_triple_extraction_response, fix_filter_triplets
+def validate_output(output_str, **kwargs):
+    schema = kwargs.get("schema")
+    fix_function = kwargs.get("fix_function", None)
+    allow_empty = kwargs.get("allow_empty", True)
+    if fix_function:
+        parsed_data = fix_function(output_str, **kwargs)  
+    jsonschema.validate(instance=parsed_data, schema=schema)
+    if not allow_empty and (not parsed_data or len(parsed_data) == 0):
+        raise ValueError("Parsed data is empty after validation.")
+    return json.dumps(parsed_data, ensure_ascii=False)
+
+def fix_filter_triplets(data: str, **kwargs) -> dict:
+    data = json_repair.loads(data)
+    processed_facts = []
+    def find_triplet(element: Any) -> List[str] | None:
+        # Base case: a valid triplet
+        if isinstance(element, list) and len(element) == 3 and all(isinstance(item, str) for item in element):
+            return element
+        # Recursive case: dig deeper into nested lists
+        elif isinstance(element, list):
+            for sub_element in element:
+                result = find_triplet(sub_element)
+                if result:
+                    return result
+        return None
+
+    for item in data.get("fact", []):
+        triplet = find_triplet(item)
+        if triplet:
+            processed_facts.append(triplet)
+
+    return {"fact": processed_facts}
+
+def fix_triple_extraction_response(response: str, **kwargs) -> str:
     """Attempt to fix and validate JSON response based on the prompt type."""
     # Extract the JSON list from the response
+    # raise error if prompt_type is not provided
+    if "prompt_type" not in kwargs:
+        raise ValueError("The 'prompt_type' argument is required.")
+    prompt_type = kwargs.get("prompt_type")
+
     json_start_token = response.find("[")
     if json_start_token == -1:
         # add [ at the start
         response = "[" + response.strip() + "]"
     parsed_objects = json_repair.loads(response)
     if len(parsed_objects) == 0:
-        return "[]", True
+        return []
     # Define required keys for each prompt type
     required_keys = {
         "entity_relation": {"Head", "Relation", "Tail"},
@@ -68,18 +108,37 @@ def fix_and_validate_response(response: str, prompt_type: str):
                 if not isinstance(corrected_item[key], str) or not corrected_item[key].strip():
                     print(f"Item {idx} {key} must be a non-empty sentence. Problematic item: {corrected_item}")
                     continue
-        
-        corrected_data.append(corrected_item)
     
         triple_tuple = tuple((k, str(v)) for k, v in corrected_item.items())
         if triple_tuple in seen_triples:
             print(f"Item {idx} is a duplicate triple: {corrected_item}")
             continue
-        seen_triples.add(triple_tuple)
-        corrected_data.append(corrected_item)
+        else:
+            seen_triples.add(triple_tuple)
+            corrected_data.append(corrected_item)
 
     if not corrected_data:
-        return "[]", True
+        return []
     
-    corrected_json_string = json.dumps(corrected_data, ensure_ascii=False)
-    return corrected_json_string, False
+    return corrected_data
+
+def fix_lkg_keywords(data: str, **kwargs) -> dict:
+    """
+    Extract and flatten keywords into a list of strings, filtering invalid types.
+    """
+    data = json_repair.loads(data)
+    processed_keywords = []
+    
+    def collect_strings(element: Any) -> None:
+        if isinstance(element, str):
+            if len(element) <= 200:  # Filter out keywords longer than 100 characters
+                processed_keywords.append(element)
+        elif isinstance(element, list):
+            for item in element:
+                collect_strings(item)
+    
+    # Start processing from the root "keywords" field
+    collect_strings(data.get("keywords", []))
+    
+    return {"keywords": processed_keywords}
+

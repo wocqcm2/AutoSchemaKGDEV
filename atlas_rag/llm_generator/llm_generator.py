@@ -4,10 +4,13 @@ from tenacity import retry, stop_after_attempt, stop_after_delay, wait_fixed, wa
 from copy import deepcopy
 from concurrent.futures import ThreadPoolExecutor
 from atlas_rag.llm_generator.prompt.rag_prompt import cot_system_instruction, cot_system_instruction_kg, cot_system_instruction_no_doc, prompt_template
-from atlas_rag.llm_generator.prompt.filter_triple_prompt import validate_filter_output, messages as filter_messages
-from atlas_rag.llm_generator.prompt.lkg_prompt import ner_prompt, validate_keyword_output, keyword_filtering_prompt
+from atlas_rag.llm_generator.prompt.lkg_prompt import ner_prompt, keyword_filtering_prompt
+from atlas_rag.llm_generator.prompt.rag_prompt import filter_triple_messages
+
+from atlas_rag.llm_generator.format.validate_json_output import *
+from atlas_rag.llm_generator.format.validate_json_schema import filter_fact_json_schema, lkg_keyword_json_schema, stage_to_schema
+    
 from atlas_rag.retriever.base import BaseEdgeRetriever, BasePassageRetriever
-from atlas_rag.kg_construction.utils.json_processing.json_repair import fix_and_validate_response
 
 from transformers.pipelines import Pipeline
 import jsonschema
@@ -35,24 +38,20 @@ class LLMGenerator():
             self.inference_type = "pipeline"
         else:
             raise ValueError("Unsupported client type. Please provide either an OpenAI client or a Huggingface Pipeline Object.")
-
+        
     @retry_decorator
-    def _generate_response(self, messages, do_sample=True, 
-                           max_new_tokens=8192,
+    def _api_inference(self, message, max_new_tokens=8192,
                            temperature = 0.7,
                            frequency_penalty = None,
                            response_format = {"type": "text"},
                            return_text_only=True,
                            return_thinking=False,
-                           reasoning_effort=None
-                           ):
-        if temperature == 0.0:
-            do_sample = False
-        if self.inference_type == "openai":
-            start_time = time.time()
-            response = self.client.chat.completions.create(
+                           reasoning_effort=None,
+                           **kwargs):
+        start_time = time.time()
+        response = self.client.chat.completions.create(
                 model=self.model_name,
-                messages=messages,
+                messages=message,
                 max_tokens=max_new_tokens,
                 temperature=temperature,
                 frequency_penalty= NOT_GIVEN if frequency_penalty is None else frequency_penalty,
@@ -60,70 +59,56 @@ class LLMGenerator():
                 timeout = 120,
                 reasoning_effort= NOT_GIVEN if reasoning_effort is None else reasoning_effort,
             )
-            time_cost = time.time() - start_time
-            content = response.choices[0].message.content
-            if content is None and hasattr(response.choices[0].message, 'reasoning_content'):
-                content = response.choices[0].message.reasoning_content
-            if '</think>' in content and not return_thinking:
-                content = content.split('</think>')[-1].strip()
-            else:
-                if hasattr(response.choices[0].message, 'reasoning_content') and response.choices[0].message.reasoning_content is not None:
-                    content = '<think>' + response.choices[0].message.reasoning_content + '</think>' + content
-            if return_text_only:
-                return content
-            else:
-                completion_usage_dict = response.usage.model_dump()
-                completion_usage_dict['time'] = time.time() - start_time 
-                return content, completion_usage_dict
-                
-        elif self.inference_type == "pipeline":
-            # Convert messages to a single string for Hugging Face
-            start_time = time.time()
-            response = self.client(
-                messages,
-                max_new_tokens=max_new_tokens,
-                temperature=temperature,
-                do_sample=do_sample,
-                return_full_text=False,
-            )
-            time_cost = time.time() - start_time
-            content = response[0]['generated_text'].strip()
-            if '</think>' in content and not return_thinking:
-                content = content.split('</think>')[-1].strip()
+        time_cost = time.time() - start_time
+        content = response.choices[0].message.content
+        if content is None and hasattr(response.choices[0].message, 'reasoning_content'):
+            content = response.choices[0].message.reasoning_content
+        validate_function = kwargs.get('validate_function', None)
+        content = validate_function(content, **kwargs) if validate_function else content
 
-            if return_text_only:
-                return content
-            else:
-                # return both content and usage
-                content = response[0]['generated_text'].strip()
-                token_count = len(content.split())  # Approximate token count
-                time_cost = time.time() - start_time  # Calculate time cost
-                completion_usage_dict = {
-                    'completion_tokens': token_count,
-                    'time': time_cost
-                }
-                return content, completion_usage_dict
+        if '</think>' in content and not return_thinking:
+            content = content.split('</think>')[-1].strip()
         else:
-            raise ValueError(f"Unsupported client type: {self.inference_type}")
+            if hasattr(response.choices[0].message, 'reasoning_content') and response.choices[0].message.reasoning_content is not None:
+                content = '<think>' + response.choices[0].message.reasoning_content + '</think>' + content
+        
+        if return_text_only:
+            return content
+        else:
+            completion_usage_dict = response.usage.model_dump()
+            completion_usage_dict['time'] = time_cost
+            return content, completion_usage_dict
 
-    def _generate_batch_responses(self, batch_messages, do_sample=True, max_new_tokens=8192,
+    def generate_response(self, batch_messages, do_sample=True, max_new_tokens=8192,
                                  temperature=0.7, frequency_penalty=None, response_format={"type": "text"},
                                  return_text_only=True, return_thinking=False, reasoning_effort=None, **kwargs):
+        if temperature == 0.0:
+            do_sample = False
+        # single = list of dict, batch = list of list of dict
+        is_batch = isinstance(batch_messages[0], list)
+        if not is_batch:
+            batch_messages = [batch_messages]
+        results = [None] * len(batch_messages)
+        to_process = list(range(len(batch_messages)))
         if self.inference_type == "openai":
             max_workers = kwargs.get('max_workers', 3)  # Default to 4 workers if not specified
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                futures = [
-                    executor.submit(
-                        self._generate_response, messages, do_sample, max_new_tokens, temperature,
-                        frequency_penalty, response_format, return_text_only, return_thinking, reasoning_effort
-                    ) for messages in batch_messages
-                ]
-                results = [future.result() for future in futures]
-            return results
+                def process_message(i):
+                    try:
+                        return self._api_inference(
+                            batch_messages[i], max_new_tokens, temperature,
+                            frequency_penalty, response_format, return_text_only, return_thinking, reasoning_effort, **kwargs
+                        )
+                    except Exception:
+                        return ""
+                futures = [executor.submit(process_message, i) for i in to_process]
+            for i, future in enumerate(futures):
+                results[i] = future.result()
+
         elif self.inference_type == "pipeline":
-            if not hasattr(self.client, 'tokenizer'):
-                raise ValueError("Pipeline must have a tokenizer for batch processing.")
+            max_retries = kwargs.get('max_retries', 3)  # Default to 3 retries if not specified
             start_time = time.time()
+            # Initial processing of all messages
             responses = self.client(
                 batch_messages,
                 max_new_tokens=max_new_tokens,
@@ -131,72 +116,108 @@ class LLMGenerator():
                 do_sample=do_sample,
                 return_full_text=False
             )
-
             time_cost = time.time() - start_time
-            contents = [resp[0]['generated_text'].strip() for resp in responses]
+            
+            # Extract contents
+            contents = [resp[0]['generated_text'].strip() for resp in responses] if is_batch else [responses[0]['generated_text'].strip()]
+            
+            # Validate and collect failed indices
+            validate_function = kwargs.get('validate_function', None)
+            failed_indices = []
+            for i, content in enumerate(contents):
+                if validate_function:
+                    try:
+                        contents[i] = validate_function(content, **kwargs)
+                    except Exception as e:
+                        print(f"Validation failed for index {i}: {e}")
+                        failed_indices.append(i)
+            
+            # Retry failed messages in batches
+            for attempt in range(max_retries):
+                if not failed_indices:
+                    break  # No more failures to retry
+                print(f"Retry attempt {attempt + 1}/{max_retries} for {len(failed_indices)} failed messages")
+                # Prepare batch of failed messages
+                failed_messages = [batch_messages[i] for i in failed_indices]
+                try:
+                    # Process failed messages as a batch
+                    retry_responses = self.client(
+                        failed_messages,
+                        max_new_tokens=max_new_tokens,
+                        temperature=temperature,
+                        do_sample=do_sample,
+                        return_full_text=False
+                    )
+                    retry_contents = [resp[0]['generated_text'].strip() for resp in retry_responses]
+                    
+                    # Validate retry results and update contents
+                    new_failed_indices = []
+                    for j, i in enumerate(failed_indices):
+                        print(retry_contents[j])
+                        try:
+                            if validate_function:
+                                retry_contents[j] = validate_function(retry_contents[j], **kwargs)
+                            contents[i] = retry_contents[j]
+                        except Exception as e:
+                            print(f"Validation failed for index {i} on retry {attempt + 1}: {e}")
+                            new_failed_indices.append(i)
+                    failed_indices = new_failed_indices  # Update failed indices for next retry
+                except Exception as e:
+                    print(f"Batch retry {attempt + 1} failed: {e}")
+                    # If batch processing fails, keep all indices in failed_indices
+                    if attempt == max_retries - 1:
+                        for i in failed_indices:
+                            contents[i] = ""  # Set to "" if all retries fail
+            
+            # Set remaining failed messages to "" after all retries
+            for i in failed_indices:
+                contents[i] = ""
+            
+            # Process thinking tags
             if not return_thinking:
                 contents = [content.split('</think>')[-1].strip() if '</think>' in content else content for content in contents]
+            
             if return_text_only:
-                return contents
+                results = contents
             else:
                 usage_dicts = [{
                     'completion_tokens': len(content.split()),
                     'time': time_cost / len(batch_messages)
                 } for content in contents]
-                return list(zip(contents, usage_dicts))
+                results = list(zip(contents, usage_dicts))
+        return results[0] if not is_batch else results
 
     def generate_cot(self, question, max_new_tokens=1024):
         messages = [
             {"role": "system", "content": "".join(cot_system_instruction_no_doc)},
             {"role": "user", "content": question},
         ]
-        return self._generate_response(messages, max_new_tokens=max_new_tokens)
+        return self.generate_response(messages, max_new_tokens=max_new_tokens)
 
     def generate_with_context(self, question, context, max_new_tokens=1024, temperature = 0.7):
         messages = [
             {"role": "system", "content": "".join(cot_system_instruction)},
             {"role": "user", "content": f"{context}\n\n{question}\nThought:"},
         ]
-        return self._generate_response(messages, max_new_tokens=max_new_tokens, temperature = temperature)
+        return self.generate_response(messages, max_new_tokens=max_new_tokens, temperature = temperature)
 
     def generate_with_context_one_shot(self, question, context, max_new_tokens=4096, temperature = 0.7):
         messages = deepcopy(prompt_template)
         messages.append(
             {"role": "user", "content": f"{context}\n\nQuestions:{question}\nThought:"},
         )
-        return self._generate_response(messages, max_new_tokens=max_new_tokens, temperature = temperature)
+        return self.generate_response(messages, max_new_tokens=max_new_tokens, temperature = temperature)
     
     def generate_with_context_kg(self, question, context, max_new_tokens=1024, temperature = 0.7):
         messages = [
             {"role": "system", "content": "".join(cot_system_instruction_kg)},
             {"role": "user", "content": f"{context}\n\n{question}"},
         ]
-        return self._generate_response(messages, max_new_tokens=max_new_tokens, temperature = temperature)
-
-    @retry_decorator
-    def filter_triples_with_entity(self,question, nodes, max_new_tokens=1024):
-        messages = [
-            {"role": "system", "content": """
-            Your task is to filter text cnadidates based on their relevance to a given query.
-            The query requires careful analysis and possibly multi-hop reasoning to connect different pieces of information.
-            You must only select relevant texts from the provided candidate list that have connection to the query, aiding in reasoning and providing an accurate answer.
-            The output should be in JSON format, e.g., {"nodes": [e1, e2, e3, e4]}, and if no texts are relevant, return an empty list, {"nodes": []}.
-            Do not include any explanations, additional text, or context Only provide the JSON output.
-            Do not change the content of each object in the list. You must only use text from the candidate list and cannot generate new text."""},
-
-            {"role": "user", "content": f"""{question} \n Output Before Filter: {nodes} \n Output After Filter:"""}
-        ]
-        try:
-            response = json.loads(self._generate_response(messages, max_new_tokens=max_new_tokens))
-            # loop through the reponse json and check if all node is original nodes else go to exception
-            return response
-        except Exception as e:
-            # If all retries fail, return the original triples
-            return json.loads(nodes)
+        return self.generate_response(messages, max_new_tokens=max_new_tokens, temperature = temperature)
         
     @retry_decorator
     def filter_triples_with_entity_event(self,question, triples):
-        messages = deepcopy(filter_messages)
+        messages = deepcopy(filter_triple_messages)
         messages.append(
             {"role": "user", "content": f"""[ ## question ## ]]
         {question}
@@ -204,16 +225,17 @@ class LLMGenerator():
         [[ ## fact_before_filter ## ]]
         {triples}"""})
         try:
-            response = self._generate_response(messages, max_new_tokens=4096, temperature=0.0, response_format={"type": "json_object"})
-            cleaned_data = validate_filter_output(response)
-            return cleaned_data['fact']
+            validate_args = {
+                "schema": filter_fact_json_schema,
+                "fix_function": fix_filter_triplets,
+            }
+            response = self.generate_response(messages, max_new_tokens=4096, temperature=0.0, response_format={"type": "json_object"},
+                                               validate_function=validate_output, **validate_args)
+            return response
         except Exception as e:
             # If all retries fail, return the original triples
-            return []
+            return triples
         
-    def generate_with_custom_messages(self, custom_messages, do_sample=True, max_new_tokens=1024, temperature=0.8, frequency_penalty = None):
-        return self._generate_response(custom_messages, do_sample, max_new_tokens, temperature, frequency_penalty)
-    
     @retry(stop=(stop_after_delay(60) | stop_after_attempt(6)), wait=wait_fixed(2))
     def large_kg_filter_keywords_with_entity(self, question, keywords):
         messages = deepcopy(keyword_filtering_prompt)
@@ -227,10 +249,10 @@ class LLMGenerator():
         })
         
         try:
-            response = self.generate_with_custom_messages(messages, response_format={"type": "json_object"}, temperature=0.0, max_new_tokens=2048)
+            response = self.generate_response(messages, response_format={"type": "json_object"}, temperature=0.0, max_new_tokens=2048)
             
             # Validate and clean the response
-            cleaned_data = validate_keyword_output(response)
+            cleaned_data = validate_output(response, lkg_keyword_json_schema, fix_lkg_keywords)
             
             return cleaned_data['keywords']
         except Exception as e:
@@ -241,7 +263,7 @@ class LLMGenerator():
             {"role": "system", "content": "Please extract the entities from the following question and output them separated by comma, in the following format: entity1, entity2, ..."},
             {"role": "user", "content": f"Extract the named entities from: {text}"},
         ]
-        return self._generate_response(messages)
+        return self.generate_response(messages)
     
     @retry(stop=(stop_after_delay(60) | stop_after_attempt(6)), wait=wait_fixed(2))
     def large_kg_ner(self, text):
@@ -254,11 +276,11 @@ class LLMGenerator():
         )
         
         # Generate raw response from LLM
-        raw_response = self._generate_response(messages, max_new_tokens=4096, temperature=0.7, frequency_penalty=1.1, response_format={"type": "json_object"})
+        raw_response = self.generate_response(messages, max_new_tokens=4096, temperature=0.7, frequency_penalty=1.1, response_format={"type": "json_object"})
         
         try:
             # Validate and clean the response
-            cleaned_data = validate_keyword_output(raw_response)
+            cleaned_data = validate_output(raw_response, lkg_keyword_json_schema, fix_lkg_keywords)
             return cleaned_data['keywords']
         
         except (json.JSONDecodeError, jsonschema.ValidationError) as e:
@@ -272,11 +294,11 @@ class LLMGenerator():
         ]
         
         # Generate raw response from LLM
-        raw_response = self._generate_response(messages, max_new_tokens=4096, temperature=0.7, frequency_penalty=1.1, response_format={"type": "json_object"})
+        raw_response = self.generate_response(messages, max_new_tokens=4096, temperature=0.7, frequency_penalty=1.1, response_format={"type": "json_object"})
         
         try:
             # Validate and clean the response
-            cleaned_data = validate_keyword_output(raw_response)
+            cleaned_data = validate_output(raw_response, lkg_keyword_json_schema, fix_lkg_keywords)
             return cleaned_data['keywords']
         
         except (json.JSONDecodeError, jsonschema.ValidationError) as e:
@@ -323,7 +345,7 @@ class LLMGenerator():
         ]
         if logger:
             logger.info(f"Messages for ReAct generation: {search_history}Question: {question}")
-        return self._generate_response(messages, max_new_tokens=max_new_tokens)
+        return self.generate_response(messages, max_new_tokens=max_new_tokens)
 
     def generate_with_rag_react(self, question: str, retriever: Union['BaseEdgeRetriever', 'BasePassageRetriever'], max_iterations: int = 5, max_new_tokens: int = 1024, logger: Logger = None):
         """
@@ -425,50 +447,15 @@ class LLMGenerator():
         # If we've reached max iterations, return the last answer
         return answer, search_history
     
-    def triple_extraction(self, messages, max_tokens=4096, stage=None, record=False):
+    def triple_extraction(self, messages, max_tokens=4096, stage=None, record=False, allow_empty=False):
         responses = []
         if isinstance(messages[0], dict):
             messages = [messages]
-        @retry_decorator
-        def process_input(input_data):
-            if record:
-                content, completion_usage_dict = self._generate_response(
-                    messages=input_data,
-                    max_new_tokens=max_tokens,
-                    temperature=0.1,
-                    frequency_penalty=0.5,
-                    reasoning_effort="none",
-                    return_text_only= not record
-                )
-            else:
-                content = self._generate_response(
-                    messages=input_data,
-                    max_new_tokens=max_tokens,
-                    temperature=0.1,
-                    frequency_penalty=0.5,
-                    reasoning_effort="none",
-                    return_text_only=True
-                )
-            prompt_type = stage_to_prompt_type.get(stage, None)
-            if prompt_type:
-                corrected, error = fix_and_validate_response(content, prompt_type)
-                if error:
-                    raise ValueError(f"Validation failed for prompt_type '{prompt_type}'")
-            if corrected and corrected.strip():
-                if record:
-                    return corrected, completion_usage_dict
-                else:
-                    return corrected
-            raise ValueError("Invalid response")
-
-        for input_data in messages:
-            try:
-                result = process_input(input_data)
-                responses.append(result)
-            except Exception as e:
-                if record:
-                    completion_usage_dict = {'completion_tokens': 0, 'total_tokens': 0, 'time': 0}
-                    responses.append(("[]", completion_usage_dict))
-                else:
-                    responses.append("[]")
-        return responses
+        validate_kwargs = {
+            'schema': stage_to_schema.get(stage, None),
+            'fix_function': fix_triple_extraction_response,
+            'prompt_type': stage_to_prompt_type.get(stage, None),
+            'allow_empty': allow_empty
+        }
+        result = self.generate_response(messages, max_new_tokens=max_tokens, validate_function=validate_output, return_text_only = not record, **validate_kwargs)
+        return result

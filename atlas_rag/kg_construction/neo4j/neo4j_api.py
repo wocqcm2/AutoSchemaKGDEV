@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from logging import Logger
 from atlas_rag.billion.lkg_retriever.base import BaseLargeKGRetriever, BaseLargeKGEdgeRetriever
 from atlas_rag.billion.utils import start_up_large_kg_index_graph
-from atlas_rag.reader import LLMGenerator
+from atlas_rag.llm_generator import LLMGenerator
 from neo4j import Driver
 from dataclasses import dataclass
 import traceback
@@ -186,7 +186,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
         if large_kg_config.logger is not None:
             large_kg_config.logger.info(rag_chat_content)
 
-        response = large_kg_config.reader_llm_generator.generate_with_custom_messages(
+        response = large_kg_config.reader_llm_generator.generate_response(
             custom_messages=rag_chat_content,
             max_new_tokens=gen_params["max_tokens"],
             temperature=gen_params["temperature"],
@@ -235,7 +235,7 @@ async def create_chat_completion(request: ChatCompletionRequest):
                     "content": f"""{question} """
                 }
             ]
-        response = large_kg_config.reader_llm_generator.generate_with_custom_messages(
+        response = large_kg_config.reader_llm_generator.generate_response(
             custom_messages=rag_chat_content,
             max_new_tokens=gen_params["max_tokens"],
             temperature=gen_params["temperature"],

@@ -30,7 +30,7 @@ class TogRetriever(BaseEdgeRetriever):
         ]
 
         
-        response = self.llm_generator._generate_response(messages)
+        response = self.llm_generator.generate_response(messages)
         generated_text = response
         # print(generated_text)
         return generated_text
@@ -152,7 +152,7 @@ class TogRetriever(BaseEdgeRetriever):
             messages = [{"role": "system", "content": "Answer the question following the prompt."},
             {"role": "user", "content": f"{prompt}"}]
 
-            response = self.llm_generator._generate_response(messages)
+            response = self.llm_generator.generate_response(messages)
             # print(response)
             rating = int(response)
             ratings.append(rating)
@@ -178,7 +178,7 @@ class TogRetriever(BaseEdgeRetriever):
         messages = [{"role": "system", "content": "Answer the question following the prompt."},
         {"role": "user", "content": f"{prompt}"}]
 
-        response = self.llm_generator._generate_response(messages)
+        response = self.llm_generator.generate_response(messages)
         return "yes" in response.lower()
 
     def generate(self, query, P):

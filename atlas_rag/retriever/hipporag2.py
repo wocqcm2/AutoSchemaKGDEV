@@ -6,6 +6,7 @@ from tqdm import tqdm
 from typing import Dict, List, Tuple
 import networkx as nx
 import numpy as np
+import json_repair
 from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
 from atlas_rag.llm_generator.llm_generator import LLMGenerator
 from logging import Logger
@@ -138,6 +139,7 @@ class HippoRAG2Retriever(BasePassageRetriever):
         if self.logging:
             self.logger.info(f"HippoRAG2 Before Filter Edge: {before_filter_edge_json['fact']}")
         filtered_facts = self.llm_generator.filter_triples_with_entity_event(query, json.dumps(before_filter_edge_json, ensure_ascii=False))
+        filtered_facts = json_repair.loads(filtered_facts)['fact']
         if len(filtered_facts) == 0:
             return {}
         # use filtered facts to get the edge id and check if it exists in the original candidate list.

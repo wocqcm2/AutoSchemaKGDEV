@@ -6,10 +6,10 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 
 from atlas_rag.llm_generator.prompt.rag_prompt import cot_system_instruction, cot_system_instruction_kg, cot_system_instruction_no_doc, prompt_template
-from atlas_rag.llm_generator.prompt.filter_triple_prompt import validate_filter_output, messages as filter_messages
+from atlas_rag.llm_generator.format.validate_json_output import validate_filter_output, messages as filter_messages
 from atlas_rag.llm_generator.prompt.lkg_prompt import ner_prompt, validate_keyword_output, keyword_filtering_prompt
 from atlas_rag.retriever.base import BaseEdgeRetriever, BasePassageRetriever
-from atlas_rag.kg_construction.utils.json_processing.json_repair import fix_and_validate_response
+from atlas_rag.llm_generator.format.validate_json_output import fix_and_validate_response
 
 from transformers.pipelines import Pipeline
 import jsonschema

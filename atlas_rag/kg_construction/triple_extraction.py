@@ -99,33 +99,33 @@ class DatasetProcessor:
         
         # Handle edge cases
         if total_texts == 0:
-            print(f"No texts found for slice {self.config.current_shard_triple+1}/{self.config.total_shards_triple}")
+            print(f"No texts found for shard {self.config.current_shard_triple+1}/{self.config.total_shards_triple}")
             return processed_samples
         
         # Calculate base and remainder for fair distribution
-        base_texts_per_slice = total_texts // self.config.total_shards_triple
+        base_texts_per_shard = total_texts // self.config.total_shards_triple
         remainder = total_texts % self.config.total_shards_triple
         
         # Calculate start index
         if self.config.current_shard_triple < remainder:
-            start_idx = self.config.current_shard_triple * (base_texts_per_slice + 1)
+            start_idx = self.config.current_shard_triple * (base_texts_per_shard + 1)
         else:
-            start_idx = remainder * (base_texts_per_slice + 1) + (self.config.current_shard_triple - remainder) * base_texts_per_slice
+            start_idx = remainder * (base_texts_per_shard + 1) + (self.config.current_shard_triple - remainder) * base_texts_per_shard
         
         # Calculate end index
         if self.config.current_shard_triple < remainder:
-            end_idx = start_idx + (base_texts_per_slice + 1)
+            end_idx = start_idx + (base_texts_per_shard + 1)
         else:
-            end_idx = start_idx + base_texts_per_slice
+            end_idx = start_idx + base_texts_per_shard
         
         # Ensure indices are within bounds
         start_idx = min(start_idx, total_texts)
         end_idx = min(end_idx, total_texts)
         
-        print(f"Processing slice {self.config.current_shard_triple+1}/{self.config.total_shards_triple} "
+        print(f"Processing shard {self.config.current_shard_triple+1}/{self.config.total_shards_triple} "
             f"(texts {start_idx}-{end_idx-1} of {total_texts}, {end_idx - start_idx} documents)")
         
-        # Process documents in assigned slice
+        # Process documents in assigned shard
         for idx in range(start_idx, end_idx):
             sample = raw_dataset[idx]
             
@@ -143,7 +143,7 @@ class DatasetProcessor:
                 print("Debug mode: Stopping at 20 chunks")
                 break
         
-        print(f"Generated {len(processed_samples)} chunks for slice {self.config.current_shard_triple+1}/{self.config.total_shards_triple}")
+        print(f"Generated {len(processed_samples)} chunks for shard {self.config.current_shard_triple+1}/{self.config.total_shards_triple}")
         return processed_samples
 
 
@@ -221,7 +221,6 @@ class OutputParser:
     def extract_structured_data(self, outputs: List[str]) -> List[List[Dict[str, Any]]]:
         """Extract structured data from model outputs."""
         results = []
-        
         for output in outputs:
             parsed_data = json_repair.loads(output)
             results.append(parsed_data)
@@ -267,7 +266,7 @@ class KnowledgeGraphExtractor:
         return outputs, structured_data
     
     def create_output_filename(self) -> str:
-        """Create output filename with timestamp and slice info."""
+        """Create output filename with timestamp and shard info."""
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         model_name_safe = self.config.model_path.replace("/", "_")
         
@@ -367,10 +366,11 @@ class KnowledgeGraphExtractor:
                         output_stream.flush()
 
     def convert_json_to_csv(self):
-        json2csv(dataset = self.config.filename_pattern, 
-                 output_dir=f"{self.config.output_directory}/triples_csv",
-                 data_dir=f"{self.config.output_directory}/kg_extraction"
-                 )
+        json2csv(
+            dataset = self.config.filename_pattern, 
+            output_dir=f"{self.config.output_directory}/triples_csv",
+            data_dir=f"{self.config.output_directory}/kg_extraction"
+        )
         csvs_to_temp_graphml(
             triple_node_file=f"{self.config.output_directory}/triples_csv/triple_nodes_{self.config.filename_pattern}_from_json_without_emb.csv",
             triple_edge_file=f"{self.config.output_directory}/triples_csv/triple_edges_{self.config.filename_pattern}_from_json_without_emb.csv",
