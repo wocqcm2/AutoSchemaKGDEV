@@ -205,7 +205,7 @@ Run
 ```bash
 bash run.sh
 ```
-Cheers! You got a markdown version of your PDF file. You can now cd back to your parent directory and run the below 
+Cheers! You have a Markdown version of your PDF file. You can now change directories back to your parent directory and run the command below to obtain your JSON file for further Atlas-RAG KG construction.
 ```
 python -m atlas_rag.kg_construction.utils.md_processing.markdown_to_json --input example_data/md_data --output example_data
 ```
