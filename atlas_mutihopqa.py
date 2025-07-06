@@ -2,10 +2,12 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '3' 
 from configparser import ConfigParser
 from openai import OpenAI
-from atlas_rag.retrieval import NvEmbed, HippoRAG2Retriever
-from atlas_rag.reader import LLMGenerator
+from atlas_rag.retriever import HippoRAG2Retriever
+from atlas_rag.vectorstore.embedding_model import NvEmbed
+from atlas_rag.vectorstore.create_graph_index import create_embeddings_and_index
+from atlas_rag.logging import setup_logger
+from atlas_rag.llm_generator import LLMGenerator
 from atlas_rag.evaluation import BenchMarkConfig, RAGBenchmark
-from atlas_rag import create_embeddings_and_index, setup_logger
 from transformers import AutoModel
 import torch
 def main():

@@ -76,7 +76,9 @@ pip install atlas-rag[nvembed]
 ### KG Construction with ATLAS
 
 ```python
-from atlas_rag import TripleGenerator, KnowledgeGraphExtractor, ProcessingConfig
+from atlas_rag.kg_construction.triple_extraction import KnowledgeGraphExtractor
+from atlas_rag.kg_construction.triple_config import ProcessingConfig
+from atlas_rag.llm_generator import LLMGenerator
 from openai import OpenAI
 from transformers import pipeline
 # client = OpenAI(api_key='<your_api_key>',base_url="<your_api_base_url>") 
@@ -90,13 +92,17 @@ client = pipeline(
 )
 keyword = 'Dulce'
 output_directory = f'import/{keyword}'
-triple_generator = TripleGenerator(client, model_name=model_name)
+triple_generator = LLMGenerator(client, model_name=model_name)
 kg_extraction_config = ProcessingConfig(
       model_path=model_name,
-      data_directory="tests",
-      filename_pattern=keyword,
-      batch_size=2,
+      data_directory="example_data",
+      filename_pattern=filename_pattern,
+      batch_size_triple=3, # batch size for triple extraction
+      batch_size_concept=16, # batch size for concept generation
       output_directory=f"{output_directory}",
+      max_new_tokens=2048,
+      max_workers=3,
+      remove_doc_spaces=True, # For removing duplicated spaces in the document text
 )
 kg_extractor = KnowledgeGraphExtractor(model=triple_generator, config=kg_extraction_config)
 
