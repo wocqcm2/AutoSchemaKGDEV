@@ -1,18 +1,18 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '7'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 from openai import OpenAI
-from atlas_rag.reader import LLMGenerator
+from atlas_rag.llm_generator import LLMGenerator
 from configparser import ConfigParser
 from sentence_transformers import SentenceTransformer
-from atlas_rag.retrieval import SentenceEmbedding, NvEmbed
+from atlas_rag.vectorstore.embedding_model import SentenceEmbedding, NvEmbed
 from neo4j import GraphDatabase
 import faiss
 import datetime
 import logging
 from logging.handlers import RotatingFileHandler
-from atlas_rag.billion.retriever import LargeKGRetriever
-from atlas_rag.billion.retriever.tog import LargeKGToGRetriever
-from atlas_rag.billion.neo4j_api import LargeKGConfig, start_app
+from atlas_rag.retriever.lkg_retriever.lkgr import LargeKGRetriever
+from atlas_rag.retriever.lkg_retriever.tog import LargeKGToGRetriever
+from atlas_rag.kg_construction.neo4j.neo4j_api import LargeKGConfig, start_app
 
 # use sentence embedding if you want to use sentence transformer
 # use NvEmbed if you want to use NvEmbed-v2 model

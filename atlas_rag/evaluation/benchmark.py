@@ -2,7 +2,7 @@ import os
 import json
 import numpy as np
 from logging import Logger
-from atlas_rag.retrieval.retriever import BaseRetriever, BaseEdgeRetriever, BasePassageRetriever
+from atlas_rag.retriever.base import BaseRetriever, BaseEdgeRetriever, BasePassageRetriever
 from typing import List
 from datetime import datetime
 from transformers import AutoModel
@@ -10,10 +10,11 @@ from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 import torch
 import torch.nn.functional as F
-from atlas_rag.retrieval.embedding_model import NvEmbed, SentenceEmbedding
-from atlas_rag.reader.llm_generator import LLMGenerator
+from atlas_rag.vectorstore.embedding_model import NvEmbed, SentenceEmbedding
+from atlas_rag.llm_generator.llm_generator import LLMGenerator
 from atlas_rag.evaluation.evaluation import QAJudger
 from dataclasses import dataclass
+from atlas_rag.llm_generator.prompt.react import ReAct
 
 
 def normalize_embeddings(embeddings):
@@ -72,6 +73,8 @@ class RAGBenchmark:
                   llm_generator:LLMGenerator,
                   use_react: bool = False):
         qa_judge = QAJudger()
+        if use_react:
+            react_agent = ReAct(llm_generator=llm_generator)
         result_list = []
         with open(self.config.question_file, "r") as f:
             data = json.load(f)
@@ -106,7 +109,7 @@ class RAGBenchmark:
             for retriever in retrievers:
                 if use_react:
                     # Use RAG with ReAct
-                    llm_generated_answer, search_history = llm_generator.generate_with_rag_react(
+                    llm_generated_answer, search_history = react_agent.generate_with_rag_react(
                         question=question,
                         retriever=retriever,
                         max_iterations=self.config.react_max_iterations,

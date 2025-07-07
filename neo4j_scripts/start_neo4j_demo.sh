@@ -20,8 +20,8 @@ ${NEO4J_HOME}/bin/neo4j start --verbose
 sleep 10
 
 # Creating index and initializing RDF configuration
-${NEO4J_HOME}/bin/cypher-shell -u neo4j -p admin2024 'CREATE CONSTRAINT n10s_unique_uri FOR (r:Resource) REQUIRE r.uri IS UNIQUE;' -a bolt://localhost:7687
-${NEO4J_HOME}/bin/cypher-shell -u neo4j -p admin2024 'call n10s.graphconfig.init({ handleMultival: "OVERWRITE", handleVocabUris: "SHORTEN", keepLangTag: false, handleRDFTypes: "NODES" })' -a bolt://localhost:7687
+${NEO4J_HOME}/bin/cypher-shell -u neo4j -p admin2024 'CREATE CONSTRAINT n10s_unique_uri FOR (r:Resource) REQUIRE r.uri IS UNIQUE;' -a bolt://localhost:8612
+${NEO4J_HOME}/bin/cypher-shell -u neo4j -p admin2024 'call n10s.graphconfig.init({ handleMultival: "OVERWRITE", handleVocabUris: "SHORTEN", keepLangTag: false, handleRDFTypes: "NODES" })' -a bolt://localhost:8612
 
 
 

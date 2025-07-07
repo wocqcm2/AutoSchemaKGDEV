@@ -5,9 +5,11 @@ import csv
 import os
 import hashlib
 import re
-from atlas_rag.utils.triple_generator import TripleGenerator
-from atlas_rag.utils.csv_to_graphml import csvs_to_temp_graphml, get_node_id
-from atlas_rag.kg_construction.prompt import CONCEPT_INSTRUCTIONS
+from atlas_rag.llm_generator import LLMGenerator
+from atlas_rag.kg_construction.triple_config import ProcessingConfig
+from atlas_rag.kg_construction.utils.csv_processing.csv_to_graphml import get_node_id
+from atlas_rag.llm_generator.prompt.triple_extraction_prompt import CONCEPT_INSTRUCTIONS
+import pickle
 # Increase the field size limit
 csv.field_size_limit(10 * 1024 * 1024)  # 10 MB limit
 
@@ -77,14 +79,22 @@ def build_batched_relations(all_node_list, batch_size):
     
     return batched_relations
 
-def batched_inference(model:TripleGenerator, inputs):
-    responses = model.generate(inputs)
+def batched_inference(model:LLMGenerator, inputs, record=False, **kwargs):
+    responses = model.generate_response(inputs, return_text_only = not record,  **kwargs)
     answers = []
-    for i in range(len(responses)):
-        answer = responses[i]
+    if record:
+        text_responses = [response[0] for response in responses]
+        usages = [response[1] for response in responses]
+    else:
+        text_responses = responses
+    for i in range(len(text_responses)):
+        answer = text_responses[i]
         answers.append([x.strip().lower() for x in answer.split(",")])
     
-    return answers
+    if record:
+        return answers, usages
+    else:
+        return answers
 
 def load_data_with_shard(input_file, shard_idx, num_shards):
 
@@ -103,57 +113,12 @@ def load_data_with_shard(input_file, shard_idx, num_shards):
     
     return data[start_idx:end_idx]
 
-def conceptualize(model: TripleGenerator,
-                  input_file = 'processed_data/triples_csv', 
-                  output_folder = 'processed_data/triples_conceptualized', 
-                  output_file = 'output.json', 
-                  logging_file = 'processed_data/logging.txt', 
-                  sample_num=None, 
-                  batch_size=32, 
-                  shard=0, 
-                  num_shards=1,
-                  **kwargs):
-    """
-    Encapsulates the logic for parsing arguments, setting up the environment, and calling the generate function.
-
-    Args:
-        model (TripleGenerator): The model to use for generating concepts.
-        input_file (str): Path to the input file.
-        output_folder (str): Path to the output folder.
-        output_file (str): Path to the output file.
-        logging_file (str): Path to the logging file.
-        sample_num (int): Sample number of sessions.
-        batch_size (int): Number of sessions processed at the same time.
-        shard (int): Shard id.
-        num_shards (int): Total number of shards.
-    """
-    # Set random seed for reproducibility
-
-    # Print environment information
-    # print("\n>>>Shard id:", shard)
-    # print("CUDA Device Count:", torch.cuda.device_count())
-    # print("VISIBLE DEVICES:", os.environ.get("CUDA_VISIBLE_DEVICES", None))
-    # print("Current CUDA Device:", torch.cuda.current_device())
-
-    # Call the generate function with the provided arguments
-    generate_concept(model,input_file=input_file,
-             output_folder=output_folder,
-             output_file=output_file,
-             logging_file=logging_file,
-             sample_num=sample_num,
-             batch_size=batch_size,
-             shard=shard,
-             num_shards=num_shards,
-             **kwargs)
-
-def generate_concept(model: TripleGenerator,
+def generate_concept(model: LLMGenerator,
             input_file = 'processed_data/triples_csv', 
-            input_triple_nodes_file = 'processed_data/triple_nodes.csv',
-            input_triple_edges_file = 'processed_data/triple_edges.csv',
             output_folder = 'processed_data/triples_conceptualized', 
             output_file = 'output.json', 
             logging_file = 'processed_data/logging.txt', 
-            sample_num=None, 
+            config:ProcessingConfig=None, 
             batch_size=32, 
             shard=0, 
             num_shards=1,
@@ -167,6 +132,7 @@ def generate_concept(model: TripleGenerator,
         open(logging_file, 'w').close()
 
     language = kwargs.get('language', 'en')
+    record = kwargs.get('record', False)
 
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     file_handler = logging.FileHandler(logging_file)
@@ -174,7 +140,8 @@ def generate_concept(model: TripleGenerator,
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     logging.getLogger().addHandler(file_handler)
     
-    temp_kg = csvs_to_temp_graphml(input_triple_nodes_file, input_triple_edges_file)
+    with open(f"{config.output_directory}/kg_graphml/{config.filename_pattern}_without_concept.pkl", "rb") as f: 
+        temp_kg = pickle.load(f)
 
     # read data
     if not os.path.exists(output_folder):
@@ -253,7 +220,12 @@ def generate_concept(model: TripleGenerator,
 
             try:
                 # print("inputs", inputs)
-                answers = batched_inference(model, inputs)
+                if record:
+                    # If recording, we will get both answers and responses
+                    answers, usages = batched_inference(model, inputs, record=record, max_workers = config.max_workers)
+                else:
+                    answers = batched_inference(model, inputs, record=record, max_workers = config.max_workers)
+                    usages = None
                 # print("answers", answers)
             except Exception as e:
                 logging.error(f"Error processing {batch_type} batch: {e}")
@@ -264,8 +236,10 @@ def generate_concept(model: TripleGenerator,
             #     logging.error(f"Error processing {batch_type} batch: {e}")
             #     continue
 
-            for node, answer in zip(batch, answers):
+            for i,(node, answer) in enumerate(zip(batch, answers)):
                 # print(node, answer, node_type)
+                if usages is not None:
+                    logging.info(f"Usage log: Node {node}, completion_usage: {usages[i]}")
                 csv_writer.writerow([node, ", ".join(answer), node_type])
                 file.flush()
     # count unique conceptualized nodes

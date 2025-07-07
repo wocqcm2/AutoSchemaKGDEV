@@ -9,7 +9,8 @@ This project uses the following paper and data:
 *   **Neo4j CSV Dumps:** [Download the dataset](https://huggingface.co/datasets/AlexFanWei/AutoSchemaKG) (huggingface dataset)
 
 ### Update
-(24/06) - Add: ToG, Chinese KG construction (refer to example_scripts for KG construction with different language). Separate NV-embed-v2 transformers dependency.
+- (05/07) Update with batch generation and refactor the codebase. Add PDF-md-json instruction. [See PDF support](#pdf-support)
+- (24/06) Add: ToG, Chinese KG construction (refer to example_scripts for KG construction with different language). Separate NV-embed-v2 transformers dependency.
 
 ## AutoSchemaKG Overview
 
@@ -37,23 +38,23 @@ ATLAS (Automated Triple Linking And Schema induction) is a family of knowledge g
 
 ```
 AutoSchemaKG/
-├── atlas_rag/                  # Main package directory
-│   ├── kg_construction/        # Knowledge graph construction modules
-│   ├── retriever/              # Retrieval components
-│   ├── reader/                 # Reading and processing components
-│   ├── utils/                  # Utility functions
-│   ├── evaluation/             # Evaluation metrics and tools
-│   └── billion/                # Large-scale KG processing
-├── EvaluateKGC/                # Knowledge Graph Construction evaluation
-├── EvaluateFactuality/         # Factual consistency evaluation
-├── EvaluateGeneralTask/        # General task performance evaluation
-├── neo4j_scripts/              # Neo4j database scripts
-├── neo4j_api_host/             # Neo4j API hosting
-├── import/                     # Data import directory
-├── dist/                       # Distribution files
-├── atlas_full_pipeline.ipynb   # Example for construct KG on new text data and doing RAG on it
-├── atlas_multihopqa.ipynb      # Example for benchmarking the multi-hop QA datasets
-└── atlas_billion_kg_usage.ipynb # Example for hosting and doing RAG with the constructed ATLAS-cc/ATLAS-wiki/ATLAS-pes2o
+├── atlas_rag/                # Main package directory
+│   ├── kg_construction/      # Knowledge graph construction modules
+│   ├── llm_generator/        # Components for large language model generation
+│   ├── retriever/            # Retrieval components for knowledge extraction
+│   ├── utils/                # Utility functions for various tasks
+│   └── vectorstore/          # Components for managing vector storage and embeddings
+├── example_data/             # Sample data for testing and examples
+├── example_scripts/          # Example scripts for usage demonstrations
+├── log/                      # Log files for tracking processes
+├── neo4j_api_host/           # API hosting for Neo4j
+├── neo4j_scripts/            # Scripts for managing Neo4j databases
+├── tests/                    # Unit tests for the project
+├── .gitignore                # Git ignore file
+├── README.md                 # Main documentation for the project
+├── atlas_billion_kg_usage.ipynb   # Example for hosting and RAG with ATLAS
+├── atlas_full_pipeline.ipynb       # Full pipeline for constructing knowledge graphs
+└── atlas_multihopqa.ipynb          # Example for benchmarking multi-hop QA datasets
 ```
 
 The project is organized into several key components:
@@ -75,7 +76,9 @@ pip install atlas-rag[nvembed]
 ### KG Construction with ATLAS
 
 ```python
-from atlas_rag import TripleGenerator, KnowledgeGraphExtractor, ProcessingConfig
+from atlas_rag.kg_construction.triple_extraction import KnowledgeGraphExtractor
+from atlas_rag.kg_construction.triple_config import ProcessingConfig
+from atlas_rag.llm_generator import LLMGenerator
 from openai import OpenAI
 from transformers import pipeline
 # client = OpenAI(api_key='<your_api_key>',base_url="<your_api_base_url>") 
@@ -89,13 +92,17 @@ client = pipeline(
 )
 keyword = 'Dulce'
 output_directory = f'import/{keyword}'
-triple_generator = TripleGenerator(client, model_name=model_name)
+triple_generator = LLMGenerator(client, model_name=model_name)
 kg_extraction_config = ProcessingConfig(
       model_path=model_name,
-      data_directory="tests",
-      filename_pattern=keyword,
-      batch_size=2,
+      data_directory="example_data",
+      filename_pattern=filename_pattern,
+      batch_size_triple=3, # batch size for triple extraction
+      batch_size_concept=16, # batch size for concept generation
       output_directory=f"{output_directory}",
+      max_new_tokens=2048,
+      max_workers=3,
+      remove_doc_spaces=True, # For removing duplicated spaces in the document text
 )
 kg_extractor = KnowledgeGraphExtractor(model=triple_generator, config=kg_extraction_config)
 
@@ -110,9 +117,6 @@ kg_extractor.create_concept_csv()
 # Convert csv to graphml for networkx
 kg_extractor.convert_to_graphml()
 ```
-
-
-
 
 ## Large Knowledge Graph Hosting and Retrieval Augmented Generation
 
@@ -143,6 +147,74 @@ The framework includes comprehensive evaluation metrics across three dimensions:
 - General Performance on MMLU (`EValuateGeneralTask`)
 
 Detailed evaluation procedures can be found in the respective evaluation directories.
+
+## PDF Support
+Creator: [swgj](https://github.com/Swgj)
+
+Due to the version requirement of marker-pdf, we suggest you to create a new conda environment for PDF-to-Markdown Transformation.
+
+Git clone PDF transform repo.
+``` bash
+git clone https://github.com/Swgj/pdf_process
+cd pdf_process
+conda create --name pdf-marker pip python=3.10
+conda activate pdf-marker
+pip install 'marker-pdf[full]'
+pip install google-genai
+```
+Modify the config.yaml file.
+``` yaml
+processing_config:
+  llm_service: "marker.services.azure_openai.AzureOpenAIService" # to use Azure OpenAI Service. To use default Gemini server, you can comment this line
+  other_config:
+    use_llm: true
+    extract_images: false  # false means not to extract images and use LLM for text description; true means extract images but not generate descriptions
+    page_range: null  # null means process all pages, or use List[int] format like [9, 10, 11, 12]
+    max_concurrency: 2 # maximum number of concurrent processes
+    #Azure OpenAI API configuration
+    azure_endpoint: <your endpoint>
+    azure_api_version: "2024-10-21"
+    deployment_name: "gpt-4o"
+
+# API configuration
+api:
+  # api_key_env: "GEMINI_API_KEY"  # Uncomment this line for Gemini API key
+  api_key_env: "AZURE_API_KEY"
+
+# Input path configuration - can be a file or folder path
+input:
+  # Supports relative and absolute paths
+  path: "test_data"  # Can be a single file path or folder path
+  # path: "data/Apple_Environmental_Progress_Report_2024.pdf"  # Example of a single file
+  
+  # If it's a folder, you can set file filtering conditions
+  file_filters:
+    extensions: [".pdf"]  # Only process PDF files
+    recursive: true       # Whether to recursively process subfolders
+    exclude_patterns:     # Exclude files that match these patterns
+      - "*temp*"
+      - "*~*"
+
+# Output configuration
+output:
+  base_dir: "md_output"     # Output directory
+  create_subdirs: true   # Whether to create a subdirectory for each input file
+  format: "md"           # Output format (md, txt)
+  
+# Logging configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  show_progress: true
+```
+
+Run
+```bash
+bash run.sh
+```
+Cheers! You have a Markdown version of your PDF file. You can now change directories back to your parent directory and run the command below to obtain your JSON file for further Atlas-RAG KG construction.
+```
+python -m atlas_rag.kg_construction.utils.md_processing.markdown_to_json --input example_data/md_data --output example_data
+```
 
 ## Citation
 

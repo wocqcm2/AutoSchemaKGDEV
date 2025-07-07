@@ -4,7 +4,7 @@ import networkx as nx
 from unittest.mock import Mock, patch
 from atlas_rag.retrieval.retriever.hipporag2 import HippoRAG2Retriever, min_max_normalize
 from atlas_rag.retrieval.embedding_model import BaseEmbeddingModel
-from atlas_rag.reader.llm_generator import LLMGenerator
+from atlas_rag.llm_generator.llm_generator import LLMGenerator
 from atlas_rag.retrieval.retriever.base import InferenceConfig
 
 @pytest.fixture
