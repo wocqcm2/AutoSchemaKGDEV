@@ -149,7 +149,7 @@ The framework includes comprehensive evaluation metrics across three dimensions:
 Detailed evaluation procedures can be found in the respective evaluation directories.
 
 ## PDF Support
-Credit: [swgj](https://github.com/Swgj)
+Creator: [swgj](https://github.com/Swgj)
 
 Due to the version requirement of marker-pdf, we suggest you to create a new conda environment for PDF-to-Markdown Transformation.
 
@@ -172,7 +172,7 @@ processing_config:
     page_range: null  # null means process all pages, or use List[int] format like [9, 10, 11, 12]
     max_concurrency: 2 # maximum number of concurrent processes
     #Azure OpenAI API configuration
-    azure_endpoint: https://knowcomp-5801-resource.cognitiveservices.azure.com/
+    azure_endpoint: <your endpoint>
     azure_api_version: "2024-10-21"
     deployment_name: "gpt-4o"
 
