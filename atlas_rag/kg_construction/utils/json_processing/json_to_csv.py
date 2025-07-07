@@ -69,10 +69,10 @@ def json2csv(dataset, data_dir, output_dir, test=False):
         missing_concepts_file = os.path.join(output_dir, f"missing_concepts_{dataset}_from_json_test.csv")
 
     # Open CSV files for writing
-    with open(node_text_file, "w", encoding='utf-8', errors='ignore') as csvfile_node_text, \
-         open(edge_text_file, "w", encoding='utf-8', errors='ignore') as csvfile_edge_text, \
-         open(node_csv_without_emb, "w", encoding='utf-8', errors='ignore') as csvfile_node, \
-         open(edge_csv_without_emb, "w", encoding='utf-8', errors='ignore') as csvfile_edge:
+    with open(node_text_file, "w", newline='', encoding='utf-8', errors='ignore') as csvfile_node_text, \
+         open(edge_text_file, "w", newline='', encoding='utf-8', errors='ignore') as csvfile_edge_text, \
+         open(node_csv_without_emb, "w", newline='', encoding='utf-8', errors='ignore') as csvfile_node, \
+         open(edge_csv_without_emb, "w", newline='', encoding='utf-8', errors='ignore') as csvfile_edge:
 
         csv_writer_node_text = csv.writer(csvfile_node_text)
         csv_writer_edge_text = csv.writer(csvfile_edge_text)
@@ -255,7 +255,7 @@ def json2csv(dataset, data_dir, output_dir, test=False):
                         writer_edge.writerow([head_event, tail_entity, relation, [], [], "Relation"])
 
     # Write missing concepts to CSV
-    with open(missing_concepts_file, "w", encoding='utf-8', errors='ignore') as csvfile:
+    with open(missing_concepts_file, "w", newline='', encoding='utf-8', errors='ignore') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["Name", "Type"])
         for entity in all_entities:

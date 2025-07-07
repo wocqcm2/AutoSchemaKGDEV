@@ -210,7 +210,7 @@ async def generate_entity_concepts(args):
         pred_entity_concept[entity].extend([x.strip().lower() for x in answer.split(",")])
 
     # write the generation resutls
-    with open(output_file, "w") as file:
+    with open(output_file, "w", newline='') as file:
         # write to csv
         csv_writer = csv.writer(file)
         csv_writer.writerow(["node", "conceptualized_node", "node_type"])
@@ -263,7 +263,7 @@ async def generate_relation_concepts(args):
         pred_relation_concept[event].extend([x.strip().lower() for x in answer.split(",")])
 
     # write the generation resutls
-    with open(output_file, "w") as file:
+    with open(output_file, "w", newline='') as file:
         # write to csv
         csv_writer = csv.writer(file)
         csv_writer.writerow(["node", "conceptualized_node", "node_type"])
@@ -307,7 +307,7 @@ async def generate_event_concepts(args):
         pred_event_concept[event].extend([x.strip().lower() for x in answer.split(",")])
 
     # write the generation resutls
-    with open(output_file, "w") as file:
+    with open(output_file, "w", newline='') as file:
         # write to csv
         csv_writer = csv.writer(file)
         csv_writer.writerow(["node", "conceptualized_node", "node_type"])

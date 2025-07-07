@@ -15,7 +15,7 @@ class BaseEmbeddingModel(ABC):
     
     def compute_kg_embedding(self, node_csv_without_emb, node_csv_file, edge_csv_without_emb, edge_csv_file, text_node_csv_without_emb, text_node_csv, **kwargs):
         with open(node_csv_without_emb, "r") as csvfile_node:
-            with open(node_csv_file, "w") as csvfile_node_emb:
+            with open(node_csv_file, "w", newline='') as csvfile_node_emb:
                 reader_node = csv.reader(csvfile_node)
 
                 # the reader has [name:ID,type,concepts,synsets,:LABEL]
@@ -56,7 +56,7 @@ class BaseEmbeddingModel(ABC):
         
 
         with open(edge_csv_without_emb, "r") as csvfile_edge:
-            with open(edge_csv_file, "w") as csvfile_edge_emb:
+            with open(edge_csv_file, "w", newline='') as csvfile_edge_emb:
                 reader_edge = csv.reader(csvfile_edge)
                 # [":START_ID",":END_ID","relation","concepts","synsets",":TYPE"]
                 writer_edge = csv.writer(csvfile_edge_emb)
@@ -92,7 +92,7 @@ class BaseEmbeddingModel(ABC):
         
 
         with open(text_node_csv_without_emb, "r") as csvfile_text_node:
-            with open(text_node_csv, "w") as csvfile_text_node_emb:
+            with open(text_node_csv, "w", newline='') as csvfile_text_node_emb:
                 reader_text_node = csv.reader(csvfile_text_node)
                 # [text_id:ID,original_text,:LABEL]
                 writer_text_node = csv.writer(csvfile_text_node_emb)
