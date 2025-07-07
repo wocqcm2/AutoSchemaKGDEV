@@ -41,7 +41,7 @@ AutoSchemaKG/
 ├── atlas_rag/                # Main package directory
 │   ├── kg_construction/      # Knowledge graph construction modules
 │   ├── llm_generator/        # Components for large language model generation
-│   ├── retriever/            # Retrieval components for knowledge extraction
+│   ├── retriever/            # Retrieval components for RAG
 │   ├── utils/                # Utility functions for various tasks
 │   └── vectorstore/          # Components for managing vector storage and embeddings
 ├── example_data/             # Sample data for testing and examples
