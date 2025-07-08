@@ -34,7 +34,7 @@ def check_created_csv_header(keyword, csv_dir):
                     break
 
 def add_csv_columns(node_csv, edge_csv, text_csv, node_with_numeric_id, edge_with_numeric_id, text_with_numeric_id):
-    with open(node_csv) as infile, open(node_with_numeric_id, 'w') as outfile:
+    with open(node_csv) as infile, open(node_with_numeric_id, 'w', newline='') as outfile:
         reader = csv.reader(infile)
         writer = csv.writer(outfile)
         header = next(reader)
@@ -45,7 +45,7 @@ def add_csv_columns(node_csv, edge_csv, text_csv, node_with_numeric_id, edge_wit
         for row_number, row in tqdm(enumerate(reader), desc="Adding numeric ID"):
             row.insert(label_index, row_number)  # Add numeric ID before ':LABEL'
             writer.writerow(row)
-    with open(edge_csv) as infile, open(edge_with_numeric_id, 'w') as outfile:
+    with open(edge_csv) as infile, open(edge_with_numeric_id, 'w', newline='') as outfile:
         reader = csv.reader(infile)
         writer = csv.writer(outfile)
         header = next(reader)
@@ -56,7 +56,7 @@ def add_csv_columns(node_csv, edge_csv, text_csv, node_with_numeric_id, edge_wit
         for row_number, row in tqdm(enumerate(reader), desc="Adding numeric ID"):
             row.insert(label_index, row_number)  # Add numeric ID before ':LABEL'
             writer.writerow(row)
-    with open(text_csv) as infile, open(text_with_numeric_id, 'w') as outfile:
+    with open(text_csv) as infile, open(text_with_numeric_id, 'w', newline='') as outfile:
         reader = csv.reader(infile)
         writer = csv.writer(outfile)
         header = next(reader)
