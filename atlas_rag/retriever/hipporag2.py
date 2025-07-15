@@ -189,6 +189,7 @@ class HippoRAG2Retriever(BasePassageRetriever):
         return node_dict, text_dict
 
     def retrieve(self, query, topN=5, **kwargs):
+        open_ie = kwargs.get("open_ie", False)
         topN_edges = self.inference_config.topk_edges
         weight_adjust = self.inference_config.weight_adjust
         

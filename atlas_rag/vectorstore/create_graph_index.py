@@ -50,7 +50,9 @@ def compute_text_embeddings(text_list, sentence_encoder: BaseEmbeddingModel, bat
 def create_embeddings_and_index(sentence_encoder, model_name: str, working_directory: str, keyword: str, include_events: bool, include_concept: bool,
                                  normalize_embeddings: bool = True, 
                                  text_batch_size = 40,
-                                 node_and_edge_batch_size = 256):
+                                 node_and_edge_batch_size = 256,
+                                 **kwargs):
+    open_ie = kwargs.get("open_ie", False)
     # Extract the last part of the encoder_model_name for simplified reference
     encoder_model_name = model_name.split('/')[-1]
     

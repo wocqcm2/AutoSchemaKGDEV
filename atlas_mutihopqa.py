@@ -44,6 +44,7 @@ def main():
         normalize_embeddings=True,
         text_batch_size=64,
         node_and_edge_batch_size=64,
+        open_ie = True
     )
 
     # Configure benchmarking
@@ -55,6 +56,7 @@ def main():
         reader_model_name=reader_model_name,
         encoder_model_name=encoder_model_name,
         number_of_samples=-1,  # -1 for all samples
+        open_ie = True
     )
 
     # Set up logger

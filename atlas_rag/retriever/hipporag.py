@@ -102,6 +102,7 @@ class HippoRAGRetriever(BasePassageRetriever):
         return personalization_dict
 
     def retrieve(self, query, topN=5, **kwargs):
+        open_ie = kwargs.get("open_ie", False)
         topN_nodes = self.inference_config.topk_nodes
         personaliation_dict = self.retrieve_personalization_dict(query, topN=topN_nodes)
         
