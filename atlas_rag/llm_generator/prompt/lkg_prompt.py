@@ -57,6 +57,9 @@ The output must be parseable according to JSON schema:
     }
 ]
 
+simple_ner_prompt = [
+    {"role": "system", "content": """You are an advanced AI assistant that always output in valid JSON format."""}
+]
 keyword_filtering_prompt = [
     {
         "role": "system",

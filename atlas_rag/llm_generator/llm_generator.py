@@ -4,7 +4,7 @@ from tenacity import retry, stop_after_attempt, stop_after_delay, wait_fixed, wa
 from copy import deepcopy
 from concurrent.futures import ThreadPoolExecutor
 from atlas_rag.llm_generator.prompt.rag_prompt import cot_system_instruction, cot_system_instruction_kg, cot_system_instruction_no_doc, prompt_template
-from atlas_rag.llm_generator.prompt.lkg_prompt import ner_prompt, keyword_filtering_prompt
+from atlas_rag.llm_generator.prompt.lkg_prompt import ner_prompt, keyword_filtering_prompt, simple_ner_prompt
 from atlas_rag.llm_generator.prompt.rag_prompt import filter_triple_messages
 
 from atlas_rag.llm_generator.format.validate_json_output import *
@@ -262,14 +262,30 @@ class LLMGenerator():
         return self.generate_response(messages)
     
     @retry(stop=(stop_after_delay(60) | stop_after_attempt(6)), wait=wait_fixed(2))
-    def large_kg_ner(self, text):
-        messages = deepcopy(ner_prompt)
-        messages.append(
-            {
-                "role": "user", 
-                "content": f"[[ ## question ## ]]\n{text}" 
-            }
-        )
+    def large_kg_ner(self, text, simple_ner = False):
+        if not simple_ner:
+            messages = deepcopy(ner_prompt)
+            messages.append(
+                {
+                    "role": "user", 
+                    "content": f"[[ ## question ## ]]\n{text}" 
+                }
+            )
+        else:
+            messages = deepcopy(simple_ner_prompt)
+            messages.append(
+                {
+                    "role": "user", 
+                    "content": """
+                    extracts named entities from given text.
+                    Output them in Json format as follows:
+                    {
+                        "keywords": ["entity1", "entity2", ...]
+                    }
+                    Given text: 
+                    """ + text
+                }
+            )
         validation_args = {
             "schema": lkg_keyword_json_schema,
             "fix_function": fix_lkg_keywords
@@ -287,11 +303,20 @@ class LLMGenerator():
  
     @retry(stop=(stop_after_delay(60) | stop_after_attempt(6)), wait=wait_fixed(2))
     def large_kg_tog_ner(self, text):
-        messages = [
-            {"role": "system", "content": "You are an advanced AI assistant that extracts named entities from given text. "},
-            {"role": "user", "content": f"Extract the named entities from: {text}"}
-        ]
-        
+        messages = deepcopy(simple_ner_prompt)
+        messages.append(
+            {
+                "role": "user", 
+                "content": """
+                extracts named entities from given text.
+                Output them in Json format as follows:
+                {
+                    "keywords": ["entity1", "entity2", ...]
+                }
+                Given text: 
+                """ + text
+            }
+        )
         # Generate raw response from LLM
         validation_args = {
             "schema": lkg_keyword_json_schema,
