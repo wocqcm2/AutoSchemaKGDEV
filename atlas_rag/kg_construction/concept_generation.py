@@ -167,7 +167,7 @@ def generate_concept(model: LLMGenerator,
 
     
     output_file = output_folder + f"/{output_file.rsplit('.', 1)[0]}_shard_{shard}.csv"
-    with open(output_file, "w") as file:
+    with open(output_file, "w", newline='') as file:
         csv_writer = csv.writer(file)
         csv_writer.writerow(["node", "conceptualized_node", "node_type"])
 
