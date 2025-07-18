@@ -171,12 +171,12 @@ class NvEmbed(BaseEmbeddingModel):
             query_prefix = None
 
         # Encode the query
-        if isinstance(self.sentence_encoder, SentenceTransformer):
+        if issubclass(type(self.sentence_encoder), SentenceTransformer):
             if query_prefix:
                 query_embeddings = self.sentence_encoder.encode(self.add_eos(query), prompt=query_prefix, **kwargs)
             else:
                 query_embeddings = self.sentence_encoder.encode(self.add_eos(query), **kwargs)
-        elif isinstance(self.sentence_encoder, AutoModel):
+        elif issubclass(type(self.sentence_encoder), AutoModel):
             if query_prefix:
                 query_embeddings = self.sentence_encoder.encode(query, instruction=query_prefix, max_length = 32768, **kwargs)
             else:

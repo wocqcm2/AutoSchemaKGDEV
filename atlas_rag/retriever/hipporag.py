@@ -21,9 +21,13 @@ class HippoRAGRetriever(BasePassageRetriever):
         self.KG = data["KG"]
         for node_id in tqdm(list(self.KG.nodes)):
             if self.KG.nodes[node_id]['type'] == "passage":
-                if self.KG.nodes[node_id]['file_id'] not in file_id_to_node_id:
-                    file_id_to_node_id[self.KG.nodes[node_id]['file_id']] = []
-                file_id_to_node_id[self.KG.nodes[node_id]['file_id']].append(node_id)
+                file_ids = self.KG.nodes[node_id]['file_id'].split(',')
+                for file_id in file_ids:
+                    if file_id not in file_id_to_node_id:
+                        file_id_to_node_id[file_id] = []
+                    file_id_to_node_id[file_id].append(node_id)
+        # further filter any file_id that is not passage type
+
         self.file_id_to_node_id = file_id_to_node_id
         
         self.KG:nx.DiGraph = self.KG.subgraph(self.node_list)
@@ -102,7 +106,6 @@ class HippoRAGRetriever(BasePassageRetriever):
         return personalization_dict
 
     def retrieve(self, query, topN=5, **kwargs):
-        open_ie = kwargs.get("open_ie", False)
         topN_nodes = self.inference_config.topk_nodes
         personaliation_dict = self.retrieve_personalization_dict(query, topN=topN_nodes)
         

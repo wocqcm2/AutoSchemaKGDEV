@@ -53,7 +53,7 @@ class BenchMarkConfig:
     encoder_model_name: str = "nvidia/NV-Embed-v2"
     number_of_samples: int = -1  # Default to -1 to use all samples
     react_max_iterations: int = 5
-    open_ie: bool = False  # Whether are we using open_ie graph
+
         
 
 class RAGBenchmark:
@@ -132,7 +132,7 @@ class RAGBenchmark:
                     sorted_context_ids = []  # We don't track IDs in ReAct mode
                 else:
                     # Original RAG implementation
-                    sorted_context, sorted_context_ids = retriever.retrieve(question, topN=5, open_ie=self.config.open_ie)
+                    sorted_context, sorted_context_ids = retriever.retrieve(question, topN=5)
                     
                     if isinstance(retriever, BaseEdgeRetriever):
                         retrieved_context = ". ".join(sorted_context)

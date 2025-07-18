@@ -79,7 +79,6 @@ class TogRetriever(BaseEdgeRetriever):
         Retrieve the top N paths that connect the entities in the query.
         Dmax is the maximum depth of the search.
         """
-        open_ie = self.inference_config.open_ie
         Dmax = self.inference_config.Dmax
         # in the first step, we retrieve the top k nodes
         initial_nodes = self.retrieve_topk_nodes(query, topN=topN)
