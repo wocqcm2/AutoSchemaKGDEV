@@ -68,6 +68,7 @@ class LLMGenerator():
             if hasattr(response.choices[0].message, 'reasoning_content') and response.choices[0].message.reasoning_content is not None and return_thinking:
                 content = '<think>' + response.choices[0].message.reasoning_content + '</think>' + content
         
+
         if return_text_only:
             return content
         else:
@@ -351,7 +352,7 @@ class LLMGenerator():
         return self.generate_response(messages, max_new_tokens=max_new_tokens)
 
     
-    def triple_extraction(self, messages, max_tokens=4096, stage=None, record=False, allow_empty=False):
+    def triple_extraction(self, messages, max_tokens=4096, stage=None, record=False, allow_empty=True):
         if isinstance(messages[0], dict):
             messages = [messages]
         validate_kwargs = {
@@ -360,5 +361,16 @@ class LLMGenerator():
             'prompt_type': stage_to_prompt_type.get(stage, None),
             'allow_empty': allow_empty
         }
-        result = self.generate_response(messages, max_new_tokens=max_tokens, validate_function=validate_output, return_text_only = not record, **validate_kwargs)
-        return result
+        try:
+            result = self.generate_response(messages, max_new_tokens=max_tokens, validate_function=validate_output, return_text_only = not record, **validate_kwargs)
+            return result
+        except Exception as e:
+            print(f"Triple extraction failed: {e}")
+            # Return empty result if validation fails and allow_empty is True
+            if allow_empty:
+                if record:
+                    return [], {'completion_tokens': 0, 'time': 0}
+                else:
+                    return "[]"
+            else:
+                raise e
