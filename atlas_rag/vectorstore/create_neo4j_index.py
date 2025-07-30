@@ -3,7 +3,7 @@ import numpy as np
 import time
 import logging
 from atlas_rag.kg_construction.utils.csv_processing.csv_to_npy import convert_csv_to_npy
-def create_faiss_index(output_directory, filename_pattern, index_type="HNSW,Flat"):
+def create_faiss_index(output_directory, filename_pattern, index_type="HNSW,Flat", faiss_gpu = True):
         """
         Create faiss index for the graph, for index type, see https://github.com/facebookresearch/faiss/wiki/Faiss-indexes
 
@@ -32,23 +32,26 @@ def create_faiss_index(output_directory, filename_pattern, index_type="HNSW,Flat
             index_type=index_type,
             index_path=f"{output_directory}/vector_index/triple_nodes_{filename_pattern}_from_json_with_emb_non_norm.index",
             npy_path=f"{output_directory}/vector_index/triple_nodes_{filename_pattern}_from_json_with_emb.npy",
+            faiss_gpu=faiss_gpu
         )
 
         build_faiss_from_npy(
             index_type=index_type,
             index_path=f"{output_directory}/vector_index/text_nodes_{filename_pattern}_from_json_with_emb_non_norm.index",
             npy_path=f"{output_directory}/vector_index/text_nodes_{filename_pattern}_from_json_with_emb.npy",
+            faiss_gpu=faiss_gpu
         )
 
         build_faiss_from_npy(
             index_type=index_type,
             index_path=f"{output_directory}/vector_index/triple_edges_{filename_pattern}_from_json_with_concept_with_emb_non_norm.index",
             npy_path=f"{output_directory}/vector_index/triple_edges_{filename_pattern}_from_json_with_concept_with_emb.npy",
+            faiss_gpu=faiss_gpu
         )
 
 # cannot avoid loading into memory when training
 # simply try load all to train
-def build_faiss_from_npy(index_type, index_path, npy_path):
+def build_faiss_from_npy(index_type, index_path, npy_path, faiss_gpu = True):
     # check npy size.
     # shapes = []
     start_time = time.time()
@@ -74,7 +77,10 @@ def build_faiss_from_npy(index_type, index_path, npy_path):
 
     if index_type.startswith("IVF"):
         index_ivf = faiss.extract_index_ivf(index)
-        clustering_index = faiss.index_cpu_to_all_gpus(faiss.IndexFlatL2(index_ivf.d))
+        if faiss_gpu:
+            clustering_index = faiss.index_cpu_to_all_gpus(faiss.IndexFlatL2(index_ivf.d))
+        else:
+            clustering_index = faiss.IndexFlatL2(index_ivf.d)
         index_ivf.clustering_index = clustering_index
     
         # Load data to match the training samples size.
@@ -126,7 +132,9 @@ def build_faiss_from_npy(index_type, index_path, npy_path):
     logging.info(f"Adding time: {time.time() - start_time:.2f} seconds")
     
     # Convert the GPU index to a CPU index for saving
-    index = faiss.index_gpu_to_cpu(index)
+    if faiss_gpu:
+        index = faiss.index_cpu_to_all_gpus(index)
+
     # Save the CPU index to a file
     faiss.write_index(index, index_path)
 
