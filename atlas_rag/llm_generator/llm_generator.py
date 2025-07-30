@@ -396,6 +396,6 @@ class LLMGenerator():
                 if record:
                     return [], {'completion_tokens': 0, 'time': 0}
                 else:
-                    return "[]"
+                    return []
             else:
                 raise e
