@@ -1,4 +1,5 @@
 import json
+import asyncio
 from openai import OpenAI, AzureOpenAI, NOT_GIVEN
 from tenacity import retry, stop_after_attempt, stop_after_delay, wait_fixed, wait_exponential, wait_random
 from copy import deepcopy
@@ -6,15 +7,36 @@ from concurrent.futures import ThreadPoolExecutor
 from atlas_rag.llm_generator.prompt.rag_prompt import cot_system_instruction, cot_system_instruction_kg, cot_system_instruction_no_doc, prompt_template
 from atlas_rag.llm_generator.prompt.lkg_prompt import ner_prompt, keyword_filtering_prompt, simple_ner_prompt
 from atlas_rag.llm_generator.prompt.rag_prompt import filter_triple_messages
-
 from atlas_rag.llm_generator.format.validate_json_output import *
 from atlas_rag.llm_generator.format.validate_json_schema import filter_fact_json_schema, lkg_keyword_json_schema, stage_to_schema
-
 from transformers.pipelines import Pipeline
 import jsonschema
-
-
 import time
+from transformers import AutoTokenizer
+
+
+
+def serialize_openai_tool_call_message(message) -> dict:
+    # Initialize the output dictionary
+    serialized = {
+        "role": message.role,
+        "content": None if not message.content else message.content,
+        "tool_calls": []
+    }
+    
+    # Serialize each tool call
+    for tool_call in message.tool_calls:
+        serialized_tool_call = {
+            "id": tool_call.id,
+            "type": tool_call.type,
+            "function": {
+                "name": tool_call.function.name,
+                "arguments": json.dumps(tool_call.function.arguments)
+            }
+        }
+        serialized["tool_calls"].append(serialized_tool_call)
+    
+    return serialized
 stage_to_prompt_type = {
     1: "entity_relation",
     2: "event_entity",
@@ -25,7 +47,7 @@ retry_decorator = retry(
     wait=wait_exponential(multiplier=1, min=2, max=30) + wait_random(min=0, max=2),
 )
 class LLMGenerator():
-    def __init__(self, client, model_name):
+    def __init__(self, client, model_name, backend='openai'):
         self.model_name = model_name
         self.client : OpenAI|Pipeline  = client
         if isinstance(client, OpenAI|AzureOpenAI):
@@ -35,6 +57,9 @@ class LLMGenerator():
         else:
             raise ValueError("Unsupported client type. Please provide either an OpenAI client or a Huggingface Pipeline Object.")
         
+        if backend == 'vllm':
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+
     @retry_decorator
     def _api_inference(self, message, max_new_tokens=8192,
                            temperature = 0.7,
@@ -97,11 +122,14 @@ class LLMGenerator():
                             frequency_penalty, response_format, return_text_only, return_thinking, reasoning_effort, **kwargs
                         )
                     except Exception as e:
-                        print(f"Error processing message {i}: {e.last_attempt.result()}")
-                        return ""
+                        return "[]"
                 futures = [executor.submit(process_message, i) for i in to_process]
             for i, future in enumerate(futures):
-                results[i] = future.result()
+                try:
+                    results[i] = future.result()
+                except Exception as e:
+                    print(f"Future {i} failed: {str(e)}")
+                    results[i] = '[]'  # Fallback to empty list on failure
 
         elif self.inference_type == "pipeline":
             max_retries = kwargs.get('max_retries', 3)  # Default to 3 retries if not specified
