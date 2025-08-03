@@ -46,4 +46,7 @@ if __name__ == "__main__":
     kg_extractor = KnowledgeGraphExtractor(model=triple_generator, config=kg_extraction_config)
     kg_extractor.convert_json_to_csv()
     kg_extractor.generate_concept_csv_temp(language='en')
+    # Uncomment the following lines to generate concept CSV for other languages
+    # kg_extractor.generate_concept_csv_temp(language='zh-HK')
+    # kg_extractor.generate_concept_csv_temp(language='zh-CN')
     kg_extractor.create_concept_csv()

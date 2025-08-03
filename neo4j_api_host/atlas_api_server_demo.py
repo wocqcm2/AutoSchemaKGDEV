@@ -14,22 +14,35 @@ from atlas_rag.retriever.lkg_retriever.lkgr import LargeKGRetriever
 from atlas_rag.retriever.lkg_retriever.tog import LargeKGToGRetriever
 from atlas_rag.kg_construction.neo4j.neo4j_api import LargeKGConfig, start_app
 
+from azure.ai.projects import AIProjectClient
+from azure.identity import DefaultAzureCredential
+
 # use sentence embedding if you want to use sentence transformer
 sentence_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', device='cuda:0')
 sentence_encoder = SentenceEmbedding(sentence_model)
 # Load OpenRouter API key from config file
 config = ConfigParser()
 config.read('config.ini')
-# reader_model_name = "meta-llama/llama-3.3-70b-instruct"
-retriever_model_name = "meta-llama/Llama-3.3-70B-Instruct"
-reader_model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
-client = OpenAI(
-  # base_url="https://openrouter.ai/api/v1",
-  # api_key=config['settings']['OPENROUTER_API_KEY'],
-  base_url="https://api.deepinfra.com/v1/openai",
-  api_key=config['settings']['DEEPINFRA_API_KEY'],
+# Added support for Azure Foundry. To use it, please do az-login in cmd first.
+model_name = "gpt-4.1"
+connection = AIProjectClient(
+    endpoint=config["urls"]["AZURE_URL"],
+    credential=DefaultAzureCredential(),
 )
+client = connection.inference.get_azure_openai_client(api_version="2024-12-01-preview")
+messages=[{"role": "system", "content": "You are a helpful assistant."}, 
+            {"role": "user", "content": "Hello, help me explain linear regression"}]
+# reader_model_name = "meta-llama/llama-3.3-70b-instruct"
+retriever_model_name = model_name
+reader_model_name = model_name
+# client = OpenAI(
+#   # base_url="https://openrouter.ai/api/v1",
+#   # api_key=config['settings']['OPENROUTER_API_KEY'],
+#   base_url="https://api.deepinfra.com/v1/openai",
+#   api_key=config['settings']['DEEPINFRA_API_KEY'],
+# )
 llm_generator = LLMGenerator(client=client, model_name=reader_model_name)
+print(llm_generator.generate_response(messages))
 
 retriever_llm_generator = LLMGenerator(client=client, model_name=retriever_model_name)
 
@@ -63,7 +76,8 @@ retriever = LargeKGRetriever(keyword = keyword,
                              topN = 5,
                              number_of_source_nodes_per_ner = 10,
                              sampling_area = 250,
-                             logger = logger) # since cc_en is enormous compared to other dataset, we have different retrieval mechanism for it, which here we use keyword to identify cc_en.
+                             logger = logger,
+                             simple_ner=True) # since cc_en is enormous compared to other dataset, we have different retrieval mechanism for it, which here we use keyword to identify cc_en.
 tog_retriever = LargeKGToGRetriever(
     keyword = keyword,
     neo4j_driver=driver,

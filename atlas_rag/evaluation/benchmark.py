@@ -53,6 +53,7 @@ class BenchMarkConfig:
     encoder_model_name: str = "nvidia/NV-Embed-v2"
     number_of_samples: int = -1  # Default to -1 to use all samples
     react_max_iterations: int = 5
+
         
 
 class RAGBenchmark:

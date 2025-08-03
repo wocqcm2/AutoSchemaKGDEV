@@ -441,8 +441,8 @@ class KnowledgeGraphExtractor:
             batch_size = 2048
         )
 
-    def create_faiss_index(self, index_type="HNSW,Flat"):
-        create_faiss_index(self.config.output_directory, self.config.filename_pattern, index_type)
+    def create_faiss_index(self, index_type="HNSW,Flat", faiss_gpu=True):
+        create_faiss_index(self.config.output_directory, self.config.filename_pattern, index_type, faiss_gpu)
 
 def parse_command_line_arguments() -> ProcessingConfig:
     """Parse command line arguments and return configuration."""

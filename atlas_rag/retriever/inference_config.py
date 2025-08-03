@@ -15,6 +15,7 @@ class InferenceConfig:
     keyword: str = "musique"
     topk: int = 5
     Dmax: int = 4
+    Wmax: int = 4
     weight_adjust: float = 1.0
     topk_edges: int = 50
     topk_nodes: int = 10

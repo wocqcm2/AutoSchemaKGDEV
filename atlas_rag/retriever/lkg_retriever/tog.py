@@ -56,7 +56,7 @@ class LargeKGToGRetriever(BaseLargeKGEdgeRetriever):
         Returns:
             List[str]: List of extracted entities.
         """
-        entities = self.llm_generator.large_kg_ner(text)
+        entities = self.llm_generator.large_kg_tog_ner(text)
         if self.verbose:
             self.logger.info(f"Extracted entities: {entities}")
         return entities

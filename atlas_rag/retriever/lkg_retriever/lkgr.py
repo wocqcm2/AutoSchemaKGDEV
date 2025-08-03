@@ -20,7 +20,7 @@ class LargeKGRetriever(BaseLargeKGRetriever):
                 node_index:faiss.Index, passage_index:faiss.Index, 
                 topN: int   = 5,
                 number_of_source_nodes_per_ner: int  = 10,
-                sampling_area : int = 250,logger:Logger = None): 
+                sampling_area : int = 250,logger:Logger = None, **kwargs): 
         # istantiate one kg resources
         self.keyword = keyword
         self.neo4j_driver = neo4j_driver
@@ -38,6 +38,7 @@ class LargeKGRetriever(BaseLargeKGRetriever):
         self.logger = logger
         
         self.ppr_weight_threshold = 0.00005
+        self.simple_ner = kwargs.get('simple_ner', False)
    
     def set_model(self, model):
         if self.llm_generator.inference_type == 'openai':
@@ -46,7 +47,7 @@ class LargeKGRetriever(BaseLargeKGRetriever):
             raise ValueError("Model can only be set for OpenAI inference type.")
     
     def ner(self, text):
-        return self.llm_generator.large_kg_ner(text)
+        return self.llm_generator.large_kg_ner(text, simple_ner=self.simple_ner)
     
     def convert_numeric_id_to_name(self, numeric_id):
         if numeric_id.isdigit():
