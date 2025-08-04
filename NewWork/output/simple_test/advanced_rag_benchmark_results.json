@@ -1,0 +1,441 @@
+{
+  "queries": [
+    "Who is Agent Alex Mercer and what is his role?",
+    "What is Operation: Dulce and why is it important?",
+    "Describe the Paranormal Military Squad",
+    "What protocols and procedures are mentioned?",
+    "Who shows compliance and what does it mean?",
+    "What are the relationships between team members?",
+    "What anomalies are being investigated?",
+    "Explain the briefing room and its significance"
+  ],
+  "methods": {
+    "simple_graph": {
+      "Who is Agent Alex Mercer and what is his role?": {
+        "results": [
+          "Agent Alex Mercer  participates_in  Operation: Dulce",
+          "Agent Taylor Cruz  questions  Agent Alex Mercer",
+          "Agent Alex Mercer  experiences  second thoughts"
+        ],
+        "status": "SimpleGraphRetriever",
+        "success": true
+      },
+      "What is Operation: Dulce and why is it important?": {
+        "results": [
+          "Operation: Dulce  discussed_in  briefing room",
+          "Operation: Dulce  symbolized_as  impending odyssey",
+          "mission briefing  prepares_for  Operation: Dulce"
+        ],
+        "status": "SimpleGraphRetriever",
+        "success": true
+      },
+      "Describe the Paranormal Military Squad": {
+        "results": [
+          "mission briefing  involves  Paranormal Military Squad",
+          "Paranormal Military Squad  executes  Operation: Dulce",
+          "mission briefing  prepares_for  Operation: Dulce"
+        ],
+        "status": "SimpleGraphRetriever",
+        "success": true
+      },
+      "What protocols and procedures are mentioned?": {
+        "results": [
+          "protocols  opposes  speculation",
+          "compliance  indicates  submission",
+          "Taylor  enforces  protocols"
+        ],
+        "status": "SimpleGraphRetriever",
+        "success": true
+      },
+      "Who shows compliance and what does it mean?": {
+        "results": [
+          "compliance  indicates  submission",
+          "Alex  demonstrates  compliance",
+          "personal convictions  conflicts with  organizational mission"
+        ],
+        "status": "SimpleGraphRetriever",
+        "success": true
+      },
+      "What are the relationships between team members?": {
+        "results": [
+          "interactions  leads to  resolve",
+          "personal convictions  conflicts with  organizational mission",
+          "Alex  experiences  internal conflict"
+        ],
+        "status": "SimpleGraphRetriever",
+        "success": true
+      },
+      "What anomalies are being investigated?": {
+        "results": [
+          "Sam Rivera  searching_for  anomalies",
+          "speculation  labeled_as  counter-productive",
+          "protocols  opposes  speculation"
+        ],
+        "status": "SimpleGraphRetriever",
+        "success": true
+      },
+      "Explain the briefing room and its significance": {
+        "results": [
+          "briefing room  contains  monitors",
+          "Operation: Dulce  discussed_in  briefing room",
+          "mission briefing  prepares_for  Operation: Dulce"
+        ],
+        "status": "SimpleGraphRetriever",
+        "success": true
+      }
+    },
+    "tog": {
+      "Who is Agent Alex Mercer and what is his role?": {
+        "results": [
+          "Agent Taylor Cruz, questions, Agent Alex Mercer",
+          "Agent Alex Mercer, participates_in, Operation: Dulce",
+          "Agent Taylor Cruz, questions, Agent Alex Mercer",
+          "Agent Alex Mercer, participates_in, Operation: Dulce",
+          "Agent Taylor Cruz, questions, Agent Alex Mercer",
+          "Agent Alex Mercer, experiences, second thoughts"
+        ],
+        "status": "ToGRetriever",
+        "success": true
+      },
+      "What is Operation: Dulce and why is it important?": {
+        "results": [
+          "impending odyssey, symbolized_as, Operation: Dulce",
+          "Operation: Dulce, executes, Paranormal Military Squad",
+          "Paranormal Military Squad, involves, mission briefing",
+          "impending odyssey, symbolized_as, Operation: Dulce",
+          "Operation: Dulce, executes, Paranormal Military Squad",
+          "Paranormal Military Squad, abstraction_of, monitors",
+          "monitors, abstraction_of, Agent Taylor Cruz",
+          "Agent Taylor Cruz, questions, Agent Alex Mercer",
+          "impending odyssey, symbolized_as, Operation: Dulce",
+          "Operation: Dulce, executes, Paranormal Military Squad",
+          "Paranormal Military Squad, abstraction_of, monitors",
+          "monitors, abstraction_of, Agent Cruz",
+          "Agent Cruz, agrees with, Alex"
+        ],
+        "status": "ToGRetriever",
+        "success": true
+      },
+      "Describe the Paranormal Military Squad": {
+        "results": [
+          "Paranormal Military Squad, involves, mission briefing",
+          "mission briefing, prepares_for, Operation: Dulce",
+          "Paranormal Military Squad, executes, Operation: Dulce",
+          "Operation: Dulce, symbolized_as, impending odyssey",
+          "Paranormal Military Squad, executes, Operation: Dulce",
+          "Operation: Dulce, prepares_for, mission briefing"
+        ],
+        "status": "ToGRetriever",
+        "success": true
+      },
+      "What protocols and procedures are mentioned?": {
+        "results": [
+          "impending odyssey, abstraction_of, protocols",
+          "protocols, enforces, Taylor",
+          "Taylor, rejects, speculation",
+          "impending odyssey, abstraction_of, protocols",
+          "protocols, abstraction_of, resolve",
+          "resolve, leads to, interactions",
+          "impending odyssey, abstraction_of, protocols",
+          "protocols, abstraction_of, resolve",
+          "resolve, abstraction_of, clear-headedness"
+        ],
+        "status": "ToGRetriever",
+        "success": true
+      },
+      "Who shows compliance and what does it mean?": {
+        "results": [
+          "impending odyssey, abstraction_of, compliance",
+          "compliance, demonstrates, Alex",
+          "impending odyssey, abstraction_of, compliance",
+          "compliance, indicates, submission",
+          "impending odyssey, abstraction_of, compliance",
+          "compliance, abstraction_of, resolve"
+        ],
+        "status": "ToGRetriever",
+        "success": true
+      },
+      "What are the relationships between team members?": {
+        "results": [
+          "Agent Taylor Cruz, questions, Agent Alex Mercer",
+          "Agent Alex Mercer, participates_in, Operation: Dulce",
+          "Operation: Dulce, executes, Paranormal Military Squad",
+          "Paranormal Military Squad, involves, mission briefing",
+          "Agent Taylor Cruz, questions, Agent Alex Mercer",
+          "Agent Alex Mercer, participates_in, Operation: Dulce",
+          "Operation: Dulce, executes, Paranormal Military Squad",
+          "Paranormal Military Squad, abstraction_of, monitors",
+          "monitors, abstraction_of, Taylor",
+          "Agent Taylor Cruz, questions, Agent Alex Mercer",
+          "Agent Alex Mercer, participates_in, Operation: Dulce",
+          "Operation: Dulce, executes, Paranormal Military Squad",
+          "Paranormal Military Squad, abstraction_of, monitors",
+          "monitors, abstraction_of, Agent Cruz"
+        ],
+        "status": "ToGRetriever",
+        "success": true
+      },
+      "What anomalies are being investigated?": {
+        "results": [
+          "impending odyssey, abstraction_of, anomalies",
+          "anomalies, searching_for, Sam Rivera",
+          "Sam Rivera, analyzed, transmission logs",
+          "impending odyssey, abstraction_of, anomalies",
+          "anomalies, searching_for, Sam Rivera",
+          "Sam Rivera, abstraction_of, monitors",
+          "impending odyssey, abstraction_of, anomalies",
+          "anomalies, abstraction_of, resolve",
+          "resolve, reinforces, determination"
+        ],
+        "status": "ToGRetriever",
+        "success": true
+      },
+      "Explain the briefing room and its significance": {
+        "results": [
+          "Agent Alex Mercer, abstraction_of, monitors",
+          "monitors, abstraction_of, briefing room",
+          "Sam Rivera, abstraction_of, monitors",
+          "monitors, displays_information_about, Operation: Dulce",
+          "Sam Rivera, abstraction_of, monitors",
+          "monitors, abstraction_of, briefing room"
+        ],
+        "status": "ToGRetriever",
+        "success": true
+      }
+    },
+    "hipporag": {
+      "Who is Agent Alex Mercer and what is his role?": {
+        "results": [
+          "Agent Alex Mercer A field agent of the Paranormal Military Squad, assigned to Operation: Dulce, showing internal conflict despite his determined reputation.",
+          "Jordan Hayes A team member who values attention to detail and supports clear-headedness in operations.",
+          "clear-headedness Mental clarity and focus, especially under pressure, emphasized as necessary for the mission."
+        ],
+        "status": "HippoRAGRetriever",
+        "success": true
+      },
+      "What is Operation: Dulce and why is it important?": {
+        "results": [
+          "Operation: Dulce A high-stakes mission undertaken by the Paranormal Military Squad, details of which are being briefed in the sterile environment.",
+          "briefing room A sterile, high-security room where the squad gathers to receive mission details; characterized by technological monitors and oppressive silence.",
+          "impending odyssey A metaphorical reference to the upcoming mission, suggesting a long, arduous, and transformative journey."
+        ],
+        "status": "HippoRAGRetriever",
+        "success": true
+      },
+      "Describe the Paranormal Military Squad": {
+        "results": [
+          "Operation: Dulce A high-stakes mission undertaken by the Paranormal Military Squad, details of which are being briefed in the sterile environment.",
+          "Paranormal Military Squad An elite military unit specializing in paranormal-related operations, responsible for executing missions like Operation: Dulce.",
+          "briefing room A sterile, high-security room where the squad gathers to receive mission details; characterized by technological monitors and oppressive silence."
+        ],
+        "status": "HippoRAGRetriever",
+        "success": true
+      },
+      "What protocols and procedures are mentioned?": {
+        "results": [
+          "protocols Established procedures meant to guide behavior and decision-making in critical situations.",
+          "speculation The act of theorizing without complete evidence, viewed negatively by leadership in this context.",
+          "counter-productive Describing actions or behaviors that hinder progress or effectiveness, used as a reprimand."
+        ],
+        "status": "HippoRAGRetriever",
+        "success": true
+      },
+      "Who shows compliance and what does it mean?": {
+        "results": [
+          "compliance The state of adhering to rules or authority, which Alex displays despite inner resistance.",
+          "Agent Alex Mercer A field agent of the Paranormal Military Squad, assigned to Operation: Dulce, showing internal conflict despite his determined reputation.",
+          "Agent Taylor Cruz A fellow agent in the Paranormal Military Squad, assertive and questioning Mercer's resolve before the mission."
+        ],
+        "status": "HippoRAGRetriever",
+        "success": true
+      },
+      "What are the relationships between team members?": {
+        "results": [
+          "Jordan Hayes A team member who values attention to detail and supports clear-headedness in operations.",
+          "clear-headedness Mental clarity and focus, especially under pressure, emphasized as necessary for the mission.",
+          "details Specific pieces of information considered crucial for success in the mission."
+        ],
+        "status": "HippoRAGRetriever",
+        "success": true
+      },
+      "What anomalies are being investigated?": {
+        "results": [
+          "anomalies Irregularities or deviations from expected patterns, particularly in data or behavior.",
+          "Agent Alex Mercer A field agent of the Paranormal Military Squad, assigned to Operation: Dulce, showing internal conflict despite his determined reputation.",
+          "Agent Taylor Cruz A fellow agent in the Paranormal Military Squad, assertive and questioning Mercer's resolve before the mission."
+        ],
+        "status": "HippoRAGRetriever",
+        "success": true
+      },
+      "Explain the briefing room and its significance": {
+        "results": [
+          "briefing room A sterile, high-security room where the squad gathers to receive mission details; characterized by technological monitors and oppressive silence.",
+          "monitors Electronic display devices used in the briefing room to project mission-critical information for Operation: Dulce.",
+          "Operation: Dulce A high-stakes mission undertaken by the Paranormal Military Squad, details of which are being briefed in the sterile environment."
+        ],
+        "status": "HippoRAGRetriever",
+        "success": true
+      }
+    },
+    "hipporag2": {
+      "Who is Agent Alex Mercer and what is his role?": {
+        "results": [
+          "Operation: Dulce A high-stakes mission undertaken by the Paranormal Military Squad, details of which are being briefed in the sterile environment.",
+          "monitors Electronic display devices used in the briefing room to project mission-critical information for Operation: Dulce.",
+          "impending odyssey A metaphorical reference to the upcoming mission, suggesting a long, arduous, and transformative journey."
+        ],
+        "status": "HippoRAG2Retriever",
+        "success": true
+      },
+      "What is Operation: Dulce and why is it important?": {
+        "results": [
+          "Operation: Dulce A high-stakes mission undertaken by the Paranormal Military Squad, details of which are being briefed in the sterile environment.",
+          "monitors Electronic display devices used in the briefing room to project mission-critical information for Operation: Dulce.",
+          "briefing room A sterile, high-security room where the squad gathers to receive mission details; characterized by technological monitors and oppressive silence."
+        ],
+        "status": "HippoRAG2Retriever",
+        "success": true
+      },
+      "Describe the Paranormal Military Squad": {
+        "results": [
+          "Operation: Dulce A high-stakes mission undertaken by the Paranormal Military Squad, details of which are being briefed in the sterile environment.",
+          "monitors Electronic display devices used in the briefing room to project mission-critical information for Operation: Dulce.",
+          "briefing room A sterile, high-security room where the squad gathers to receive mission details; characterized by technological monitors and oppressive silence."
+        ],
+        "status": "HippoRAG2Retriever",
+        "success": true
+      },
+      "What protocols and procedures are mentioned?": {
+        "results": [
+          "Operation: Dulce A high-stakes mission undertaken by the Paranormal Military Squad, details of which are being briefed in the sterile environment.",
+          "monitors Electronic display devices used in the briefing room to project mission-critical information for Operation: Dulce.",
+          "briefing room A sterile, high-security room where the squad gathers to receive mission details; characterized by technological monitors and oppressive silence."
+        ],
+        "status": "HippoRAG2Retriever",
+        "success": true
+      },
+      "Who shows compliance and what does it mean?": {
+        "results": [
+          "Operation: Dulce A high-stakes mission undertaken by the Paranormal Military Squad, details of which are being briefed in the sterile environment.",
+          "monitors Electronic display devices used in the briefing room to project mission-critical information for Operation: Dulce.",
+          "briefing room A sterile, high-security room where the squad gathers to receive mission details; characterized by technological monitors and oppressive silence."
+        ],
+        "status": "HippoRAG2Retriever",
+        "success": true
+      },
+      "What are the relationships between team members?": {
+        "results": [
+          "Operation: Dulce A high-stakes mission undertaken by the Paranormal Military Squad, details of which are being briefed in the sterile environment.",
+          "monitors Electronic display devices used in the briefing room to project mission-critical information for Operation: Dulce.",
+          "briefing room A sterile, high-security room where the squad gathers to receive mission details; characterized by technological monitors and oppressive silence."
+        ],
+        "status": "HippoRAG2Retriever",
+        "success": true
+      },
+      "What anomalies are being investigated?": {
+        "results": [
+          "Operation: Dulce A high-stakes mission undertaken by the Paranormal Military Squad, details of which are being briefed in the sterile environment.",
+          "monitors Electronic display devices used in the briefing room to project mission-critical information for Operation: Dulce.",
+          "impending odyssey A metaphorical reference to the upcoming mission, suggesting a long, arduous, and transformative journey."
+        ],
+        "status": "HippoRAG2Retriever",
+        "success": true
+      },
+      "Explain the briefing room and its significance": {
+        "results": [
+          "Operation: Dulce A high-stakes mission undertaken by the Paranormal Military Squad, details of which are being briefed in the sterile environment.",
+          "monitors Electronic display devices used in the briefing room to project mission-critical information for Operation: Dulce.",
+          "briefing room A sterile, high-security room where the squad gathers to receive mission details; characterized by technological monitors and oppressive silence."
+        ],
+        "status": "HippoRAG2Retriever",
+        "success": true
+      }
+    },
+    "simple_text": {
+      "Who is Agent Alex Mercer and what is his role?": {
+        "results": [
+          "A field agent of the Paranormal Military Squad, assigned to Operation: Dulce, showing internal conflict despite his determined reputation.",
+          "A fellow agent in the Paranormal Military Squad, assertive and questioning Mercer's resolve before the mission.",
+          "A team member involved in a high-stakes discussion, showing internal conflict between compliance and curiosity."
+        ],
+        "status": "SimpleTextRetriever",
+        "success": true
+      },
+      "What is Operation: Dulce and why is it important?": {
+        "results": [
+          "A high-stakes mission undertaken by the Paranormal Military Squad, details of which are being briefed in the sterile environment.",
+          "A field agent of the Paranormal Military Squad, assigned to Operation: Dulce, showing internal conflict despite his determined reputation.",
+          "An elite military unit specializing in paranormal-related operations, responsible for executing missions like Operation: Dulce."
+        ],
+        "status": "SimpleTextRetriever",
+        "success": true
+      },
+      "Describe the Paranormal Military Squad": {
+        "results": [
+          "An elite military unit specializing in paranormal-related operations, responsible for executing missions like Operation: Dulce.",
+          "A high-stakes mission undertaken by the Paranormal Military Squad, details of which are being briefed in the sterile environment.",
+          "A field agent of the Paranormal Military Squad, assigned to Operation: Dulce, showing internal conflict despite his determined reputation."
+        ],
+        "status": "SimpleTextRetriever",
+        "success": true
+      },
+      "What protocols and procedures are mentioned?": {
+        "results": [
+          "Established procedures meant to guide behavior and decision-making in critical situations.",
+          "A set of formal rules or procedures governing behavior within an organization or system, emphasized as essential in the interaction.",
+          "A specific individual involved in a protocol-driven environment, showing internal conflict between compliance and personal determination."
+        ],
+        "status": "SimpleTextRetriever",
+        "success": true
+      },
+      "Who shows compliance and what does it mean?": {
+        "results": [
+          "The act of adhering to rules or authority, demonstrated by Alex's verbal agreement despite inner resistance.",
+          "A specific individual involved in a protocol-driven environment, showing internal conflict between compliance and personal determination.",
+          "The state of adhering to rules or authority, which Alex displays despite inner resistance."
+        ],
+        "status": "SimpleTextRetriever",
+        "success": true
+      },
+      "What are the relationships between team members?": {
+        "results": [
+          "A team member involved in a high-stakes discussion, showing internal conflict between compliance and curiosity.",
+          "A team member who enforces discipline by emphasizing protocols and dismissing speculation.",
+          "A team member who values attention to detail and supports clear-headedness in operations."
+        ],
+        "status": "SimpleTextRetriever",
+        "success": true
+      },
+      "What anomalies are being investigated?": {
+        "results": [
+          "Irregularities or deviations from expected patterns, particularly in data or behavior.",
+          "Records of prior communications being analyzed for unusual patterns or data.",
+          "The act of theorizing without complete evidence, viewed negatively by leadership in this context."
+        ],
+        "status": "SimpleTextRetriever",
+        "success": true
+      },
+      "Explain the briefing room and its significance": {
+        "results": [
+          "A sterile, high-security room where the squad gathers to receive mission details; characterized by technological monitors and oppressive silence.",
+          "The procedural act of disseminating mission details, objectives, and protocols to operatives before deployment.",
+          "Electronic display devices used in the briefing room to project mission-critical information for Operation: Dulce."
+        ],
+        "status": "SimpleTextRetriever",
+        "success": true
+      }
+    }
+  },
+  "summary": {
+    "total_methods": 5,
+    "successful_methods": 5,
+    "failed_methods": 0,
+    "method_success_rate": {
+      "simple_graph": 1.0,
+      "tog": 1.0,
+      "hipporag": 1.0,
+      "hipporag2": 1.0,
+      "simple_text": 1.0
+    }
+  }
+}

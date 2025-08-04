@@ -1,0 +1,26 @@
+{
+  "total_nodes": 32,
+  "total_edges": 114,
+  "density": 0.11491935483870967,
+  "is_connected": true,
+  "number_of_components": 1,
+  "node_types": {
+    "entity": 12,
+    "event": 1,
+    "abstract_concept": 17,
+    "process": 2
+  },
+  "abstraction_levels": {
+    "specific": 12,
+    "general": 12,
+    "abstract": 8
+  },
+  "edge_types": {
+    "concept_relation": 31,
+    "abstraction_relation": 83
+  },
+  "avg_in_degree": 3.5625,
+  "avg_out_degree": 3.5625,
+  "max_in_degree": 11,
+  "max_out_degree": 9
+}

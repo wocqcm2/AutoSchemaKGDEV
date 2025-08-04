@@ -1,0 +1,32 @@
+{
+  "total_nodes": 8374,
+  "total_edges": 1560372,
+  "density": 0.022254308326851886,
+  "is_connected": false,
+  "number_of_components": 3,
+  "node_types": {
+    "entity": 5220,
+    "abstract_concept": 2061,
+    "event": 1048,
+    "location": 15,
+    "process": 13,
+    "organization": 6,
+    "person": 7,
+    "award": 2,
+    "place": 1,
+    "relationship": 1
+  },
+  "abstraction_levels": {
+    "specific": 6252,
+    "general": 2018,
+    "abstract": 104
+  },
+  "edge_types": {
+    "concept_relation": 7386,
+    "abstraction_relation": 1552986
+  },
+  "avg_in_degree": 186.33532362073083,
+  "avg_out_degree": 186.33532362073083,
+  "max_in_degree": 5047,
+  "max_out_degree": 1741
+}

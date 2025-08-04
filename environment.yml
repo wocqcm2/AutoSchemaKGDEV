@@ -1,0 +1,74 @@
+name: autoschemakg
+channels:
+  - pytorch
+  - nvidia
+  - huggingface
+  - conda-forge
+  - defaults
+
+dependencies:
+  # Python环境
+  - python>=3.9,<3.13
+  
+  # 深度学习框架
+  - pytorch
+  - torchvision 
+  - torchaudio
+  - pytorch-cuda=12.1  # 如果有NVIDIA GPU，根据CUDA版本调整
+  
+  # 科学计算库
+  - numpy>=1.26.0
+  - pandas>=2.0.0
+  - scipy
+  - scikit-learn
+  
+  # 自然语言处理
+  - nltk
+  - spacy
+  
+  # 图数据库和图计算
+  - networkx>=3.1
+  
+  # Web框架
+  - fastapi>=0.95.0
+  - uvicorn>=0.21.0
+  
+  # 工具库
+  - tqdm>=4.65.0
+  - jsonschema>=4.17.3
+  - tenacity>=9.1.2
+  - einops
+  
+  # Jupyter环境
+  - jupyter
+  - notebook
+  - ipykernel
+  
+  # 开发工具
+  - pip
+  - git
+  
+  # pip安装的包
+  - pip:
+    # Hugging Face生态
+    - transformers
+    - datasets
+    - accelerate>=1.7.0
+    - sentence-transformers>=2.7.0
+    
+    # Neo4j相关
+    - neo4j>=5.8.0
+    - graphdatascience
+    
+    # OpenAI和Azure
+    - openai>=1.0.0
+    - azure-ai-projects
+    - azure-cli
+    - azure-ai-inference
+    - azure-identity
+    
+    # 其他工具
+    - json_repair
+    
+    # 本项目
+    - -e .  # 以开发模式安装当前项目

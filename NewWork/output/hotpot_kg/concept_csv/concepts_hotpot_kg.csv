@@ -1,0 +1,1001 @@
+id,text,type,abstraction_level,source_doc
+concept_0,Radio City (Indian radio station),entity,specific,hotpot_context_0
+concept_1,History of Albanian football,entity,specific,hotpot_context_1
+concept_2,Echosmith,entity,specific,hotpot_context_2
+concept_3,Women's colleges in the Southern United States,entity,specific,hotpot_context_3
+concept_4,First Arthur County Courthouse and Jail,entity,specific,hotpot_context_4
+concept_5,Arthur's Magazine,entity,specific,hotpot_context_5
+concept_6,2014–15 Ukrainian Hockey Championship,entity,specific,hotpot_context_6
+concept_7,First for Women,entity,specific,hotpot_context_7
+concept_8,Freeway Complex Fire,entity,specific,hotpot_context_8
+concept_9,William Rast,entity,specific,hotpot_context_9
+concept_10,Ritz-Carlton Jakarta,entity,specific,hotpot_context_10
+concept_11,Oberoi family,entity,specific,hotpot_context_11
+concept_12,Ishqbaaaz,entity,specific,hotpot_context_12
+concept_13,Hotel Tallcorn,entity,specific,hotpot_context_13
+concept_14,Mohan Singh Oberoi,entity,specific,hotpot_context_14
+concept_15,Hotel Bond,entity,specific,hotpot_context_15
+concept_16,The Oberoi Group,entity,specific,hotpot_context_16
+concept_17,Future Fibre Technologies,entity,specific,hotpot_context_17
+concept_18,289th Military Police Company,entity,specific,hotpot_context_18
+concept_19,Glennwanis Hotel,entity,specific,hotpot_context_19
+concept_20,Lisa Simpson,entity,specific,hotpot_context_20
+concept_21,Marge Simpson,entity,specific,hotpot_context_21
+concept_22,Bart Simpson,entity,specific,hotpot_context_22
+concept_23,Allie Goertz,entity,specific,hotpot_context_23
+concept_24,Milhouse Van Houten,entity,specific,hotpot_context_24
+concept_25,Los Angeles Reader,entity,specific,hotpot_context_25
+concept_26,Homer Simpson,entity,specific,hotpot_context_26
+concept_27,List of The Simpsons video games,entity,specific,hotpot_context_27
+concept_28,"The Simpsons: An Uncensored, Unauthorized History",entity,specific,hotpot_context_28
+concept_29,List of The Simpsons guest stars,entity,specific,hotpot_context_29
+concept_30,"Moloch: or, This Gentile World",entity,specific,hotpot_context_30
+concept_31,"Launceston by-election, 1874",entity,specific,hotpot_context_31
+concept_32,Incest: From a Journal of Love,entity,specific,hotpot_context_32
+concept_33,James Henry Deakin (junior),entity,specific,hotpot_context_33
+concept_34,Ewan MacColl,entity,specific,hotpot_context_34
+concept_35,Peggy Seeger,entity,specific,hotpot_context_35
+concept_36,Henry Miller Memorial Library,entity,specific,hotpot_context_36
+concept_37,June Miller,entity,specific,hotpot_context_37
+concept_38,"James Innes-Ker, 7th Duke of Roxburghe",entity,specific,hotpot_context_38
+concept_39,"Jim Miller (Australian footballer, born 1919)",entity,specific,hotpot_context_39
+concept_40,Cadmium chloride,entity,specific,hotpot_context_40
+concept_41,Water blue,entity,specific,hotpot_context_41
+concept_42,Diflucortolone valerate,entity,specific,hotpot_context_42
+concept_43,Heptanoic acid,entity,specific,hotpot_context_43
+concept_44,Magnesium chloride,entity,specific,hotpot_context_44
+concept_45,Ethanol,entity,specific,hotpot_context_45
+concept_46,Tributyltin oxide,entity,specific,hotpot_context_46
+concept_47,Benzamide,entity,specific,hotpot_context_47
+concept_48,Gold(III) chloride,entity,specific,hotpot_context_48
+concept_49,Chloride,entity,specific,hotpot_context_49
+concept_50,Li Na,entity,specific,hotpot_context_50
+concept_51,Williams sisters,entity,specific,hotpot_context_51
+concept_52,Henri Leconte,entity,specific,hotpot_context_52
+concept_53,Steffi Graf,entity,specific,hotpot_context_53
+concept_54,1986 Grand Prix German Open,entity,specific,hotpot_context_54
+concept_55,Jonathan Stark (tennis),entity,specific,hotpot_context_55
+concept_56,Pam Teeguarden,entity,specific,hotpot_context_56
+concept_57,Ken Rosewall,entity,specific,hotpot_context_57
+concept_58,2009 Serena Williams tennis season,entity,specific,hotpot_context_58
+concept_59,Larisa Neiland,entity,specific,hotpot_context_59
+concept_60,India,entity,specific,hotpot_context_60
+concept_61,List of companies of India,entity,specific,hotpot_context_61
+concept_62,Eutrapela,entity,specific,hotpot_context_62
+concept_63,Geography of India,entity,specific,hotpot_context_63
+concept_64,Yoshiyasua,entity,specific,hotpot_context_64
+concept_65,Nepita,entity,specific,hotpot_context_65
+concept_66,Parectropis,entity,specific,hotpot_context_66
+concept_67,Indogrammodes,entity,specific,hotpot_context_67
+concept_68,Eumacaria,entity,specific,hotpot_context_68
+concept_69,Nymphuliella,entity,specific,hotpot_context_69
+concept_70,Verano de Escándalo (1998),entity,specific,hotpot_context_70
+concept_71,Triplemanía VII,entity,specific,hotpot_context_71
+concept_72,Protection racket,entity,specific,hotpot_context_72
+concept_73,E. Gordon Gee,entity,specific,hotpot_context_73
+concept_74,Badr Hari,entity,specific,hotpot_context_74
+concept_75,Guerra de Titanes (1998),entity,specific,hotpot_context_75
+concept_76,Global Fighting Championship,entity,specific,hotpot_context_76
+concept_77,Outrageous Betrayal,entity,specific,hotpot_context_77
+concept_78,Betting controversies in cricket,entity,specific,hotpot_context_78
+concept_79,Prosecution of gender-targeted crimes,entity,specific,hotpot_context_79
+concept_80,House of Anubis,entity,specific,hotpot_context_80
+concept_81,Batibot,entity,specific,hotpot_context_81
+concept_82,Wolfblood,entity,specific,hotpot_context_82
+concept_83,List of House of Anubis episodes,entity,specific,hotpot_context_83
+concept_84,Majisuka Gakuen,entity,specific,hotpot_context_84
+concept_85,Graduation Day (Buffy the Vampire Slayer),entity,specific,hotpot_context_85
+concept_86,Fish Police (TV series),entity,specific,hotpot_context_86
+concept_87,Nathalia Ramos,entity,specific,hotpot_context_87
+concept_88,Het Huis Anubis,entity,specific,hotpot_context_88
+concept_89,Das Haus Anubis,entity,specific,hotpot_context_89
+concept_90,Mount Panorama Circuit,entity,specific,hotpot_context_90
+concept_91,2016 Intercontinental GT Challenge,entity,specific,hotpot_context_91
+concept_92,Bathurst 12 Hour,entity,specific,hotpot_context_92
+concept_93,2018 Intercontinental GT Challenge,entity,specific,hotpot_context_93
+concept_94,2016 Liqui Moly Bathurst 12 Hour,entity,specific,hotpot_context_94
+concept_95,2017 Intercontinental GT Challenge,entity,specific,hotpot_context_95
+concept_96,2013 Liqui Moly Bathurst 12 Hour,entity,specific,hotpot_context_96
+concept_97,2015 Liqui Moly Bathurst 12 Hour,entity,specific,hotpot_context_97
+concept_98,2017 Liqui Moly Bathurst 12 Hour,entity,specific,hotpot_context_98
+concept_99,2014 Liqui Moly Bathurst 12 Hour,entity,specific,hotpot_context_99
+concept_100,Lights Out Paris,entity,specific,hotpot_context_100
+concept_101,El-P,entity,specific,hotpot_context_101
+concept_102,Born and Raised (EP),entity,specific,hotpot_context_102
+concept_103,Lord Steppington,entity,specific,hotpot_context_103
+concept_104,Control Freek,entity,specific,hotpot_context_104
+concept_105,Hip hop,entity,specific,hotpot_context_105
+concept_106,"Fast Cars, Danger, Fire and Knives",entity,specific,hotpot_context_106
+concept_107,Longterm Mentality,entity,specific,hotpot_context_107
+concept_108,Experimental hip hop,entity,specific,hotpot_context_108
+concept_109,Changes (Alyson Avenue album),entity,specific,hotpot_context_109
+concept_110,Louis Stevens (writer),entity,specific,hotpot_context_110
+concept_111,The Lone Gunmen,entity,specific,hotpot_context_111
+concept_112,Hermanos de Pistoleros Latinos,entity,specific,hotpot_context_112
+concept_113,Piranha (1972 film),entity,specific,hotpot_context_113
+concept_114,Gunmen from Laredo,entity,specific,hotpot_context_114
+concept_115,Seemanto-heera,entity,specific,hotpot_context_115
+concept_116,Frontier Texas!,entity,specific,hotpot_context_116
+concept_117,Walter Coy,entity,specific,hotpot_context_117
+concept_118,Max McLean,entity,specific,hotpot_context_118
+concept_119,Bruce Harwood,entity,specific,hotpot_context_119
+concept_120,Pantun Sunda,entity,specific,hotpot_context_120
+concept_121,Bubu music,entity,specific,hotpot_context_121
+concept_122,Peşrev,entity,specific,hotpot_context_122
+concept_123,Skiffle,entity,specific,hotpot_context_123
+concept_124,Cachi Cachi music,entity,specific,hotpot_context_124
+concept_125,Background music,entity,specific,hotpot_context_125
+concept_126,Kantrum,entity,specific,hotpot_context_126
+concept_127,Chillador,entity,specific,hotpot_context_127
+concept_128,Die Rhöner Säuwäntzt,entity,specific,hotpot_context_128
+concept_129,Minoru Kojima,entity,specific,hotpot_context_129
+concept_130,Winston Lagoon,entity,specific,hotpot_context_130
+concept_131,Malcolm Smith (American football),entity,specific,hotpot_context_131
+concept_132,Super Bowl XLVIII,entity,specific,hotpot_context_132
+concept_133,2013 NBA Summer League,entity,specific,hotpot_context_133
+concept_134,Steve Clark (American football),entity,specific,hotpot_context_134
+concept_135,1959 Illinois Fighting Illini football team,entity,specific,hotpot_context_135
+concept_136,103rd Grey Cup,entity,specific,hotpot_context_136
+concept_137,"Richard Smith (rugby union, born 1973)",entity,specific,hotpot_context_137
+concept_138,Kevin Durant,entity,specific,hotpot_context_138
+concept_139,Super Bowl Most Valuable Player Award,entity,specific,hotpot_context_139
+concept_140,Zilpo Road,entity,specific,hotpot_context_140
+concept_141,RISE (sculpture),entity,specific,hotpot_context_141
+concept_142,Peterman Hill,entity,specific,hotpot_context_142
+concept_143,Arkansas Highway 113,entity,specific,hotpot_context_143
+concept_144,California State Route 266,entity,specific,hotpot_context_144
+concept_145,"Morehead, Kentucky",entity,specific,hotpot_context_145
+concept_146,Roman bridge of Salamanca,entity,specific,hotpot_context_146
+concept_147,"Hawks Nest, West Virginia",entity,specific,hotpot_context_147
+concept_148,Hawaii Route 64,entity,specific,hotpot_context_148
+concept_149,"Glen Ferris, West Virginia",entity,specific,hotpot_context_149
+concept_150,Shane Stanley,entity,specific,hotpot_context_150
+concept_151,Robert Cummings,entity,specific,hotpot_context_151
+concept_152,Beau Bridges,entity,specific,hotpot_context_152
+concept_153,Annette Bening,entity,specific,hotpot_context_153
+concept_154,Farrah Fawcett,entity,specific,hotpot_context_154
+concept_155,List of stars on the Hollywood Walk of Fame,entity,specific,hotpot_context_155
+concept_156,Kevin Bacon,entity,specific,hotpot_context_156
+concept_157,Larry R. Williams,entity,specific,hotpot_context_157
+concept_158,The Great Outdoors (film),entity,specific,hotpot_context_158
+concept_159,John Lithgow,entity,specific,hotpot_context_159
+concept_160,Joey Vera,entity,specific,hotpot_context_160
+concept_161,Hurt Locker (musical),entity,specific,hotpot_context_161
+concept_162,Obús,entity,specific,hotpot_context_162
+concept_163,Metal Health,entity,specific,hotpot_context_163
+concept_164,Joey Jordison,entity,specific,hotpot_context_164
+concept_165,Black 'n Blue,entity,specific,hotpot_context_165
+concept_166,Machine Head (band),entity,specific,hotpot_context_166
+concept_167,Dan Spitz,entity,specific,hotpot_context_167
+concept_168,Nu metal,entity,specific,hotpot_context_168
+concept_169,Metallica,entity,specific,hotpot_context_169
+concept_170,My Finale,entity,specific,hotpot_context_170
+concept_171,Desperate Housewives (season 2),entity,specific,hotpot_context_171
+concept_172,List of Republic of Doyle episodes,entity,specific,hotpot_context_172
+concept_173,Human Error (House),entity,specific,hotpot_context_173
+concept_174,The Price of Free and Fair Elections,entity,specific,hotpot_context_174
+concept_175,Robert Chase,entity,specific,hotpot_context_175
+concept_176,The Voice Portugal,entity,specific,hotpot_context_176
+concept_177,House (TV series),entity,specific,hotpot_context_177
+concept_178,Through the Looking Glass (Lost),entity,specific,hotpot_context_178
+concept_179,Mr. Yin Presents...,entity,specific,hotpot_context_179
+concept_180,Last Dance (Dua Lipa song),entity,specific,hotpot_context_180
+concept_181,Dua Lipa,entity,specific,hotpot_context_181
+concept_182,Lost in Your Light,entity,specific,hotpot_context_182
+concept_183,Be the One (Dua Lipa song),entity,specific,hotpot_context_183
+concept_184,Hotter than Hell Tour (Dua Lipa),entity,specific,hotpot_context_184
+concept_185,Blow Your Mind (Mwah),entity,specific,hotpot_context_185
+concept_186,US and Europe Tour,entity,specific,hotpot_context_186
+concept_187,Dua Lipa (album),entity,specific,hotpot_context_187
+concept_188,New Rules (song),entity,specific,hotpot_context_188
+concept_189,Hotter than Hell (Dua Lipa song),entity,specific,hotpot_context_189
+concept_190,Kamala Harris,entity,specific,hotpot_context_190
+concept_191,"Maryland Attorney General election, 2014",entity,specific,hotpot_context_191
+concept_192,Corey Palumbo,entity,specific,hotpot_context_192
+concept_193,Catherine Cortez Masto,entity,specific,hotpot_context_193
+concept_194,Joe Heck,entity,specific,hotpot_context_194
+concept_195,List of United States Senators from Nevada,entity,specific,hotpot_context_195
+concept_196,Dennis Heck,entity,specific,hotpot_context_196
+concept_197,Samuel D. Jackson,entity,specific,hotpot_context_197
+concept_198,George Henry Williams,entity,specific,hotpot_context_198
+concept_199,Jeff Harris (politician),entity,specific,hotpot_context_199
+concept_200,USA Drug,entity,specific,hotpot_context_200
+concept_201,Perry Drug Stores,entity,specific,hotpot_context_201
+concept_202,Longs Drugs,entity,specific,hotpot_context_202
+concept_203,Thrifty PayLess,entity,specific,hotpot_context_203
+concept_204,Leader Drug Stores,entity,specific,hotpot_context_204
+concept_205,Gray Drug,entity,specific,hotpot_context_205
+concept_206,Hartig Drug,entity,specific,hotpot_context_206
+concept_207,Warren Bryant,entity,specific,hotpot_context_207
+concept_208,Cunningham Drug (U.S.),entity,specific,hotpot_context_208
+concept_209,Rexall,entity,specific,hotpot_context_209
+concept_210,Mike Dmitrich,entity,specific,hotpot_context_210
+concept_211,Maurice A. Donahue,entity,specific,hotpot_context_211
+concept_212,John Hoeven,entity,specific,hotpot_context_212
+concept_213,Anne Donahue,entity,specific,hotpot_context_213
+concept_214,Sue Donahue,entity,specific,hotpot_context_214
+concept_215,Frank J. Donahue,entity,specific,hotpot_context_215
+concept_216,Charles Harlow,entity,specific,hotpot_context_216
+concept_217,Kelli Ward,entity,specific,hotpot_context_217
+concept_218,Dan Donahue,entity,specific,hotpot_context_218
+concept_219,Warren Furutani,entity,specific,hotpot_context_219
+concept_220,Nobody's Daughter,entity,specific,hotpot_context_220
+concept_221,Courtney Love filmography,entity,specific,hotpot_context_221
+concept_222,Patty Schemel,entity,specific,hotpot_context_222
+concept_223,Beautiful Son,entity,specific,hotpot_context_223
+concept_224,The Wolfhounds,entity,specific,hotpot_context_224
+concept_225,Live Through This,entity,specific,hotpot_context_225
+concept_226,Turpentine (song),entity,specific,hotpot_context_226
+concept_227,Miss World (song),entity,specific,hotpot_context_227
+concept_228,"Softer, Softest",entity,specific,hotpot_context_228
+concept_229,Courtney Love,entity,specific,hotpot_context_229
+concept_230,Catching Fire,entity,specific,hotpot_context_230
+concept_231,Oil well fire,entity,specific,hotpot_context_231
+concept_232,H2O: Footprints in the Sand,entity,specific,hotpot_context_232
+concept_233,To Heart 2,entity,specific,hotpot_context_233
+concept_234,The Hunger Games (novel),entity,specific,hotpot_context_234
+concept_235,Moon (visual novel),entity,specific,hotpot_context_235
+concept_236,Dōsei,entity,specific,hotpot_context_236
+concept_237,The Hunger Games: Catching Fire,entity,specific,hotpot_context_237
+concept_238,Tenshin Ranman: Lucky or Unlucky!?,entity,specific,hotpot_context_238
+concept_239,"Hello, Good-bye",entity,specific,hotpot_context_239
+concept_240,May 16 coup,entity,specific,hotpot_context_240
+concept_241,Han Myeong-sook,entity,specific,hotpot_context_241
+concept_242,Chang Dae-hwan,entity,specific,hotpot_context_242
+concept_243,Chang Won-jun,entity,specific,hotpot_context_243
+concept_244,Korea under Japanese rule,entity,specific,hotpot_context_244
+concept_245,Tommy Chang (martial artist),entity,specific,hotpot_context_245
+concept_246,United States in the Korean War,entity,specific,hotpot_context_246
+concept_247,Chang Mi-hee,entity,specific,hotpot_context_247
+concept_248,Chang Yong-hak,entity,specific,hotpot_context_248
+concept_249,Chang Ucchin,entity,specific,hotpot_context_249
+concept_250,Los Angeles County Federation of Labor,entity,specific,hotpot_context_250
+concept_251,Good Life Cafe,entity,specific,hotpot_context_251
+concept_252,Austin Young,entity,specific,hotpot_context_252
+concept_253,Old School (film),entity,specific,hotpot_context_253
+concept_254,Stephen Nicholas (actor),entity,specific,hotpot_context_254
+concept_255,John Miner,entity,specific,hotpot_context_255
+concept_256,Quality Cafe,entity,specific,hotpot_context_256
+concept_257,Quality Cafe (jazz club),entity,specific,hotpot_context_257
+concept_258,"Filandia, Quindío",entity,specific,hotpot_context_258
+concept_259,Quality Cafe (diner),entity,specific,hotpot_context_259
+concept_260,Guess Who I Saw Today,entity,specific,hotpot_context_260
+concept_261,Paul Nassau,entity,specific,hotpot_context_261
+concept_262,New Faces of 1952,entity,specific,hotpot_context_262
+concept_263,Carol Lawrence,entity,specific,hotpot_context_263
+concept_264,Monotonous (song),entity,specific,hotpot_context_264
+concept_265,How to Eat Like a Child,entity,specific,hotpot_context_265
+concept_266,New Faces (film),entity,specific,hotpot_context_266
+concept_267,Mary Begoña,entity,specific,hotpot_context_267
+concept_268,Leonard Sillman,entity,specific,hotpot_context_268
+concept_269,Leonard Sillman's New Faces of 1968,entity,specific,hotpot_context_269
+concept_270,Leonid Ramzin,entity,specific,hotpot_context_270
+concept_271,Leftover hash lemma,entity,specific,hotpot_context_271
+concept_272,Phthinosaurus,entity,specific,hotpot_context_272
+concept_273,Kate Dillon Levin,entity,specific,hotpot_context_273
+concept_274,Tony Levin,entity,specific,hotpot_context_274
+concept_275,Gabriel Levin,entity,specific,hotpot_context_275
+concept_276,Leonid Levin,entity,specific,hotpot_context_276
+concept_277,Pavel Urysohn,entity,specific,hotpot_context_277
+concept_278,Meyer Levin,entity,specific,hotpot_context_278
+concept_279,Leonid Bunimovich,entity,specific,hotpot_context_279
+concept_280,Whiteout Conditions,entity,specific,hotpot_context_280
+concept_281,A. C. Newman,entity,specific,hotpot_context_281
+concept_282,Kings of Leon,entity,specific,hotpot_context_282
+concept_283,Little Scout,entity,specific,hotpot_context_283
+concept_284,Neko Case,entity,specific,hotpot_context_284
+concept_285,Good People Rock,entity,specific,hotpot_context_285
+concept_286,Kathryn Calder,entity,specific,hotpot_context_286
+concept_287,Kurt Dahle,entity,specific,hotpot_context_287
+concept_288,Phantom Buffalo,entity,specific,hotpot_context_288
+concept_289,The New Pornographers,entity,specific,hotpot_context_289
+concept_290,655 Park Avenue,entity,specific,hotpot_context_290
+concept_291,101 Park Avenue,entity,specific,hotpot_context_291
+concept_292,South Phoenix,entity,specific,hotpot_context_292
+concept_293,750 7th Avenue,entity,specific,hotpot_context_293
+concept_294,"Berkeley, Denver",entity,specific,hotpot_context_294
+concept_295,Church of St. Ignatius Loyola (New York City),entity,specific,hotpot_context_295
+concept_296,"Squire Park, Seattle",entity,specific,hotpot_context_296
+concept_297,"Hounsfield Heights/Briar Hill, Calgary",entity,specific,hotpot_context_297
+concept_298,Greenwich Avenue,entity,specific,hotpot_context_298
+concept_299,Tinley Park station,entity,specific,hotpot_context_299
+concept_300,Kyōryū Sentai Zyuranger,entity,specific,hotpot_context_300
+concept_301,GoGo Sentai Boukenger,entity,specific,hotpot_context_301
+concept_302,Gosei Sentai Dairanger,entity,specific,hotpot_context_302
+concept_303,Engine Sentai Go-onger,entity,specific,hotpot_context_303
+concept_304,Power Rangers,entity,specific,hotpot_context_304
+concept_305,Super Sentai,entity,specific,hotpot_context_305
+concept_306,Unofficial Sentai Akibaranger,entity,specific,hotpot_context_306
+concept_307,Doubutsu Sentai Zyuohger,entity,specific,hotpot_context_307
+concept_308,Chouriki Sentai Ohranger,entity,specific,hotpot_context_308
+concept_309,Kimberly Hart,entity,specific,hotpot_context_309
+concept_310,Lion's Den (2008 film),entity,specific,hotpot_context_310
+concept_311,White Elephant (2012 film),entity,specific,hotpot_context_311
+concept_312,Pablo Trapero,entity,specific,hotpot_context_312
+concept_313,El Bonaerense,entity,specific,hotpot_context_313
+concept_314,Crane World,entity,specific,hotpot_context_314
+concept_315,Carancho,entity,specific,hotpot_context_315
+concept_316,Familia rodante,entity,specific,hotpot_context_316
+concept_317,The Clan (film),entity,specific,hotpot_context_317
+concept_318,Aleksander Ford,entity,specific,hotpot_context_318
+concept_319,7 Days in Havana,entity,specific,hotpot_context_319
+concept_320,List of magazines in Malaysia,entity,specific,hotpot_context_320
+concept_321,First for Women,entity,specific,hotpot_context_321
+concept_322,Jane (magazine),entity,specific,hotpot_context_322
+concept_323,Rabotnitsa,entity,specific,hotpot_context_323
+concept_324,Jane Addams,entity,specific,hotpot_context_324
+concept_325,Marianne Schnall,entity,specific,hotpot_context_325
+concept_326,Jane Cunningham Croly,entity,specific,hotpot_context_326
+concept_327,My Secret Garden,entity,specific,hotpot_context_327
+concept_328,Be Love,entity,specific,hotpot_context_328
+concept_329,List of magazines in China,entity,specific,hotpot_context_329
+concept_330,Baby Doll,entity,specific,hotpot_context_330
+concept_331,Nicholas Ray,entity,specific,hotpot_context_331
+concept_332,Elia Kazan,entity,specific,hotpot_context_332
+concept_333,Art &amp; Gadg,entity,specific,hotpot_context_333
+concept_334,A Letter to Elia,entity,specific,hotpot_context_334
+concept_335,The Visitors (1972 film),entity,specific,hotpot_context_335
+concept_336,Truckline Cafe,entity,specific,hotpot_context_336
+concept_337,All My Sons,entity,specific,hotpot_context_337
+concept_338,Maya Kazan,entity,specific,hotpot_context_338
+concept_339,Macao (film),entity,specific,hotpot_context_339
+concept_340,WizKids,entity,specific,hotpot_context_340
+concept_341,Aixam,entity,specific,hotpot_context_341
+concept_342,Arola (microcar),entity,specific,hotpot_context_342
+concept_343,"Knapp, Stout &amp; Co.",entity,specific,hotpot_context_343
+concept_344,Syncros,entity,specific,hotpot_context_344
+concept_345,Murco Petroleum,entity,specific,hotpot_context_345
+concept_346,I. G. Baker Company,entity,specific,hotpot_context_346
+concept_347,Cliché Skateboards,entity,specific,hotpot_context_347
+concept_348,Budd Silverliner,entity,specific,hotpot_context_348
+concept_349,Polaris Industries,entity,specific,hotpot_context_349
+concept_350,Adam (musical),entity,specific,hotpot_context_350
+concept_351,Adam Clayton Powell (film),entity,specific,hotpot_context_351
+concept_352,Adam Clayton Powell Jr.,entity,specific,hotpot_context_352
+concept_353,Adam Clayton Powell IV,entity,specific,hotpot_context_353
+concept_354,Seventh Avenue (Manhattan),entity,specific,hotpot_context_354
+concept_355,Mother African Methodist Episcopal Zion Church,entity,specific,hotpot_context_355
+concept_356,Abyssinian Baptist Church,entity,specific,hotpot_context_356
+concept_357,Adam Clayton Powell Jr. State Office Building,entity,specific,hotpot_context_357
+concept_358,The Saimaa Gesture,entity,specific,hotpot_context_358
+concept_359,Adam Clayton Powell Sr.,entity,specific,hotpot_context_359
+concept_360,Just Like Paradise,entity,specific,hotpot_context_360
+concept_361,The David Lee Roth Band,entity,specific,hotpot_context_361
+concept_362,Sammy Hagar,entity,specific,hotpot_context_362
+concept_363,Your Filthy Little Mouth,entity,specific,hotpot_context_363
+concept_364,The Midnighters,entity,specific,hotpot_context_364
+concept_365,The David Lee Roth Show,entity,specific,hotpot_context_365
+concept_366,Cia Berg,entity,specific,hotpot_context_366
+concept_367,David Lee Roth,entity,specific,hotpot_context_367
+concept_368,David Lee Roth discography,entity,specific,hotpot_context_368
+concept_369,Yankee Rose (song),entity,specific,hotpot_context_369
+concept_370,Inyathi High School,entity,specific,hotpot_context_370
+concept_371,Presbyterian Boys' Senior High School,entity,specific,hotpot_context_371
+concept_372,J. Sterling Morton High School East,entity,specific,hotpot_context_372
+concept_373,Reverend Juuso Shikongo Senior Secondary School,entity,specific,hotpot_context_373
+concept_374,Legae Academy,entity,specific,hotpot_context_374
+concept_375,Winslow Township High School,entity,specific,hotpot_context_375
+concept_376,Ishibu Higher Secondary School,entity,specific,hotpot_context_376
+concept_377,Guwe Secondary School,entity,specific,hotpot_context_377
+concept_378,Singwango Secondary School,entity,specific,hotpot_context_378
+concept_379,Carle Place High School,entity,specific,hotpot_context_379
+concept_380,List of Commissioners of New South Wales Police,entity,specific,hotpot_context_380
+concept_381,Royal Commission into Drug Trafficking,entity,specific,hotpot_context_381
+concept_382,New South Wales Police Force,entity,specific,hotpot_context_382
+concept_383,Kennedy Royal Commission,entity,specific,hotpot_context_383
+concept_384,First 'Ndrangheta war,entity,specific,hotpot_context_384
+concept_385,Honoured Society (Australia),entity,specific,hotpot_context_385
+concept_386,Royal Commission of Inquiry into Drug Trafficking,entity,specific,hotpot_context_386
+concept_387,Chelmsford Royal Commission,entity,specific,hotpot_context_387
+concept_388,Robert Trimbole,entity,specific,hotpot_context_388
+concept_389,Roberto Pannunzi,entity,specific,hotpot_context_389
+concept_390,46th Operations Group,entity,specific,hotpot_context_390
+concept_391,46th Test Wing,entity,specific,hotpot_context_391
+concept_392,46th Test Group,entity,specific,hotpot_context_392
+concept_393,486th Flight Test Squadron,entity,specific,hotpot_context_393
+concept_394,586th Flight Test Squadron,entity,specific,hotpot_context_394
+concept_395,337th Flight Test Squadron,entity,specific,hotpot_context_395
+concept_396,Holloman High Speed Test Track,entity,specific,hotpot_context_396
+concept_397,McClellan Air Force Base,entity,specific,hotpot_context_397
+concept_398,417th Flight Test Squadron,entity,specific,hotpot_context_398
+concept_399,96th Test Wing,entity,specific,hotpot_context_399
+concept_400,Hexatron Engineering,entity,specific,hotpot_context_400
+concept_401,History of BMW,entity,specific,hotpot_context_401
+concept_402,Engine Alliance,entity,specific,hotpot_context_402
+concept_403,BMW R32,entity,specific,hotpot_context_403
+concept_404,Orenda Iroquois,entity,specific,hotpot_context_404
+concept_405,D-Motor,entity,specific,hotpot_context_405
+concept_406,MTU Aero Engines,entity,specific,hotpot_context_406
+concept_407,Pirna 014,entity,specific,hotpot_context_407
+concept_408,Stratus 2000,entity,specific,hotpot_context_408
+concept_409,Junkers,entity,specific,hotpot_context_409
+concept_410,"Missoula, Montana",entity,specific,hotpot_context_410
+concept_411,"Great Falls, Montana",entity,specific,hotpot_context_411
+concept_412,Lynn University,entity,specific,hotpot_context_412
+concept_413,New Providence High School,entity,specific,hotpot_context_413
+concept_414,Montana State University Billings,entity,specific,hotpot_context_414
+concept_415,"Media in Missoula, Montana",entity,specific,hotpot_context_415
+concept_416,Ohio Northern University,entity,specific,hotpot_context_416
+concept_417,Cooperating Colleges of Greater Springfield,entity,specific,hotpot_context_417
+concept_418,University of Providence,entity,specific,hotpot_context_418
+concept_419,Jacksonville University,entity,specific,hotpot_context_419
+concept_420,Cover version,entity,specific,hotpot_context_420
+concept_421,Till Death Unites Us,entity,specific,hotpot_context_421
+concept_422,"Livin' in the Sunlight, Lovin' in the Moonlight",entity,specific,hotpot_context_422
+concept_423,The Chimes (album),entity,specific,hotpot_context_423
+concept_424,The Chimes (Scottish band),entity,specific,hotpot_context_424
+concept_425,Dragostea Din Tei,entity,specific,hotpot_context_425
+concept_426,I Still Haven't Found What I'm Looking For,entity,specific,hotpot_context_426
+concept_427,Pauline Henry,entity,specific,hotpot_context_427
+concept_428,Cover Version,entity,specific,hotpot_context_428
+concept_429,Love Is (Michi EP),entity,specific,hotpot_context_429
+concept_430,Michael Breed,entity,specific,hotpot_context_430
+concept_431,Timeline of town creation in the Hudson Valley,entity,specific,hotpot_context_431
+concept_432,Guitars for Wounded Warriors,entity,specific,hotpot_context_432
+concept_433,Aaron B. Rollins,entity,specific,hotpot_context_433
+concept_434,"New Paltz (village), New York",entity,specific,hotpot_context_434
+concept_435,Brian Tarquin,entity,specific,hotpot_context_435
+concept_436,New York County Courthouse,entity,specific,hotpot_context_436
+concept_437,New York County District Attorney,entity,specific,hotpot_context_437
+concept_438,Julius Harburger,entity,specific,hotpot_context_438
+concept_439,List of counties in New York,entity,specific,hotpot_context_439
+concept_440,Loretta Lynn,entity,specific,hotpot_context_440
+concept_441,Tim Malchak,entity,specific,hotpot_context_441
+concept_442,Tammy Wynette,entity,specific,hotpot_context_442
+concept_443,Bobby Lewis (country singer),entity,specific,hotpot_context_443
+concept_444,Three Wooden Crosses,entity,specific,hotpot_context_444
+concept_445,I'm a One-Woman Man,entity,specific,hotpot_context_445
+concept_446,Please Don't Stop Loving Me,entity,specific,hotpot_context_446
+concept_447,Buddy Brown (musician),entity,specific,hotpot_context_447
+concept_448,Lane Brody,entity,specific,hotpot_context_448
+concept_449,The Battle (George Jones song),entity,specific,hotpot_context_449
+concept_450,"James Stuart, 3rd Earl of Moray",entity,specific,hotpot_context_450
+concept_451,Charlotte of the Palatinate (1628–1631),entity,specific,hotpot_context_451
+concept_452,"Margaret Howard, Countess of Nottingham",entity,specific,hotpot_context_452
+concept_453,Francis Nethersole,entity,specific,hotpot_context_453
+concept_454,Gustavus Adolphus of the Palatinate,entity,specific,hotpot_context_454
+concept_455,"Elizabeth Stuart, Queen of Bohemia",entity,specific,hotpot_context_455
+concept_456,The Gates Ajar,entity,specific,hotpot_context_456
+concept_457,Elisabeth of the Palatinate,entity,specific,hotpot_context_457
+concept_458,A Singular Life,entity,specific,hotpot_context_458
+concept_459,Philip Howard (cardinal),entity,specific,hotpot_context_459
+concept_460,Hacker-Pschorr Brewery,entity,specific,hotpot_context_460
+concept_461,Reinheitsgebot,entity,specific,hotpot_context_461
+concept_462,KAGG (law),entity,specific,hotpot_context_462
+concept_463,Building regulations approval,entity,specific,hotpot_context_463
+concept_464,Self-executing order,entity,specific,hotpot_context_464
+concept_465,Comply or explain,entity,specific,hotpot_context_465
+concept_466,Mercedes-Benz short bonnet trucks,entity,specific,hotpot_context_466
+concept_467,Title 47 CFR Part 15,entity,specific,hotpot_context_467
+concept_468,Corporate social responsibility,entity,specific,hotpot_context_468
+concept_469,Greisen–Zatsepin–Kuzmin limit,entity,specific,hotpot_context_469
+concept_470,Australian twenty five-cent coin,entity,specific,hotpot_context_470
+concept_471,Charles Cardoza Poindexter,entity,specific,hotpot_context_471
+concept_472,2016–17 British and Irish Cup,entity,specific,hotpot_context_472
+concept_473,The Ride Tour,entity,specific,hotpot_context_473
+concept_474,2015–16 A-League,entity,specific,hotpot_context_474
+concept_475,Howard Marks,entity,specific,hotpot_context_475
+concept_476,Marching On Together,entity,specific,hotpot_context_476
+concept_477,Matthew Mason (Welsh cricketer),entity,specific,hotpot_context_477
+concept_478,Here It Comes Again (The Fortunes song),entity,specific,hotpot_context_478
+concept_479,Don Barry Mason,entity,specific,hotpot_context_479
+concept_480,Producers Guild Film Award for Best Male Debut,entity,specific,hotpot_context_480
+concept_481,Sverrir Gudnason,entity,specific,hotpot_context_481
+concept_482,Indian Telly Award for Best Actor in a Lead Role,entity,specific,hotpot_context_482
+concept_483,Robert Sheehan,entity,specific,hotpot_context_483
+concept_484,The Messenger (2015 horror film),entity,specific,hotpot_context_484
+concept_485,Mohammad-Reza Foroutan,entity,specific,hotpot_context_485
+concept_486,IIFA Award for Star Debut of the Year – Male,entity,specific,hotpot_context_486
+concept_487,Filmfare Award for Best Male Debut,entity,specific,hotpot_context_487
+concept_488,ARY Film Award for Best Star Debut Male,entity,specific,hotpot_context_488
+concept_489,Kurt Kreuger,entity,specific,hotpot_context_489
+concept_490,Parallel key,entity,specific,hotpot_context_490
+concept_491,Paloma (cocktail),entity,specific,hotpot_context_491
+concept_492,Sazerac Company,entity,specific,hotpot_context_492
+concept_493,Seafood cocktail,entity,specific,hotpot_context_493
+concept_494,Salty dog (cocktail),entity,specific,hotpot_context_494
+concept_495,Sweet Melissa,entity,specific,hotpot_context_495
+concept_496,Tequila and tonic,entity,specific,hotpot_context_496
+concept_497,Tonic water,entity,specific,hotpot_context_497
+concept_498,Gin and tonic,entity,specific,hotpot_context_498
+concept_499,Mário-Henrique Leiria,entity,specific,hotpot_context_499
+concept_500,Babette Hughes,entity,specific,hotpot_context_500
+concept_501,Dark Side (R5 song),entity,specific,hotpot_context_501
+concept_502,Ross Lynch,entity,specific,hotpot_context_502
+concept_503,Live in Tokyo (HTP album),entity,specific,hotpot_context_503
+concept_504,Glenn Hughes,entity,specific,hotpot_context_504
+concept_505,Trapeze (band),entity,specific,hotpot_context_505
+concept_506,Black Country Communion,entity,specific,hotpot_context_506
+concept_507,California Breed,entity,specific,hotpot_context_507
+concept_508,List of Trapeze band members,entity,specific,hotpot_context_508
+concept_509,Different Stages – The Best of Glenn Hughes,entity,specific,hotpot_context_509
+concept_510,Mark Simpson (clarinetist),entity,specific,hotpot_context_510
+concept_511,Doctor Who: The Music,entity,specific,hotpot_context_511
+concept_512,Alf Clausen,entity,specific,hotpot_context_512
+concept_513,Hail to the Hills of Westwood,entity,specific,hotpot_context_513
+concept_514,Sarp Bridge,entity,specific,hotpot_context_514
+concept_515,Celebrity Mastermind,entity,specific,hotpot_context_515
+concept_516,Donnie Simpson,entity,specific,hotpot_context_516
+concept_517,British Royal Train,entity,specific,hotpot_context_517
+concept_518,The Simpsons Theme,entity,specific,hotpot_context_518
+concept_519,Las Lomitas Elementary School District,entity,specific,hotpot_context_519
+concept_520,Semmering railway,entity,specific,hotpot_context_520
+concept_521,Most–Moldava railway,entity,specific,hotpot_context_521
+concept_522,Southern Railway (Austria),entity,specific,hotpot_context_522
+concept_523,Rudyard Lake Steam Railway,entity,specific,hotpot_context_523
+concept_524,Carolina and Northwestern Railway,entity,specific,hotpot_context_524
+concept_525,D. William Brosnan,entity,specific,hotpot_context_525
+concept_526,Hakone Tozan Railway,entity,specific,hotpot_context_526
+concept_527,Green Mountain Cog Railway,entity,specific,hotpot_context_527
+concept_528,East Siberian Railway,entity,specific,hotpot_context_528
+concept_529,Reisseck Railway,entity,specific,hotpot_context_529
+concept_530,List of awards and nominations received by Lost,entity,specific,hotpot_context_530
+concept_531,Frances Conroy,entity,specific,hotpot_context_531
+concept_532,Megan Mullally,entity,specific,hotpot_context_532
+concept_533,Lucy Liu,entity,specific,hotpot_context_533
+concept_534,Geoffrey Rush,entity,specific,hotpot_context_534
+concept_535,Uzo Aduba,entity,specific,hotpot_context_535
+concept_536,Miranda Hobbes,entity,specific,hotpot_context_536
+concept_537,Skyler White,entity,specific,hotpot_context_537
+concept_538,Crazy Eyes (character),entity,specific,hotpot_context_538
+concept_539,Cynthia Nixon,entity,specific,hotpot_context_539
+concept_540,The Green Hornet (2011 film),entity,specific,hotpot_context_540
+concept_541,Kato (The Green Hornet),entity,specific,hotpot_context_541
+concept_542,The Green Hornet (radio series),entity,specific,hotpot_context_542
+concept_543,The Green Hornet (Hong Kong film),entity,specific,hotpot_context_543
+concept_544,Cyndee San Luis,entity,specific,hotpot_context_544
+concept_545,Bruce Lee,entity,specific,hotpot_context_545
+concept_546,The Green Hornet Strikes Again!,entity,specific,hotpot_context_546
+concept_547,The Green Hornet (2006 film),entity,specific,hotpot_context_547
+concept_548,The Green Hornet (TV series),entity,specific,hotpot_context_548
+concept_549,Green Hornet,entity,specific,hotpot_context_549
+concept_550,Liverpool F.C. league record by opponent,entity,specific,hotpot_context_550
+concept_551,List of Liverpool F.C. players (1–24 appearances),entity,specific,hotpot_context_551
+concept_552,2009–10 Everton F.C. season,entity,specific,hotpot_context_552
+concept_553,List of Liverpool F.C. seasons,entity,specific,hotpot_context_553
+concept_554,1966 FA Charity Shield,entity,specific,hotpot_context_554
+concept_555,Anfield,entity,specific,hotpot_context_555
+concept_556,1895–96 Everton F.C. season,entity,specific,hotpot_context_556
+concept_557,List of Liverpool F.C. managers,entity,specific,hotpot_context_557
+concept_558,2010–11 Everton F.C. season,entity,specific,hotpot_context_558
+concept_559,Goodison Park,entity,specific,hotpot_context_559
+concept_560,A Head Full of Dreams,entity,specific,hotpot_context_560
+concept_561,Estadio Ciudad de La Plata,entity,specific,hotpot_context_561
+concept_562,A Head Full of Dreams Tour,entity,specific,hotpot_context_562
+concept_563,Hymn for the Weekend,entity,specific,hotpot_context_563
+concept_564,Wildest Dreams Tour,entity,specific,hotpot_context_564
+concept_565,Kaleidoscope (EP),entity,specific,hotpot_context_565
+concept_566,Everglow,entity,specific,hotpot_context_566
+concept_567,Maiden England World Tour,entity,specific,hotpot_context_567
+concept_568,In Your Wildest Dreams (song),entity,specific,hotpot_context_568
+concept_569,Seventh Tour of a Seventh Tour,entity,specific,hotpot_context_569
+concept_570,Beowulf (2007 film),entity,specific,hotpot_context_570
+concept_571,Dreams on Spec,entity,specific,hotpot_context_571
+concept_572,Braddon Mendelson,entity,specific,hotpot_context_572
+concept_573,Raymond Dokpesi,entity,specific,hotpot_context_573
+concept_574,Roger Avary,entity,specific,hotpot_context_574
+concept_575,Sri Lanka Media Training Institute,entity,specific,hotpot_context_575
+concept_576,Latinos Beyond Reel,entity,specific,hotpot_context_576
+concept_577,Beowulf: Return to the Shieldlands,entity,specific,hotpot_context_577
+concept_578,Christopher Panzner,entity,specific,hotpot_context_578
+concept_579,The Polar Express (film),entity,specific,hotpot_context_579
+concept_580,International House (1933 film),entity,specific,hotpot_context_580
+concept_581,Ginger Rogers,entity,specific,hotpot_context_581
+concept_582,Hat Check Girl,entity,specific,hotpot_context_582
+concept_583,The Big Shot (1931 film),entity,specific,hotpot_context_583
+concept_584,Sweepstakes (film),entity,specific,hotpot_context_584
+concept_585,Ladies of the Jury,entity,specific,hotpot_context_585
+concept_586,Cracked Nuts,entity,specific,hotpot_context_586
+concept_587,The Half-Naked Truth,entity,specific,hotpot_context_587
+concept_588,The Gay Nighties,entity,specific,hotpot_context_588
+concept_589,Little Orphan Annie (1932 film),entity,specific,hotpot_context_589
+concept_590,New Arrangement,entity,specific,hotpot_context_590
+concept_591,Danity Kane discography,entity,specific,hotpot_context_591
+concept_592,Bette Davis Eyes,entity,specific,hotpot_context_592
+concept_593,You Keep Me Hangin' On,entity,specific,hotpot_context_593
+concept_594,Put a Little Love in Your Heart,entity,specific,hotpot_context_594
+concept_595,Animal (Neon Trees song),entity,specific,hotpot_context_595
+concept_596,I Got You Babe,entity,specific,hotpot_context_596
+concept_597,Just the Two of Us (Grover Washington Jr. song),entity,specific,hotpot_context_597
+concept_598,Donna Lewis,entity,specific,hotpot_context_598
+concept_599,I Love You Always Forever,entity,specific,hotpot_context_599
+concept_600,ForPlay,entity,specific,hotpot_context_600
+concept_601,Lior Goldenberg,entity,specific,hotpot_context_601
+concept_602,My Type,entity,specific,hotpot_context_602
+concept_603,Saintmotelevision,entity,specific,hotpot_context_603
+concept_604,Curve Lake First Nation,entity,specific,hotpot_context_604
+concept_605,Voyeur (Saint Motel album),entity,specific,hotpot_context_605
+concept_606,Lars Stalfors,entity,specific,hotpot_context_606
+concept_607,Saint Motel,entity,specific,hotpot_context_607
+concept_608,Curve (band),entity,specific,hotpot_context_608
+concept_609,AJ Jackson,entity,specific,hotpot_context_609
+concept_610,Major Boobage,entity,specific,hotpot_context_610
+concept_611,South Park (season 7),entity,specific,hotpot_context_611
+concept_612,South Park (season 8),entity,specific,hotpot_context_612
+concept_613,South Park (season 12),entity,specific,hotpot_context_613
+concept_614,South Park (season 2),entity,specific,hotpot_context_614
+concept_615,South Park (season 15),entity,specific,hotpot_context_615
+concept_616,South Park (season 9),entity,specific,hotpot_context_616
+concept_617,South Park (season 10),entity,specific,hotpot_context_617
+concept_618,Funnybot,entity,specific,hotpot_context_618
+concept_619,Eric Cartman,entity,specific,hotpot_context_619
+concept_620,Chestnut Hill West station,entity,specific,hotpot_context_620
+concept_621,List of Boston College Eagles football seasons,entity,specific,hotpot_context_621
+concept_622,"Chestnut Hill (Leesburg, Virginia)",entity,specific,hotpot_context_622
+concept_623,Old Chestnut Hill Historic District,entity,specific,hotpot_context_623
+concept_624,Boston College,entity,specific,hotpot_context_624
+concept_625,2007 Boston College Eagles football team,entity,specific,hotpot_context_625
+concept_626,Jesuit Ivy,entity,specific,hotpot_context_626
+concept_627,Stanford University,entity,specific,hotpot_context_627
+concept_628,Chestnut Hill Reservoir Historic District,entity,specific,hotpot_context_628
+concept_629,"Chestnut Hill, Massachusetts",entity,specific,hotpot_context_629
+concept_630,Arthur Rigby (actor),entity,specific,hotpot_context_630
+concept_631,Walter Reed (actor),entity,specific,hotpot_context_631
+concept_632,Brian Lane Green,entity,specific,hotpot_context_632
+concept_633,Eric Thal,entity,specific,hotpot_context_633
+concept_634,Victor Mature,entity,specific,hotpot_context_634
+concept_635,Teru Shimada,entity,specific,hotpot_context_635
+concept_636,Elois Jenssen,entity,specific,hotpot_context_636
+concept_637,Ivan Samson,entity,specific,hotpot_context_637
+concept_638,Gary Watson,entity,specific,hotpot_context_638
+concept_639,Samson and Delilah (1984 film),entity,specific,hotpot_context_639
+concept_640,Iqaluit Airport,entity,specific,hotpot_context_640
+concept_641,Frobisher Bay Air Base,entity,specific,hotpot_context_641
+concept_642,Lawren Harris,entity,specific,hotpot_context_642
+concept_643,Frank Wolf (adventurer),entity,specific,hotpot_context_643
+concept_644,Selwyn Egerton Sangster,entity,specific,hotpot_context_644
+concept_645,Canadian North,entity,specific,hotpot_context_645
+concept_646,Nunatsiaq News,entity,specific,hotpot_context_646
+concept_647,Air Nunavut,entity,specific,hotpot_context_647
+concept_648,First Air,entity,specific,hotpot_context_648
+concept_649,Bernard Émond,entity,specific,hotpot_context_649
+concept_650,Socialist Party of Connecticut,entity,specific,hotpot_context_650
+concept_651,Royal Spa Centre,entity,specific,hotpot_context_651
+concept_652,Federation Party,entity,specific,hotpot_context_652
+concept_653,Boerestaat Party,entity,specific,hotpot_context_653
+concept_654,Anthony Eden,entity,specific,hotpot_context_654
+concept_655,Political party committee,entity,specific,hotpot_context_655
+concept_656,Royal Pump Rooms,entity,specific,hotpot_context_656
+concept_657,Conservative Party (UK),entity,specific,hotpot_context_657
+concept_658,Save Romania Union,entity,specific,hotpot_context_658
+concept_659,Unity Party (South Ossetia),entity,specific,hotpot_context_659
+concept_660,Mississippi Masala,entity,specific,hotpot_context_660
+concept_661,"Part 2, Sounder",entity,specific,hotpot_context_661
+concept_662,Sooni Taraporevala,entity,specific,hotpot_context_662
+concept_663,Howards End (film),entity,specific,hotpot_context_663
+concept_664,Little Zizou,entity,specific,hotpot_context_664
+concept_665,Duel of Hearts,entity,specific,hotpot_context_665
+concept_666,The Namesake (film),entity,specific,hotpot_context_666
+concept_667,Lone Scherfig,entity,specific,hotpot_context_667
+concept_668,Parineeta (2005 film),entity,specific,hotpot_context_668
+concept_669,Such a Long Journey (film),entity,specific,hotpot_context_669
+concept_670,Give It All,entity,specific,hotpot_context_670
+concept_671,Tim McIlrath,entity,specific,hotpot_context_671
+concept_672,The Dwarves Must Die,entity,specific,hotpot_context_672
+concept_673,Tragedy + Time,entity,specific,hotpot_context_673
+concept_674,Spike Slawson,entity,specific,hotpot_context_674
+concept_675,The Violence,entity,specific,hotpot_context_675
+concept_676,Audience of One (song),entity,specific,hotpot_context_676
+concept_677,The Honor System (band),entity,specific,hotpot_context_677
+concept_678,Help Is on the Way,entity,specific,hotpot_context_678
+concept_679,Filthy Thieving Bastards,entity,specific,hotpot_context_679
+concept_680,Gigantic (2008 film),entity,specific,hotpot_context_680
+concept_681,First Monday in October (film),entity,specific,hotpot_context_681
+concept_682,Cate Blanchett,entity,specific,hotpot_context_682
+concept_683,Russell Crowe filmography,entity,specific,hotpot_context_683
+concept_684,Revolutionary Road (film),entity,specific,hotpot_context_684
+concept_685,John Goodman,entity,specific,hotpot_context_685
+concept_686,Stathis Giallelis,entity,specific,hotpot_context_686
+concept_687,Nick Nolte,entity,specific,hotpot_context_687
+concept_688,Cantinflas,entity,specific,hotpot_context_688
+concept_689,Tom Cruise filmography,entity,specific,hotpot_context_689
+concept_690,Tom Daley,entity,specific,hotpot_context_690
+concept_691,Splash! (UK TV series),entity,specific,hotpot_context_691
+concept_692,Zoe Arancini,entity,specific,hotpot_context_692
+concept_693,Nikitas Kocheilas,entity,specific,hotpot_context_693
+concept_694,Eszter Tomaskovics,entity,specific,hotpot_context_694
+concept_695,Alicia McCormack,entity,specific,hotpot_context_695
+concept_696,Major achievements in swimming by nation,entity,specific,hotpot_context_696
+concept_697,FINA World Masters Championships,entity,specific,hotpot_context_697
+concept_698,Glencora Ralph,entity,specific,hotpot_context_698
+concept_699,2010 FINA Diving World Cup,entity,specific,hotpot_context_699
+concept_700,I Got a Thang for You,entity,specific,hotpot_context_700
+concept_701,Revolver (T-Pain album),entity,specific,hotpot_context_701
+concept_702,Still da Baddest,entity,specific,hotpot_context_702
+concept_703,B R Right,entity,specific,hotpot_context_703
+concept_704,Da Baddest Bitch,entity,specific,hotpot_context_704
+concept_705,Single Again,entity,specific,hotpot_context_705
+concept_706,You da Baddest,entity,specific,hotpot_context_706
+concept_707,Life in a Tin Can,entity,specific,hotpot_context_707
+concept_708,Meech Wells,entity,specific,hotpot_context_708
+concept_709,Keyshia Cole,entity,specific,hotpot_context_709
+concept_710,Somebody to Love (film),entity,specific,hotpot_context_710
+concept_711,Four Rooms,entity,specific,hotpot_context_711
+concept_712,In the Soup,entity,specific,hotpot_context_712
+concept_713,Koh Rong Sanloem,entity,specific,hotpot_context_713
+concept_714,Am Rong,entity,specific,hotpot_context_714
+concept_715,13 Moons,entity,specific,hotpot_context_715
+concept_716,Pete Smalls Is Dead,entity,specific,hotpot_context_716
+concept_717,Little Feet (film),entity,specific,hotpot_context_717
+concept_718,Alexandre Rockwell,entity,specific,hotpot_context_718
+concept_719,Rong (surname),entity,specific,hotpot_context_719
+concept_720,Australian Law Librarians' Association,entity,specific,hotpot_context_720
+concept_721,Historias de un arrabal parisino,entity,specific,hotpot_context_721
+concept_722,Golf Magazine,entity,specific,hotpot_context_722
+concept_723,El Nuevo Cojo,entity,specific,hotpot_context_723
+concept_724,El Nuevo Heraldo,entity,specific,hotpot_context_724
+concept_725,El Nuevo Herald,entity,specific,hotpot_context_725
+concept_726,Alberto Ibargüen,entity,specific,hotpot_context_726
+concept_727,Golf Digest,entity,specific,hotpot_context_727
+concept_728,El Nuevo Diario,entity,specific,hotpot_context_728
+concept_729,Time Inc.,entity,specific,hotpot_context_729
+concept_730,Team Homer,entity,specific,hotpot_context_730
+concept_731,North Boone Community Unit School District 200,entity,specific,hotpot_context_731
+concept_732,Otto Mann,entity,specific,hotpot_context_732
+concept_733,Jasper County Community Unit School District 1,entity,specific,hotpot_context_733
+concept_734,2006 Huntsville bus crash,entity,specific,hotpot_context_734
+concept_735,Charleston Community Unit School District 1,entity,specific,hotpot_context_735
+concept_736,Burbank School District 111,entity,specific,hotpot_context_736
+concept_737,Braintree Public Schools,entity,specific,hotpot_context_737
+concept_738,The Otto Show,entity,specific,hotpot_context_738
+concept_739,Zion Elementary School District 6,entity,specific,hotpot_context_739
+concept_740,Southend University Hospital NHS Foundation Trust,entity,specific,hotpot_context_740
+concept_741,Square 54 Redevelopment,entity,specific,hotpot_context_741
+concept_742,MedStar Georgetown University Hospital,entity,specific,hotpot_context_742
+concept_743,Brad Wenstrup,entity,specific,hotpot_context_743
+concept_744,Children's National Medical Center,entity,specific,hotpot_context_744
+concept_745,Medical Faculty Associates,entity,specific,hotpot_context_745
+concept_746,George Washington University Hospital,entity,specific,hotpot_context_746
+concept_747,Georgetown University School of Medicine,entity,specific,hotpot_context_747
+concept_748,MedStar Washington Hospital Center,entity,specific,hotpot_context_748
+concept_749,"West End, Washington, D.C.",entity,specific,hotpot_context_749
+concept_750,Peter O'Meara (rugby union),entity,specific,hotpot_context_750
+concept_751,Time Slave,entity,specific,hotpot_context_751
+concept_752,Gold (1974 film),entity,specific,hotpot_context_752
+concept_753,Peter O'Meara,entity,specific,hotpot_context_753
+concept_754,Norman Dike,entity,specific,hotpot_context_754
+concept_755,Middelharnis,entity,specific,hotpot_context_755
+concept_756,Ernest Norman,entity,specific,hotpot_context_756
+concept_757,Norman Staunton Dike,entity,specific,hotpot_context_757
+concept_758,Oklahoma Shakespeare in the Park,entity,specific,hotpot_context_758
+concept_759,1985 Dunhill Cup,entity,specific,hotpot_context_759
+concept_760,Pedro Alcántara Quijano Montero,entity,specific,hotpot_context_760
+concept_761,Peter Gallo,entity,specific,hotpot_context_761
+concept_762,Silas Bent,entity,specific,hotpot_context_762
+concept_763,Philip Schultz,entity,specific,hotpot_context_763
+concept_764,Dysteleology,entity,specific,hotpot_context_764
+concept_765,Na-Ga,entity,specific,hotpot_context_765
+concept_766,Skylite,entity,specific,hotpot_context_766
+concept_767,Christopher Hitchens,entity,specific,hotpot_context_767
+concept_768,Emily Matchar,entity,specific,hotpot_context_768
+concept_769,Menil Collection,entity,specific,hotpot_context_769
+concept_770,Dwight D. Eisenhower,entity,specific,hotpot_context_770
+concept_771,34th Battalion (Australia),entity,specific,hotpot_context_771
+concept_772,2013 America's Cup,entity,specific,hotpot_context_772
+concept_773,34th Armoured Brigade (United Kingdom),entity,specific,hotpot_context_773
+concept_774,Andrés Avelino Cáceres,entity,specific,hotpot_context_774
+concept_775,R Adams Cowley,entity,specific,hotpot_context_775
+concept_776,David Eisenhower,entity,specific,hotpot_context_776
+concept_777,Black Bat Squadron,entity,specific,hotpot_context_777
+concept_778,34th Street (IRT Second Avenue Line),entity,specific,hotpot_context_778
+concept_779,East 34th – Campus (RTA Rapid Transit station),entity,specific,hotpot_context_779
+concept_780,Fortean Times,entity,specific,hotpot_context_780
+concept_781,Charles Fort,entity,specific,hotpot_context_781
+concept_782,Bob Rickard,entity,specific,hotpot_context_782
+concept_783,Bizarre (magazine),entity,specific,hotpot_context_783
+concept_784,Super-Sargasso Sea,entity,specific,hotpot_context_784
+concept_785,Fortean Society,entity,specific,hotpot_context_785
+concept_786,Vincent Gaddis,entity,specific,hotpot_context_786
+concept_787,William R. Corliss,entity,specific,hotpot_context_787
+concept_788,Michael D. Swords,entity,specific,hotpot_context_788
+concept_789,The Book of the Damned,entity,specific,hotpot_context_789
+concept_790,Chipmunks in Low Places,entity,specific,hotpot_context_790
+concept_791,Martina McBride discography,entity,specific,hotpot_context_791
+concept_792,Danity Kane discography,entity,specific,hotpot_context_792
+concept_793,The Dance (song),entity,specific,hotpot_context_793
+concept_794,I Feel Lucky,entity,specific,hotpot_context_794
+concept_795,Rosanne Cash discography,entity,specific,hotpot_context_795
+concept_796,There It Is (Shalamar song),entity,specific,hotpot_context_796
+concept_797,Omarion,entity,specific,hotpot_context_797
+concept_798,No Fences,entity,specific,hotpot_context_798
+concept_799,Friends in Low Places,entity,specific,hotpot_context_799
+concept_800,Rosanne Cash discography,entity,specific,hotpot_context_800
+concept_801,Train discography,entity,specific,hotpot_context_801
+concept_802,I Love You Always Forever,entity,specific,hotpot_context_802
+concept_803,The Definition Of...,entity,specific,hotpot_context_803
+concept_804,Thomas Rhett discography,entity,specific,hotpot_context_804
+concept_805,Trisha Yearwood discography,entity,specific,hotpot_context_805
+concept_806,Number 1's (Destiny's Child album),entity,specific,hotpot_context_806
+concept_807,Dirt (Alice in Chains album),entity,specific,hotpot_context_807
+concept_808,Uncle Charlie,entity,specific,hotpot_context_808
+concept_809,Hate to Feel,entity,specific,hotpot_context_809
+concept_810,Mocean 8,entity,specific,hotpot_context_810
+concept_811,In the Mountain in the Cloud,entity,specific,hotpot_context_811
+concept_812,Modest Mouse,entity,specific,hotpot_context_812
+concept_813,Portugal. The Man discography,entity,specific,hotpot_context_813
+concept_814,Waiter: &quot;You Vultures!&quot;,entity,specific,hotpot_context_814
+concept_815,The Studdogs,entity,specific,hotpot_context_815
+concept_816,John Gourley,entity,specific,hotpot_context_816
+concept_817,Portugal. The Man,entity,specific,hotpot_context_817
+concept_818,The Satanic Satanist,entity,specific,hotpot_context_818
+concept_819,Hutch Harris,entity,specific,hotpot_context_819
+concept_820,Anu Namshir,entity,specific,hotpot_context_820
+concept_821,Walter Payton NFL Man of the Year Award,entity,specific,hotpot_context_821
+concept_822,Carole Dieschbourg,entity,specific,hotpot_context_822
+concept_823,Jérôme d'Ambrosio,entity,specific,hotpot_context_823
+concept_824,2016 Marrakesh ePrix,entity,specific,hotpot_context_824
+concept_825,2016 BBC Sports Personality of the Year Award,entity,specific,hotpot_context_825
+concept_826,Sébastien Buemi,entity,specific,hotpot_context_826
+concept_827,Lucas di Grassi,entity,specific,hotpot_context_827
+concept_828,BBC Sports Personality of the Year Award,entity,specific,hotpot_context_828
+concept_829,FPAI Indian Player of the Year,entity,specific,hotpot_context_829
+concept_830,Seoul Station (film),entity,specific,hotpot_context_830
+concept_831,Cafe Noir,entity,specific,hotpot_context_831
+concept_832,Psychokinesis (film),entity,specific,hotpot_context_832
+concept_833,Train to Busan,entity,specific,hotpot_context_833
+concept_834,The Fake (2013 film),entity,specific,hotpot_context_834
+concept_835,Yeon Sang-ho,entity,specific,hotpot_context_835
+concept_836,Kim Yool-ho,entity,specific,hotpot_context_836
+concept_837,The Crucible (2011 film),entity,specific,hotpot_context_837
+concept_838,The King of Pigs,entity,specific,hotpot_context_838
+concept_839,Top Gear Korea,entity,specific,hotpot_context_839
+concept_840,Tabas-e Masina,entity,specific,hotpot_context_840
+concept_841,Aghajari,entity,specific,hotpot_context_841
+concept_842,Sareyn County,entity,specific,hotpot_context_842
+concept_843,"Ningi, Nigeria",entity,specific,hotpot_context_843
+concept_844,Uche James-Iroha,entity,specific,hotpot_context_844
+concept_845,Noorat,entity,specific,hotpot_context_845
+concept_846,Hinduism in Australia,entity,specific,hotpot_context_846
+concept_847,Enugu,entity,specific,hotpot_context_847
+concept_848,Terang,entity,specific,hotpot_context_848
+concept_849,Shiqi Subdistrict,entity,specific,hotpot_context_849
+concept_850,Barbara Avedon,entity,specific,hotpot_context_850
+concept_851,D.C. Cab,entity,specific,hotpot_context_851
+concept_852,Phil Fish (character),entity,specific,hotpot_context_852
+concept_853,Jim Moody (actor),entity,specific,hotpot_context_853
+concept_854,Jack Soo,entity,specific,hotpot_context_854
+concept_855,Nellie Bellflower,entity,specific,hotpot_context_855
+concept_856,Max Gail,entity,specific,hotpot_context_856
+concept_857,Ron Carey (actor),entity,specific,hotpot_context_857
+concept_858,Steve Landesberg,entity,specific,hotpot_context_858
+concept_859,Joe Bash,entity,specific,hotpot_context_859
+concept_860,Late Night Final,entity,specific,hotpot_context_860
+concept_861,Lady's Bridge (album),entity,specific,hotpot_context_861
+concept_862,Standing at the Sky's Edge,entity,specific,hotpot_context_862
+concept_863,Richard Hawley,entity,specific,hotpot_context_863
+concept_864,Catherine (alternative rock band),entity,specific,hotpot_context_864
+concept_865,Truelove's Gutter,entity,specific,hotpot_context_865
+concept_866,Lowedges,entity,specific,hotpot_context_866
+concept_867,A Heavy Nite With...,entity,specific,hotpot_context_867
+concept_868,Broken (Soulsavers album),entity,specific,hotpot_context_868
+concept_869,Longpigs,entity,specific,hotpot_context_869
+concept_870,Pam Veasey,entity,specific,hotpot_context_870
+concept_871,All the Vermeers in New York,entity,specific,hotpot_context_871
+concept_872,Marc Veasey,entity,specific,hotpot_context_872
+concept_873,Black Merda,entity,specific,hotpot_context_873
+concept_874,Dale Veasey,entity,specific,hotpot_context_874
+concept_875,Over Here (film),entity,specific,hotpot_context_875
+concept_876,Last Chants for a Slow Dance,entity,specific,hotpot_context_876
+concept_877,Emmanuelle Chaulet,entity,specific,hotpot_context_877
+concept_878,List of CSI: Cyber episodes,entity,specific,hotpot_context_878
+concept_879,Jon Jost,entity,specific,hotpot_context_879
+concept_880,Maurice Spata,entity,specific,hotpot_context_880
+concept_881,Hot Feet,entity,specific,hotpot_context_881
+concept_882,"Thomas Berkeley, 5th Baron Berkeley",entity,specific,hotpot_context_882
+concept_883,John Hines (Australian soldier),entity,specific,hotpot_context_883
+concept_884,Baron Berkeley of Stratton,entity,specific,hotpot_context_884
+concept_885,Baron Berkeley,entity,specific,hotpot_context_885
+concept_886,Andrew Hines,entity,specific,hotpot_context_886
+concept_887,Cactus Club,entity,specific,hotpot_context_887
+concept_888,Uptown... It's Hot!,entity,specific,hotpot_context_888
+concept_889,Maurice Hines,entity,specific,hotpot_context_889
+concept_890,Augusta Canal,entity,specific,hotpot_context_890
+concept_891,17th Street Canal,entity,specific,hotpot_context_891
+concept_892,Almonaster Road,entity,specific,hotpot_context_892
+concept_893,Karakum Canal,entity,specific,hotpot_context_893
+concept_894,New Orleans Outfall Canals,entity,specific,hotpot_context_894
+concept_895,London Avenue Canal,entity,specific,hotpot_context_895
+concept_896,Orleans Canal,entity,specific,hotpot_context_896
+concept_897,Southern Railway Terminal (New Orleans),entity,specific,hotpot_context_897
+concept_898,16th Ward of New Orleans,entity,specific,hotpot_context_898
+concept_899,Canal Streetcar Line,entity,specific,hotpot_context_899
+concept_900,Pokémon universe,entity,specific,hotpot_context_900
+concept_901,Pete Hill,entity,specific,hotpot_context_901
+concept_902,RSPORTS,entity,specific,hotpot_context_902
+concept_903,Robert Kraft,entity,specific,hotpot_context_903
+concept_904,Mane 'n Tail Lady Stallions (2015),entity,specific,hotpot_context_904
+concept_905,1926 American Football League season,entity,specific,hotpot_context_905
+concept_906,Crispa 400,entity,specific,hotpot_context_906
+concept_907,Canadian Premier League,entity,specific,hotpot_context_907
+concept_908,PLDT Volleyball Club,entity,specific,hotpot_context_908
+concept_909,Myra Kraft,entity,specific,hotpot_context_909
+concept_910,David Lucas (composer),entity,specific,hotpot_context_910
+concept_911,Blue Öyster Cult,entity,specific,hotpot_context_911
+concept_912,Godzilla (song),entity,specific,hotpot_context_912
+concept_913,Imaginos,entity,specific,hotpot_context_913
+concept_914,Fu Manchu (band),entity,specific,hotpot_context_914
+concept_915,Some Enchanted Evening (Blue Öyster Cult album),entity,specific,hotpot_context_915
+concept_916,Blue Öyster Cult (album),entity,specific,hotpot_context_916
+concept_917,Mirrors (Blue Öyster Cult album),entity,specific,hotpot_context_917
+concept_918,Black Blade (song),entity,specific,hotpot_context_918
+concept_919,The Essential Blue Öyster Cult,entity,specific,hotpot_context_919
+concept_920,Joe Wizan,entity,specific,hotpot_context_920
+concept_921,Connie Tavel,entity,specific,hotpot_context_921
+concept_922,Proud Mary (film),entity,specific,hotpot_context_922
+concept_923,Toby Emmerich,entity,specific,hotpot_context_923
+concept_924,Dete Meserve,entity,specific,hotpot_context_924
+concept_925,Easy Money II: Hard to Kill,entity,specific,hotpot_context_925
+concept_926,Zygi Kamasa,entity,specific,hotpot_context_926
+concept_927,No Code of Conduct,entity,specific,hotpot_context_927
+concept_928,Scott Rosenbaum,entity,specific,hotpot_context_928
+concept_929,London Has Fallen,entity,specific,hotpot_context_929
+concept_930,Jane Alexander,entity,specific,hotpot_context_930
+concept_931,Rafael Bello,entity,specific,hotpot_context_931
+concept_932,Chuck Versus the Role Models,entity,specific,hotpot_context_932
+concept_933,Patti LuPone,entity,specific,hotpot_context_933
+concept_934,John Carrafa,entity,specific,hotpot_context_934
+concept_935,Serializer,entity,specific,hotpot_context_935
+concept_936,Rich Moore,entity,specific,hotpot_context_936
+concept_937,Swoosie Kurtz,entity,specific,hotpot_context_937
+concept_938,Paul Haggis,entity,specific,hotpot_context_938
+concept_939,Christian Borle,entity,specific,hotpot_context_939
+concept_940,Rainbow Terrace,entity,specific,hotpot_context_940
+concept_941,Antonio Villaraigosa,entity,specific,hotpot_context_941
+concept_942,William B. Hartsfield,entity,specific,hotpot_context_942
+concept_943,Glen Murray (politician),entity,specific,hotpot_context_943
+concept_944,Robert Maddox,entity,specific,hotpot_context_944
+concept_945,Albert Hofstede,entity,specific,hotpot_context_945
+concept_946,"San Francisco mayoral election, 1995",entity,specific,hotpot_context_946
+concept_947,Harold Washington,entity,specific,hotpot_context_947
+concept_948,Asa Griggs Candler,entity,specific,hotpot_context_948
+concept_949,Phil Amicone,entity,specific,hotpot_context_949
+concept_950,Gupta script,entity,specific,hotpot_context_950
+concept_951,Coptic alphabet,entity,specific,hotpot_context_951
+concept_952,Modi alphabet,entity,specific,hotpot_context_952
+concept_953,Southeastern Iberian script,entity,specific,hotpot_context_953
+concept_954,Balbodh,entity,specific,hotpot_context_954
+concept_955,Hebrew alphabet,entity,specific,hotpot_context_955
+concept_956,Elbasan alphabet,entity,specific,hotpot_context_956
+concept_957,Siddhaṃ script,entity,specific,hotpot_context_957
+concept_958,Cuneiform script,entity,specific,hotpot_context_958
+concept_959,Autograph (Assyriology),entity,specific,hotpot_context_959
+concept_960,Azerbaijanis,entity,specific,hotpot_context_960
+concept_961,Mandinka people,entity,specific,hotpot_context_961
+concept_962,Han Chinese,entity,specific,hotpot_context_962
+concept_963,Ewe people,entity,specific,hotpot_context_963
+concept_964,Princess Fragrant,entity,specific,hotpot_context_964
+concept_965,Muslim population growth,entity,specific,hotpot_context_965
+concept_966,Fezara people,entity,specific,hotpot_context_966
+concept_967,Harvard Foundation,entity,specific,hotpot_context_967
+concept_968,Jack Goldstone,entity,specific,hotpot_context_968
+concept_969,Oku people (Sierra Leone),entity,specific,hotpot_context_969
+concept_970,Manifesto Records (UK),entity,specific,hotpot_context_970
+concept_971,David L. Boren,entity,specific,hotpot_context_971
+concept_972,Allen Williamson,entity,specific,hotpot_context_972
+concept_973,H. E. Bailey,entity,specific,hotpot_context_973
+concept_974,Boren-McCurdy proposals,entity,specific,hotpot_context_974
+concept_975,Cripps' mission,entity,specific,hotpot_context_975
+concept_976,Mabel Bassett,entity,specific,hotpot_context_976
+concept_977,13th Oklahoma Legislature,entity,specific,hotpot_context_977
+concept_978,15th Oklahoma Legislature,entity,specific,hotpot_context_978
+concept_979,Cowboy Pink Williams,entity,specific,hotpot_context_979
+concept_980,"Kings County Museum (Hampton, New Brunswick)",entity,specific,hotpot_context_980
+concept_981,Fernbank Museum of Natural History,entity,specific,hotpot_context_981
+concept_982,"Deadwood, South Dakota",entity,specific,hotpot_context_982
+concept_983,Yarmouth Runic Stone,entity,specific,hotpot_context_983
+concept_984,Goa State Museum,entity,specific,hotpot_context_984
+concept_985,National Railway Museum Shildon,entity,specific,hotpot_context_985
+concept_986,Stele Forest,entity,specific,hotpot_context_986
+concept_987,Tankavaara,entity,specific,hotpot_context_987
+concept_988,Thoen Stone,entity,specific,hotpot_context_988
+concept_989,Clay County Historical Museum,entity,specific,hotpot_context_989
+concept_990,Mercy Hospital and Medical Center,entity,specific,hotpot_context_990
+concept_991,Brad Wenstrup,entity,specific,hotpot_context_991
+concept_992,Baylor College of Medicine,entity,specific,hotpot_context_992
+concept_993,Adventist Medical Center Manila,entity,specific,hotpot_context_993
+concept_994,Banner University Medical Center Tucson,entity,specific,hotpot_context_994
+concept_995,Children's National Medical Center,entity,specific,hotpot_context_995
+concept_996,NewYork–Presbyterian Hospital,entity,specific,hotpot_context_996
+concept_997,MedStar Georgetown University Hospital,entity,specific,hotpot_context_997
+concept_998,MedStar Washington Hospital Center,entity,specific,hotpot_context_998
+concept_999,Capitol University Medical City,entity,specific,hotpot_context_999

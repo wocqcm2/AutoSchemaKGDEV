@@ -1,0 +1,41 @@
+{
+  "start_time": "2025-08-03T15:31:29.598497",
+  "steps_completed": [
+    {
+      "step": "Concept Extraction",
+      "timestamp": "2025-08-03T16:26:55.711822",
+      "success": true
+    },
+    {
+      "step": "CSV Conversion",
+      "timestamp": "2025-08-03T16:26:55.782645",
+      "success": true
+    },
+    {
+      "step": "Graph Construction",
+      "timestamp": "2025-08-03T16:27:01.444972",
+      "success": true
+    },
+    {
+      "step": "Graph Saving",
+      "timestamp": "2025-08-03T16:27:23.667388",
+      "success": true
+    },
+    {
+      "step": "Statistics Generation",
+      "timestamp": "2025-08-03T16:27:24.315292",
+      "success": true
+    }
+  ],
+  "errors": [],
+  "outputs": {
+    "concept_extraction": "output/concepts/direct_concepts_20250803153132.json",
+    "concepts_csv": "output/concept_csv/concepts_hotpot_contexts_for_kg.csv",
+    "relationships_csv": "output/concept_csv/relationships_hotpot_contexts_for_kg.csv",
+    "graphml_file": "output/graph/hotpot_kg.graphml",
+    "pickle_file": "output/graph/hotpot_kg.pkl",
+    "statistics_file": "output/statistics.json"
+  },
+  "end_time": "2025-08-03T16:27:24.315315",
+  "total_duration": 3354.716818
+}

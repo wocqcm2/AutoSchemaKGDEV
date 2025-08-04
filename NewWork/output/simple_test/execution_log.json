@@ -1,0 +1,41 @@
+{
+  "start_time": "2025-08-01T11:24:39.922098",
+  "steps_completed": [
+    {
+      "step": "Concept Extraction",
+      "timestamp": "2025-08-01T11:26:36.350015",
+      "success": true
+    },
+    {
+      "step": "CSV Conversion",
+      "timestamp": "2025-08-01T11:26:36.352347",
+      "success": true
+    },
+    {
+      "step": "Graph Construction",
+      "timestamp": "2025-08-01T11:26:36.355096",
+      "success": true
+    },
+    {
+      "step": "Graph Saving",
+      "timestamp": "2025-08-01T11:26:36.362957",
+      "success": true
+    },
+    {
+      "step": "Statistics Generation",
+      "timestamp": "2025-08-01T11:26:36.364757",
+      "success": true
+    }
+  ],
+  "errors": [],
+  "outputs": {
+    "concept_extraction": "output/simple_test/concepts/direct_concepts_20250801112440.json",
+    "concepts_csv": "output/simple_test/concept_csv/concepts_Dulce_test.csv",
+    "relationships_csv": "output/simple_test/concept_csv/relationships_Dulce_test.csv",
+    "graphml_file": "output/simple_test/graph/dulce_simple.graphml",
+    "pickle_file": "output/simple_test/graph/dulce_simple.pkl",
+    "statistics_file": "output/simple_test/statistics.json"
+  },
+  "end_time": "2025-08-01T11:26:36.364774",
+  "total_duration": 116.442676
+}

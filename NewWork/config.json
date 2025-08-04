@@ -1,0 +1,62 @@
+{
+  "api": {
+    "base_url": "https://api.deepinfra.com/v1/openai",
+    "api_key": "PpqbriLq8q3p3uoegRDqJxl4eBT8s2QE",
+    "model": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+    "timeout": 120,
+    "max_retries": 3
+  },
+  
+  "models": {
+    "qwen_235b": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+    "llama_405b": "meta-llama/Meta-Llama-3.1-405B-Instruct",
+    "llama_70b": "meta-llama/Llama-3.3-70B-Instruct",
+    "llama_8b": "meta-llama/Meta-Llama-3-8B-Instruct",
+    "llama_8b_turbo": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+    "deepseek": "deepseek-ai/DeepSeek-V3-0324-Turbo",
+    "openai_gpt4o": "gpt-4o",
+    "openai_gpt4o_mini": "gpt-4o-mini"
+  },
+  
+  "extraction": {
+    "max_new_tokens": 2048,
+    "temperature": 0.1,
+    "batch_size_concept": 8,
+    "text_chunk_size": 1024,
+    "chunk_overlap": 100,
+    "max_workers": 3,
+    "sleep_interval": 1,
+    "batch_rest_frequency": 10
+  },
+  
+  "processing": {
+    "extraction_mode": "passage_concept",
+    "language": "en",
+    "include_abstraction_levels": true,
+    "include_hierarchical_relations": true,
+    "min_concept_frequency": 1,
+    "normalize_concept_names": true,
+    "filter_low_quality_concepts": true,
+    "remove_doc_spaces": true
+  },
+  
+  "paths": {
+    "data_directory": "../example_data",
+    "output_directory": "output",
+    "default_filename_pattern": "sample"
+  },
+  
+  "logging": {
+    "debug_mode": true,
+    "record_usage": true,
+    "save_intermediate_results": true,
+    "log_level": "INFO"
+  },
+  
+  "performance": {
+    "use_local_model": false,
+    "device_map": "auto",
+    "load_in_8bit": false,
+    "load_in_4bit": false
+  }
+}
