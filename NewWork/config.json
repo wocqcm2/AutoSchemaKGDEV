@@ -1,11 +1,5 @@
 {
-  "api": {
-    "base_url": "https://api.deepinfra.com/v1/openai",
-    "api_key": "PpqbriLq8q3p3uoegRDqJxl4eBT8s2QE",
-    "model": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-    "timeout": 120,
-    "max_retries": 3
-  },
+
   
   "models": {
     "qwen_235b": "Qwen/Qwen3-235B-A22B-Instruct-2507",
